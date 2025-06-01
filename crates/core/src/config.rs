@@ -1,8 +1,8 @@
-use std::path::Path;
-use anyhow::Result;
-use serde::{Serialize, Deserialize};
-use std::fs;
 use crate::browser::BrowserSettings;
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
