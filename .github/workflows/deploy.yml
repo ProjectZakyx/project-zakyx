@@ -42,13 +42,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libgtk-3-dev \
-            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
             libglib2.0-dev \
             libcairo-gobject2 \
             libgtk-3-0 \
-            libwebkit2gtk-4.0-37 \
+            libwebkit2gtk-4.1-0 \
             build-essential \
-            pkg-config
+            pkg-config \
+            libappindicator3-dev \
+            librsvg2-dev
 
       # Windows-specific setup
       - name: Install Windows dependencies
