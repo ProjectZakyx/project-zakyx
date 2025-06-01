@@ -188,8 +188,9 @@ mod windows_webview {
 
 #[cfg(target_os = "linux")]
 mod linux_webview {
-    use super::*;
+    use anyhow::Result;
     use gtk::prelude::*;
+    use gtk::Inhibit;
     use webkit2gtk::{WebView, WebViewExt};
 
     pub struct WebViewApp {
@@ -234,7 +235,7 @@ mod linux_webview {
 
 #[cfg(target_os = "macos")]
 mod macos_webview {
-    use super::*;
+    use anyhow::Result;
     
     pub struct WebViewApp {
         // macOS-specific implementation would go here
