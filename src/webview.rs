@@ -190,7 +190,6 @@ mod windows_webview {
 mod linux_webview {
     use anyhow::Result;
     use gtk::prelude::*;
-    use gtk::Inhibit;
     use webkit2gtk::{WebView, WebViewExt};
 
     pub struct WebViewApp {
@@ -211,7 +210,7 @@ mod linux_webview {
             
             window.connect_delete_event(|_, _| {
                 gtk::main_quit();
-                Inhibit(false)
+                gtk::Inhibit(false)
             });
 
             Ok(Self { window, webview })
