@@ -1,5 +1,5 @@
-use std::path::Path;
 use anyhow::Result;
+use std::path::Path;
 
 pub fn get_project_root() -> Result<String> {
     let current_dir = std::env::current_dir()?;

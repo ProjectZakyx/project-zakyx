@@ -1,11 +1,11 @@
-use dioxus::prelude::*;
-use dioxus_desktop::{Config, WindowBuilder};
-use dioxus_desktop::tao::dpi::LogicalSize;
 use dioxus::events::FormData;
+use dioxus::prelude::*;
+use dioxus_desktop::tao::dpi::LogicalSize;
+use dioxus_desktop::{Config, WindowBuilder};
 
-pub use projekt_ora_core::BrowserSettings;
-use projekt_ora_core::BrowserEvent;
 pub use projekt_ora_core::browser::Browser as CoreBrowser;
+use projekt_ora_core::BrowserEvent;
+pub use projekt_ora_core::BrowserSettings;
 
 use std::sync::Arc;
 
