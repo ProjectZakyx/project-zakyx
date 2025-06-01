@@ -1,0 +1,15 @@
+# Rust build
+/target/
+**/*.rs.bk
+Cargo.lock
+.env
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# By-products
+*.pdb
+*.rmeta
+*.rlib

@@ -1,0 +1,12 @@
+[package]
+name = "projekt-ora-ui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+projekt-ora-core = { path = "../core" }
+projekt-ora-devtools = { path = "../devtools" }
+projekt-ora-platform = { path = "../platform" }
+dioxus = { version = "0.4.3" }
+dioxus-desktop = { version = "0.4.3", features = ["transparent"] }
+anyhow = "1"
