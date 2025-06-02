@@ -34,15 +34,21 @@ sudo apt install -y build-essential pkg-config git
 # GTK3 und WebKit2GTK Entwicklungsbibliotheken installieren
 sudo apt install -y \
     libgtk-3-dev \
-    libwebkit2gtk-4.0-dev \
+    libwebkit2gtk-4.1-dev \
+    libjavascriptcoregtk-4.1-dev \
+    libsoup-3.0-dev \
     libglib2.0-dev \
     libcairo-gobject2 \
     libgtk-3-0 \
-    libwebkit2gtk-4.0-37 \
+    libwebkit2gtk-4.1-0 \
+    libjavascriptcoregtk-4.1-0 \
+    libsoup-3.0-0 \
     libgdk-pixbuf2.0-dev \
     libpango1.0-dev \
     libatk1.0-dev \
-    libcairo-dev
+    libcairo-dev \
+    libappindicator3-dev \
+    librsvg2-dev
 
 # Optional: Zusätzliche Multimedia-Unterstützung
 sudo apt install -y \
@@ -70,13 +76,16 @@ sudo dnf install -y pkg-config git
 # GTK3 und WebKit2GTK Entwicklungsbibliotheken installieren
 sudo dnf install -y \
     gtk3-devel \
-    webkit2gtk3-devel \
+    webkit2gtk4.1-devel \
+    libsoup3-devel \
     glib2-devel \
     cairo-gobject-devel \
     gdk-pixbuf2-devel \
     pango-devel \
     atk-devel \
-    cairo-devel
+    cairo-devel \
+    libappindicator-gtk3-devel \
+    librsvg2-devel
 
 # Optional: Zusätzliche Multimedia-Unterstützung
 sudo dnf install -y \
@@ -102,12 +111,15 @@ sudo pacman -S base-devel git pkg-config
 # GTK3 und WebKit2GTK Bibliotheken installieren
 sudo pacman -S \
     gtk3 \
-    webkit2gtk \
+    webkit2gtk-4.1 \
+    libsoup3 \
     glib2 \
     cairo \
     gdk-pixbuf2 \
     pango \
-    atk
+    atk \
+    libappindicator-gtk3 \
+    librsvg
 
 # Optional: Zusätzliche Multimedia-Unterstützung
 sudo pacman -S \
@@ -135,12 +147,15 @@ sudo zypper install -y git pkg-config
 # GTK3 und WebKit2GTK Entwicklungsbibliotheken installieren
 sudo zypper install -y \
     gtk3-devel \
-    webkit2gtk3-devel \
+    webkit2gtk4_1-devel \
+    libsoup3-devel \
     glib2-devel \
     cairo-devel \
     gdk-pixbuf-devel \
     pango-devel \
-    atk-devel
+    atk-devel \
+    libappindicator3-devel \
+    librsvg-devel
 ```
 
 ## Projekt klonen und bauen
@@ -181,14 +196,32 @@ sudo pacman -S gtk3            # Arch
 
 #### 2. WebKit2GTK nicht gefunden
 ```bash
-# Fehler: "Package webkit2gtk-4.0 was not found"
-# Lösung: WebKit2GTK-Entwicklungsbibliotheken installieren
-sudo apt install libwebkit2gtk-4.0-dev  # Ubuntu/Debian
-sudo dnf install webkit2gtk3-devel      # Fedora
-sudo pacman -S webkit2gtk               # Arch
+# Fehler: "Package webkit2gtk-4.1 was not found"
+# Lösung: WebKit2GTK 4.1-Entwicklungsbibliotheken installieren
+sudo apt install libwebkit2gtk-4.1-dev  # Ubuntu/Debian
+sudo dnf install webkit2gtk4.1-devel    # Fedora
+sudo pacman -S webkit2gtk-4.1           # Arch
 ```
 
-#### 3. pkg-config nicht gefunden
+#### 3. JavaScriptCore GTK nicht gefunden
+```bash
+# Fehler: "Package javascriptcoregtk-4.1 was not found"
+# Lösung: JavaScriptCore GTK 4.1-Entwicklungsbibliotheken installieren
+sudo apt install libjavascriptcoregtk-4.1-dev  # Ubuntu/Debian
+sudo dnf install webkit2gtk4.1-devel           # Fedora (enthalten)
+sudo pacman -S webkit2gtk-4.1                  # Arch (enthalten)
+```
+
+#### 4. libsoup-3.0 nicht gefunden
+```bash
+# Fehler: "Package libsoup-3.0 was not found"
+# Lösung: libsoup-3.0-Entwicklungsbibliotheken installieren
+sudo apt install libsoup-3.0-dev  # Ubuntu/Debian
+sudo dnf install libsoup3-devel   # Fedora
+sudo pacman -S libsoup3           # Arch
+```
+
+#### 5. pkg-config nicht gefunden
 ```bash
 # Fehler: "Could not find pkg-config"
 # Lösung: pkg-config installieren
@@ -197,7 +230,7 @@ sudo dnf install pkg-config    # Fedora
 sudo pacman -S pkg-config      # Arch
 ```
 
-#### 4. Linker-Fehler
+#### 6. Linker-Fehler
 ```bash
 # Fehler: "cannot find -lgtk-3"
 # Lösung: Umgebungsvariablen setzen
@@ -211,11 +244,22 @@ export LD_LIBRARY_PATH=/usr/lib:/usr/lib/x86_64-linux-gnu
 # Verfügbare GTK-Versionen prüfen
 pkg-config --modversion gtk+-3.0
 
-# WebKit2GTK-Version prüfen
-pkg-config --modversion webkit2gtk-4.0
+# WebKit2GTK 4.1-Version prüfen
+pkg-config --modversion webkit2gtk-4.1
+
+# JavaScriptCore GTK 4.1-Version prüfen
+pkg-config --modversion javascriptcoregtk-4.1
+
+# libsoup-3.0-Version prüfen
+pkg-config --modversion libsoup-3.0
 
 # Alle verfügbaren pkg-config-Module anzeigen
-pkg-config --list-all | grep -E "(gtk|webkit)"
+pkg-config --list-all | grep -E "(gtk|webkit|soup)"
+
+# Spezifische Bibliothek-Pfade anzeigen
+pkg-config --cflags --libs webkit2gtk-4.1
+pkg-config --cflags --libs javascriptcoregtk-4.1
+pkg-config --cflags --libs libsoup-3.0
 
 # Rust-Toolchain-Information
 rustc --version
@@ -223,6 +267,9 @@ cargo --version
 
 # Detaillierte Build-Ausgabe
 RUST_LOG=debug cargo build --verbose
+
+# Cargo-Dependencies prüfen
+cargo tree
 ```
 
 ## Performance-Optimierung

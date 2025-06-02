@@ -77,8 +77,22 @@ check_dependencies() {
     fi
     
     # Check WebKit2GTK
-    if ! pkg-config --exists webkit2gtk-4.0; then
-        print_error "WebKit2GTK development libraries not found"
+    if ! pkg-config --exists webkit2gtk-4.1; then
+        print_error "WebKit2GTK 4.1 development libraries not found"
+        install_dependencies
+        return
+    fi
+    
+    # Check JavaScriptCore GTK
+    if ! pkg-config --exists javascriptcoregtk-4.1; then
+        print_error "JavaScriptCore GTK 4.1 development libraries not found"
+        install_dependencies
+        return
+    fi
+    
+    # Check libsoup-3.0
+    if ! pkg-config --exists libsoup-3.0; then
+        print_error "libsoup-3.0 development libraries not found"
         install_dependencies
         return
     fi
@@ -98,15 +112,21 @@ install_dependencies() {
                 build-essential \
                 pkg-config \
                 libgtk-3-dev \
-                libwebkit2gtk-4.0-dev \
+                libwebkit2gtk-4.1-dev \
+                libjavascriptcoregtk-4.1-dev \
+                libsoup-3.0-dev \
                 libglib2.0-dev \
                 libcairo-gobject2 \
                 libgtk-3-0 \
-                libwebkit2gtk-4.0-37 \
+                libwebkit2gtk-4.1-0 \
+                libjavascriptcoregtk-4.1-0 \
+                libsoup-3.0-0 \
                 libgdk-pixbuf2.0-dev \
                 libpango1.0-dev \
                 libatk1.0-dev \
-                libcairo-dev
+                libcairo-dev \
+                libappindicator3-dev \
+                librsvg2-dev
             ;;
         fedora|rhel|centos)
             print_status "Installing Fedora/RHEL dependencies..."
@@ -114,13 +134,16 @@ install_dependencies() {
             sudo dnf install -y \
                 pkg-config \
                 gtk3-devel \
-                webkit2gtk3-devel \
+                webkit2gtk4.1-devel \
+                libsoup3-devel \
                 glib2-devel \
                 cairo-gobject-devel \
                 gdk-pixbuf2-devel \
                 pango-devel \
                 atk-devel \
-                cairo-devel
+                cairo-devel \
+                libappindicator-gtk3-devel \
+                librsvg2-devel
             ;;
         arch|manjaro)
             print_status "Installing Arch Linux dependencies..."
@@ -128,12 +151,15 @@ install_dependencies() {
                 base-devel \
                 pkg-config \
                 gtk3 \
-                webkit2gtk \
+                webkit2gtk-4.1 \
+                libsoup3 \
                 glib2 \
                 cairo \
                 gdk-pixbuf2 \
                 pango \
-                atk
+                atk \
+                libappindicator-gtk3 \
+                librsvg
             ;;
         opensuse*)
             print_status "Installing openSUSE dependencies..."
@@ -141,12 +167,15 @@ install_dependencies() {
                 -t pattern devel_basis \
                 pkg-config \
                 gtk3-devel \
-                webkit2gtk3-devel \
+                webkit2gtk4_1-devel \
+                libsoup3-devel \
                 glib2-devel \
                 cairo-devel \
                 gdk-pixbuf-devel \
                 pango-devel \
-                atk-devel
+                atk-devel \
+                libappindicator3-devel \
+                librsvg-devel
             ;;
         *)
             print_warning "Unknown distribution: $DISTRO"
@@ -154,7 +183,9 @@ install_dependencies() {
             echo "- build-essential/development tools"
             echo "- pkg-config"
             echo "- GTK3 development libraries"
-            echo "- WebKit2GTK development libraries"
+            echo "- WebKit2GTK 4.1 development libraries"
+            echo "- JavaScriptCore GTK 4.1 development libraries"
+            echo "- libsoup-3.0 development libraries"
             read -p "Continue anyway? (y/N): " -n 1 -r
             echo
             if [[ ! $REPLY =~ ^[Yy]$ ]]; then

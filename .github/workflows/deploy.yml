@@ -4,9 +4,9 @@ on:
   push:
     tags:
       - 'v*'
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,10 +20,22 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifact_name: projekt-ora-linux
             binary_name: projekt-ora
+            platform: linux
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: projekt-ora-windows
             binary_name: projekt-ora.exe
+            platform: windows
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: projekt-ora-macos-intel
+            binary_name: projekt-ora
+            platform: macos
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: projekt-ora-macos-arm64
+            binary_name: projekt-ora
+            platform: macos
 
     runs-on: ${{ matrix.os }}
 
@@ -35,28 +47,51 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      # Linux-specific dependencies
+      # Linux-specific dependencies (complete set based on our testing)
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            build-essential \
+            pkg-config \
             libgtk-3-dev \
             libwebkit2gtk-4.1-dev \
+            libjavascriptcoregtk-4.1-dev \
+            libsoup-3.0-dev \
             libglib2.0-dev \
             libcairo-gobject2 \
             libgtk-3-0 \
             libwebkit2gtk-4.1-0 \
-            build-essential \
-            pkg-config \
             libappindicator3-dev \
-            librsvg2-dev
+            librsvg2-dev \
+            libayatana-appindicator3-dev
 
       # Windows-specific setup
       - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         run: |
-          echo "WebView2 should be available on the runner"
+          echo "WebView2 is pre-installed on GitHub Actions Windows runners"
+          # Verify WebView2 is available
+          Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" -Name "pv" -ErrorAction SilentlyContinue
+
+      # macOS-specific setup
+      - name: Install macOS dependencies
+        if: matrix.platform == 'macos'
+        run: |
+          # Install any additional dependencies if needed
+          echo "macOS dependencies (if any) would be installed here"
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cargo-
 
       - name: Build
         run: cargo build --verbose --release --target ${{ matrix.target }}
@@ -65,15 +100,15 @@ jobs:
         run: cargo test --verbose --target ${{ matrix.target }}
 
       # Prepare binary for upload
-      - name: Prepare binary (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Prepare binary (Unix-like)
+        if: matrix.platform != 'windows'
         run: |
           mkdir -p release
           cp target/${{ matrix.target }}/release/${{ matrix.binary_name }} release/${{ matrix.artifact_name }}
           chmod +x release/${{ matrix.artifact_name }}
 
       - name: Prepare binary (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         run: |
           mkdir release
           copy "target\${{ matrix.target }}\release\${{ matrix.binary_name }}" "release\${{ matrix.artifact_name }}.exe"
@@ -82,12 +117,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: release/${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          path: release/${{ matrix.artifact_name }}${{ matrix.platform == 'windows' && '.exe' || '' }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master')
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
 
     steps:
       - uses: actions/checkout@v4
@@ -100,7 +135,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -la artifacts/
 
-      # Create tag if pushing to master (auto-versioning)
+      # Create tag if pushing to master/main (auto-versioning)
       - name: Generate tag name
         id: tag
         run: |
@@ -109,6 +144,12 @@ jobs:
           else
             echo "tag=v$(date +'%Y.%m.%d')-${{ github.run_number }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create checksums
+        run: |
+          cd artifacts
+          find . -name "projekt-ora-*" -type f -exec sha256sum {} \; > ../checksums.txt
+          cd ..
 
       - name: Create Release
         id: create_release
@@ -119,8 +160,54 @@ jobs:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: Release ${{ steps.tag.outputs.tag }}
           draft: false
-          prerelease: false
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
           generate_release_notes: true
+          body: |
+            ## Cross-Platform Release
+
+            This release includes binaries for:
+            - **Linux** (x86_64): `projekt-ora-linux`
+            - **Windows** (x86_64): `projekt-ora-windows.exe`
+            - **macOS Intel** (x86_64): `projekt-ora-macos-intel`
+            - **macOS Apple Silicon** (ARM64): `projekt-ora-macos-arm64`
+
+            ### Installation Instructions
+
+            #### Linux (Ubuntu/Debian)
+            ```bash
+            # Download and install dependencies
+            sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0 libjavascriptcoregtk-4.1-0 libsoup-3.0-0
+            
+            # Download and run
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-linux
+            chmod +x projekt-ora-linux
+            ./projekt-ora-linux
+            ```
+
+            #### Windows
+            ```powershell
+            # Download and run (WebView2 is included with Windows 11 or Edge)
+            # Download projekt-ora-windows.exe and double-click to run
+            ```
+
+            #### macOS
+            ```bash
+            # Intel Macs
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-macos-intel
+            chmod +x projekt-ora-macos-intel
+            ./projekt-ora-macos-intel
+
+            # Apple Silicon Macs
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-macos-arm64
+            chmod +x projekt-ora-macos-arm64
+            ./projekt-ora-macos-arm64
+            ```
+
+            ### Checksums
+            See `checksums.txt` for file integrity verification.
           files: |
             artifacts/projekt-ora-linux/projekt-ora-linux
             artifacts/projekt-ora-windows/projekt-ora-windows.exe
+            artifacts/projekt-ora-macos-intel/projekt-ora-macos-intel
+            artifacts/projekt-ora-macos-arm64/projekt-ora-macos-arm64
+            checksums.txt
