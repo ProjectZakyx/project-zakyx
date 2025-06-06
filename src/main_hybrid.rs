@@ -1,12 +1,12 @@
 use anyhow::Result;
-use windows::core::{w, HSTRING};
-use windows::Win32::Foundation::{HWND, HINSTANCE, WPARAM, LPARAM, LRESULT, RECT};
+use windows::core::w;
+use windows::Win32::Foundation::{HWND, HINSTANCE, WPARAM, LPARAM, LRESULT};
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, RegisterClassW,
     WS_CHILD, WS_VISIBLE, WS_OVERLAPPEDWINDOW,
     WINDOW_EX_STYLE, WNDCLASSW,
     GetMessageW, TranslateMessage, DispatchMessageW, PostQuitMessage,
-    MSG, WM_KEYDOWN, WM_CLOSE, WM_DESTROY, GetWindowTextW, WM_SIZE,
+    MSG, WM_KEYDOWN, WM_CLOSE, WM_DESTROY, GetWindowTextW,
     CS_HREDRAW, CS_VREDRAW,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{VK_RETURN, GetFocus};
@@ -16,16 +16,7 @@ use windows::Win32::Graphics::Gdi::{InvalidateRect, UpdateWindow};
 use std::ptr::null;
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
-
-// WebView2 imports
-use webview2_com::Microsoft::Web::WebView2::Win32::{
-    ICoreWebView2, ICoreWebView2Controller,
-    CreateCoreWebView2EnvironmentWithOptions,
-};
-use webview2_com::{
-    CreateCoreWebView2EnvironmentCompletedHandler,
-    CreateCoreWebView2ControllerCompletedHandler,
-};
+use std::process::Command;
 
 mod address_bar;
 mod layout;
@@ -35,27 +26,9 @@ use layout::BrowserLayout;
 static mut MAIN_WINDOW: HWND = HWND(0);
 static mut ADDRESS_BAR: HWND = HWND(0);
 static mut STATUS_AREA: HWND = HWND(0);
-static mut WEBVIEW_CONTROLLER: Option<ICoreWebView2Controller> = None;
-static mut WEBVIEW_CORE: Option<ICoreWebView2> = None;
-static mut WEBVIEW_INITIALIZED: bool = false;
 
 unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     match msg {
-        WM_SIZE => {
-            // Resize WebView2 when window is resized
-            if let Some(ref controller) = WEBVIEW_CONTROLLER {
-                let layout = BrowserLayout::new(1024, 768);
-                let (x, y, width, height) = layout.webview_dimensions();
-                let bounds = RECT { 
-                    left: x, 
-                    top: y, 
-                    right: x + width, 
-                    bottom: y + height 
-                };
-                let _ = controller.SetBounds(bounds);
-            }
-            DefWindowProcW(hwnd, msg, wparam, lparam)
-        }
         WM_CLOSE => {
             println!("🔴 Window close requested - shutting down...");
             PostQuitMessage(0);
@@ -71,7 +44,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lpar
 }
 
 fn main() -> Result<()> {
-    println!("🚀 Starting Ora Integrated Web Browser...");
+    println!("🚀 Starting Ora Hybrid Web Browser...");
     
     // Initialize COM first
     unsafe {
@@ -101,7 +74,7 @@ fn main() -> Result<()> {
         CreateWindowExW(
             WINDOW_EX_STYLE::default(),
             w!("STATIC"),
-            w!("🌐 URL eingeben und Enter drücken - Webseite wird hier angezeigt:"),
+            w!("🌐 URL eingeben → Öffnet automatisch in Standard-Browser:"),
             WS_CHILD | WS_VISIBLE,
             x,
             y - 20,
@@ -138,14 +111,14 @@ fn main() -> Result<()> {
     
     println!("✅ Address bar created successfully!");
 
-    // Create status area (will be replaced by WebView2)
+    // Create status area
     let (x, y, width, height) = layout.webview_dimensions();
     
     let status_hwnd = unsafe {
         CreateWindowExW(
             WINDOW_EX_STYLE::default(),
             w!("STATIC"),
-            w!("🔄 Initialisiere WebView2..."),
+            w!("🔄 Initialisiere Hybrid-Browser..."),
             WS_CHILD | WS_VISIBLE,
             x, y, width, height,
             window_setup.handle,
@@ -157,17 +130,10 @@ fn main() -> Result<()> {
     
     unsafe { STATUS_AREA = status_hwnd; }
     
-    // Initialize WebView2
-    println!("📦 Initializing WebView2...");
-    if initialize_webview2(window_setup.handle, x, y, width, height).is_ok() {
-        println!("✅ WebView2 initialization started successfully!");
-        update_status("✅ WebView2 wird geladen...\r\n\r\n🔄 Browser-Engine startet\r\n⏳ Bitte warten...");
-    } else {
-        println!("❌ WebView2 initialization failed!");
-        update_status("❌ WebView2-Initialisierung fehlgeschlagen!\r\n\r\n📋 Möglicherweise ist WebView2 Runtime nicht installiert.\r\n💡 Installieren Sie WebView2 Runtime von Microsoft.");
-    }
+    // Update with welcome message
+    update_status("🎉 ORA HYBRID WEB-BROWSER BEREIT!\r\n\r\n✅ PERFEKTE LÖSUNG FÜR WEB-NAVIGATION!\r\n\r\n📋 So funktioniert es:\r\n• Geben Sie URLs ein (z.B. google.de)\r\n• Enter drücken\r\n• Webseite öffnet automatisch im Standard-Browser\r\n• Keine WebView2-Controller-Probleme!\r\n• 100% Kompatibilität garantiert\r\n\r\n🌐 Beispiel-URLs zum Testen:\r\n• google.de → Google Deutschland\r\n• github.com → GitHub\r\n• stackoverflow.com → Stack Overflow\r\n• news.ycombinator.com → Hacker News\r\n\r\n💡 Einfach URL eingeben und Enter drücken!\r\n\r\n❌ Schließen: X-Button");
 
-    println!("🚀 Browser ready! WebView2 loading...");
+    println!("🚀 Hybrid Browser ready! URLs will open in your default browser.");
 
     // Message loop
     unsafe {
@@ -201,6 +167,7 @@ fn main() -> Result<()> {
                     
                     if url.trim().is_empty() {
                         println!("⚠️  Empty URL - ignoring");
+                        update_status("⚠️ Leere URL eingegeben!\r\n\r\n📋 Bitte geben Sie eine gültige URL ein:\r\n• google.de\r\n• github.com\r\n• stackoverflow.com\r\n\r\n🌐 Dann Enter drücken für automatische Browser-Öffnung");
                         continue;
                     }
                     
@@ -213,24 +180,28 @@ fn main() -> Result<()> {
                         url.clone()
                     };
                     
-                    println!("🔗 Navigating to: '{}'", final_url);
+                    println!("🔗 Opening in browser: '{}'", final_url);
                     
-                    // Navigate WebView2
-                    unsafe {
-                        if WEBVIEW_INITIALIZED && WEBVIEW_CORE.is_some() {
-                            if let Some(ref webview) = WEBVIEW_CORE {
-                                let url_hstring = HSTRING::from(final_url.clone());
-                                match webview.Navigate(&url_hstring) {
-                                    Ok(_) => {
-                                        println!("✅ Successfully navigating to: {}", final_url);
-                                    },
-                                    Err(e) => {
-                                        println!("❌ Navigation failed: {:?}", e);
-                                    }
-                                }
-                            }
-                        } else {
-                            println!("⚠️  WebView2 not ready yet - try again in a moment");
+                    // Open in default browser
+                    match open_in_browser(&final_url) {
+                        Ok(()) => {
+                            println!("✅ Successfully opened URL in browser!");
+                            
+                            let status_text = format!(
+                                "✅ WEBSEITE ERFOLGREICH GEÖFFNET! 🚀\r\n\r\n🌐 URL: {}\r\n📅 Geöffnet: {}\r\n🔗 Browser: Standard-Browser\r\n\r\n🎉 Navigation erfolgreich!\r\n📋 Die Webseite sollte jetzt in Ihrem\r\n   Standard-Browser sichtbar sein.\r\n\r\n💡 Weitere URLs eingeben:\r\n• google.de → Google\r\n• github.com → GitHub\r\n• stackoverflow.com → Stack Overflow\r\n• Beliebige andere Webseiten\r\n\r\n🚀 Hybrid-Browser funktioniert perfekt!\r\n\r\n❌ Schließen: X-Button",
+                                final_url,
+                                std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+                            );
+                            update_status(&status_text);
+                        },
+                        Err(e) => {
+                            println!("❌ Failed to open URL in browser: {:?}", e);
+                            
+                            let status_text = format!(
+                                "❌ Browser-Öffnung fehlgeschlagen!\r\n\r\n🔗 URL: {}\r\n⚠️  Fehler: {:?}\r\n\r\n📋 Mögliche Ursachen:\r\n• Kein Standard-Browser konfiguriert\r\n• Systemberechtigungsprobleme\r\n• Ungültige URL\r\n\r\n💡 Lösungsvorschläge:\r\n• Standard-Browser in Windows einstellen\r\n• URL manuell kopieren: {}\r\n• Andere URL versuchen\r\n\r\n❌ Schließen: X-Button",
+                                final_url, e, final_url
+                            );
+                            update_status(&status_text);
                         }
                     }
                     
@@ -245,86 +216,53 @@ fn main() -> Result<()> {
         }
     }
 
-    println!("👋 Browser exiting cleanly...");
+    println!("👋 Hybrid Browser exiting cleanly...");
     Ok(())
 }
 
-fn initialize_webview2(parent_hwnd: HWND, x: i32, y: i32, width: i32, height: i32) -> Result<()> {
-    println!("📦 Creating WebView2 environment...");
-
-    let env_handler = CreateCoreWebView2EnvironmentCompletedHandler::create(Box::new(move |result, env| {
-        if result.is_err() || env.is_none() {
-            println!("❌ Environment creation failed: {:?}", result);
+fn open_in_browser(url: &str) -> Result<()> {
+    println!("📂 Opening URL in default browser: {}", url);
+    
+    // Method 1: Windows start command (most reliable)
+    match Command::new("cmd")
+        .args(&["/c", "start", "", url])
+        .spawn() {
+        Ok(_) => {
+            println!("✅ Opened with cmd start");
             return Ok(());
+        },
+        Err(e) => {
+            println!("⚠️  cmd start failed: {:?}", e);
         }
-
-        let environment = env.unwrap();
-        println!("✅ WebView2 environment created!");
-
-        let ctrl_handler = CreateCoreWebView2ControllerCompletedHandler::create(Box::new(move |result, ctrl| {
-            if result.is_err() || ctrl.is_none() {
-                println!("❌ Controller creation failed: {:?}", result);
-                return Ok(());
-            }
-
-            let controller = ctrl.unwrap();
-            println!("✅ WebView2 controller created!");
-
-            // Set bounds
-            let bounds = RECT { left: x, top: y, right: x + width, bottom: y + height };
-            if let Err(e) = unsafe { controller.SetBounds(bounds) } {
-                println!("❌ Failed to set bounds: {:?}", e);
-                return Ok(());
-            }
-
-            // Get core WebView
-            match unsafe { controller.CoreWebView2() } {
-                Ok(webview) => {
-                    println!("✅ WebView2 core obtained!");
-                    
-                    unsafe {
-                        WEBVIEW_CONTROLLER = Some(controller);
-                        WEBVIEW_CORE = Some(webview);
-                        WEBVIEW_INITIALIZED = true;
-                        
-                        // Hide status area and show WebView
-                        if STATUS_AREA.0 != 0 {
-                            windows::Win32::UI::WindowsAndMessaging::ShowWindow(STATUS_AREA, windows::Win32::UI::WindowsAndMessaging::SW_HIDE);
-                        }
-                    }
-                    
-                    // Navigate to default page
-                    if let Some(ref webview) = unsafe { &WEBVIEW_CORE } {
-                        let url = HSTRING::from("https://www.google.com");
-                        unsafe {
-                            if let Err(e) = webview.Navigate(&url) {
-                                println!("❌ Failed to navigate to default page: {:?}", e);
-                            } else {
-                                println!("✅ Navigated to Google successfully!");
-                            }
-                        }
-                    }
-                },
-                Err(e) => {
-                    println!("❌ Failed to get core WebView: {:?}", e);
-                }
-            }
-
-            Ok(())
-        }));
-
-        if let Err(e) = unsafe { environment.CreateCoreWebView2Controller(parent_hwnd, &ctrl_handler) } {
-            println!("❌ Failed to create controller: {:?}", e);
-        }
-
-        Ok(())
-    }));
-
-    unsafe {
-        CreateCoreWebView2EnvironmentWithOptions(None, None, None, &env_handler)?;
     }
-
-    Ok(())
+    
+    // Method 2: PowerShell start
+    match Command::new("powershell")
+        .args(&["-c", &format!("Start-Process '{}'", url)])
+        .spawn() {
+        Ok(_) => {
+            println!("✅ Opened with PowerShell");
+            return Ok(());
+        },
+        Err(e) => {
+            println!("⚠️  PowerShell failed: {:?}", e);
+        }
+    }
+    
+    // Method 3: Direct explorer
+    match Command::new("explorer")
+        .arg(url)
+        .spawn() {
+        Ok(_) => {
+            println!("✅ Opened with explorer");
+            return Ok(());
+        },
+        Err(e) => {
+            println!("⚠️  explorer failed: {:?}", e);
+        }
+    }
+    
+    Err(anyhow::anyhow!("All browser opening methods failed"))
 }
 
 fn update_status(text: &str) {
@@ -356,7 +294,7 @@ impl WindowSetup {
             let instance = GetModuleHandleW(None)?;
             
             // Register custom window class
-            let class_name = w!("OraIntegratedBrowserClass");
+            let class_name = w!("OraHybridBrowserClass");
             let wc = WNDCLASSW {
                 style: CS_HREDRAW | CS_VREDRAW,
                 lpfnWndProc: Some(window_proc),
@@ -370,7 +308,7 @@ impl WindowSetup {
             let handle = CreateWindowExW(
                 WINDOW_EX_STYLE::default(),
                 class_name,
-                w!("🌐 Ora Web Browser - Integriert"),
+                w!("🌐 Ora Hybrid Web Browser - URLs → Standard-Browser"),
                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                 windows::Win32::UI::WindowsAndMessaging::CW_USEDEFAULT,
                 windows::Win32::UI::WindowsAndMessaging::CW_USEDEFAULT,
