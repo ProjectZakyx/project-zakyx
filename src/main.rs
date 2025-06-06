@@ -8,6 +8,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GetMessageW, TranslateMessage, DispatchMessageW, PostQuitMessage,
     MSG, WM_KEYDOWN, WM_CLOSE, WM_DESTROY, GetWindowTextW, WM_SIZE, WM_COMMAND,
     CS_HREDRAW, CS_VREDRAW, SendMessageW, DestroyWindow, SetWindowPos, SetWindowTextW, SWP_NOZORDER,
+    BS_PUSHBUTTON,
 };
 // Listbox message constants
 const LB_RESETCONTENT: u32 = 0x0184;
@@ -52,6 +53,7 @@ static mut BOOKMARKS_LIST: HWND = HWND(0);
 static mut NEW_TAB_BUTTON: HWND = HWND(0);
 static mut TAB_BUTTONS: Vec<HWND> = Vec::new();
 static mut BOOKMARK_BUTTONS: Vec<HWND> = Vec::new(); // Horizontale Favoriten-Buttons
+static mut BOOKMARK_DELETE_BUTTONS: Vec<HWND> = Vec::new(); // "X" Buttons zum einzelnen Löschen
 static mut BOOKMARKS_CLEAR_BUTTON: HWND = HWND(0);
 static mut BOOKMARKS_MANAGE_BUTTON: HWND = HWND(0);
 static mut BOOKMARKS_SEPARATOR: HWND = HWND(0);
@@ -67,6 +69,8 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lpar
         WM_COMMAND => {
             let notification_code = (wparam.0 >> 16) & 0xFFFF;
             let control_hwnd = HWND(lparam.0 as isize);
+            
+            println!("🎛️ WM_COMMAND received - Control: {:?}, Notification: {}", control_hwnd, notification_code);
             
             // Handle listbox double-click (LBN_DBLCLK = 2)
             if control_hwnd == BOOKMARKS_LIST && notification_code == 2 {
@@ -194,8 +198,37 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lpar
                 println!("⚙️ Manage bookmarks button clicked");
                 show_bookmarks_info();
             } else {
+                // Check if it's a bookmark delete button
+                println!("🔍 Checking against {} bookmark delete buttons", BOOKMARK_DELETE_BUTTONS.len());
+                for (i, &delete_button_hwnd) in BOOKMARK_DELETE_BUTTONS.iter().enumerate() {
+                    println!("🔍 Delete button #{}: {:?} vs clicked {:?}", i + 1, delete_button_hwnd, button_hwnd);
+                    if button_hwnd == delete_button_hwnd {
+                        println!("❌ Delete bookmark #{} clicked", i + 1);
+                        if let Some(ref mut bookmark_manager) = BOOKMARK_MANAGER {
+                            if i < bookmark_manager.get_bookmarks().len() {
+                                let bookmark_to_delete = bookmark_manager.get_bookmarks()[i].clone();
+                                println!("🗑️ Deleting bookmark: {} -> {}", bookmark_to_delete.title, bookmark_to_delete.url);
+                                
+                                // Remove bookmark from manager
+                                bookmark_manager.bookmarks.remove(i);
+                                
+                                // Save updated bookmarks
+                                if let Err(e) = bookmark_manager.save_bookmarks() {
+                                    println!("❌ Failed to save after deleting: {:?}", e);
+                                } else {
+                                    println!("✅ Bookmark deleted and saved!");
+                                    update_bookmarks_list();
+                                }
+                            }
+                        }
+                        return LRESULT(0);
+                    }
+                }
+
                 // Check if it's a bookmark button
+                println!("🔍 Checking against {} bookmark buttons", BOOKMARK_BUTTONS.len());
                 for (i, &bookmark_button_hwnd) in BOOKMARK_BUTTONS.iter().enumerate() {
+                    println!("🔍 Bookmark button #{}: {:?} vs clicked {:?}", i + 1, bookmark_button_hwnd, button_hwnd);
                     if button_hwnd == bookmark_button_hwnd {
                         println!("📚 Bookmark #{} clicked", i + 1);
                         if let Some(ref bookmark_manager) = BOOKMARK_MANAGER {
@@ -748,6 +781,14 @@ fn recreate_bookmark_buttons(window_setup: &WindowSetup, layout: &BrowserLayout)
         }
         BOOKMARK_BUTTONS.clear();
         
+        // Destroy existing delete buttons
+        for &delete_button_hwnd in &BOOKMARK_DELETE_BUTTONS {
+            if delete_button_hwnd.0 != 0 {
+                DestroyWindow(delete_button_hwnd);
+            }
+        }
+        BOOKMARK_DELETE_BUTTONS.clear();
+        
         if let Some(ref bookmark_manager) = BOOKMARK_MANAGER {
             let bookmarks = bookmark_manager.get_bookmarks();
             let bookmarks_per_row = 6; // 6 Favoriten pro Reihe
@@ -755,9 +796,9 @@ fn recreate_bookmark_buttons(window_setup: &WindowSetup, layout: &BrowserLayout)
             for (i, bookmark) in bookmarks.iter().enumerate() {
                 let (x, y, width, height) = layout.bookmark_button_dimensions(i, bookmarks_per_row);
                 
-                // Kürze den Titel falls zu lang
-                let display_title = if bookmark.title.len() > 15 {
-                    format!("{}...", &bookmark.title[..12])
+                // Kürze den Titel falls zu lang (schmaler wegen X Button)
+                let display_title = if bookmark.title.len() > 12 {
+                    format!("{}...", &bookmark.title[..9])
                 } else {
                     bookmark.title.clone()
                 };
@@ -776,11 +817,35 @@ fn recreate_bookmark_buttons(window_setup: &WindowSetup, layout: &BrowserLayout)
                     null(),
                 );
                 
+                println!("📚 Created bookmark button #{}: '{}' at ({}, {}) with HWND: {:?}", 
+                         i + 1, display_title, x, y, bookmark_button_hwnd);
+                
                 BOOKMARK_BUTTONS.push(bookmark_button_hwnd);
+                
+                // Create delete button
+                let (del_x, del_y, del_width, del_height) = layout.bookmark_delete_button_dimensions(i, bookmarks_per_row);
+                
+                let delete_button_hwnd = CreateWindowExW(
+                    WINDOW_EX_STYLE::default(),
+                    w!("BUTTON"),
+                    w!("❌"),
+                    WS_CHILD | WS_VISIBLE,
+                    del_x, del_y, del_width, del_height,
+                    window_setup.handle,
+                    None,
+                    window_setup.instance,
+                    null(),
+                );
+                
+                println!("❌ Created delete button #{}: at ({}, {}) with HWND: {:?}", 
+                         i + 1, del_x, del_y, delete_button_hwnd);
+                
+                BOOKMARK_DELETE_BUTTONS.push(delete_button_hwnd);
             }
         }
         
-        println!("📚 Horizontal bookmarks updated ({} buttons)", BOOKMARK_BUTTONS.len());
+        println!("📚 Horizontal bookmarks updated ({} bookmark buttons, {} delete buttons)", 
+                 BOOKMARK_BUTTONS.len(), BOOKMARK_DELETE_BUTTONS.len());
     }
 }
 
@@ -948,7 +1013,8 @@ fn show_bookmarks_info() {
             println!("ℹ️ Favoritenleiste Info:");
             println!("   📊 Anzahl Lesezeichen: {}", count);
             println!("   📂 Datei: bookmarks.json");
-            println!("   📋 Layout: Vertikal (optimiert)");
+            println!("   📋 Layout: Horizontal (6 pro Reihe)");
+            println!("   🎛️ Buttons erstellt: {}", BOOKMARK_BUTTONS.len());
             
             if count > 0 {
                 println!("   📝 Lesezeichen:");

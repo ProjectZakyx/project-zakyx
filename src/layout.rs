@@ -135,19 +135,29 @@ impl BrowserLayout {
 
     // Einzelner Favoriten-Button (horizontal angeordnet)
     pub fn bookmark_button_dimensions(&self, index: usize, bookmarks_per_row: usize) -> (i32, i32, i32, i32) {
-        let (area_x, area_y, area_width, _) = self.bookmarks_area_dimensions();
-        let button_width = 150;
+        let (area_x, area_y, _area_width, _) = self.bookmarks_area_dimensions();
+        let button_width = 130; // Schmaler um Platz für "X" Button zu schaffen
         let button_height = 25;
-        let spacing_x = 5;
+        let total_width = 155; // Button + X Button + Abstand
         let spacing_y = 5;
         
         let row = index / bookmarks_per_row;
         let col = index % bookmarks_per_row;
         
-        let x = area_x + col as i32 * (button_width + spacing_x);
+        let x = area_x + col as i32 * total_width;
         let y = area_y + 20 + row as i32 * (button_height + spacing_y); // +20 für Header
         
         (x, y, button_width, button_height)
+    }
+
+    // "X" Button zum Löschen einzelner Favoriten
+    pub fn bookmark_delete_button_dimensions(&self, index: usize, bookmarks_per_row: usize) -> (i32, i32, i32, i32) {
+        let (bookmark_x, bookmark_y, bookmark_width, bookmark_height) = self.bookmark_button_dimensions(index, bookmarks_per_row);
+        let delete_width = 20;
+        let x = bookmark_x + bookmark_width + 3; // 3px Abstand
+        let y = bookmark_y;
+        
+        (x, y, delete_width, bookmark_height)
     }
 
     // Favoriten-Header (horizontal)
