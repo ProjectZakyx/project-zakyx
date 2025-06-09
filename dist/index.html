@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ora Browser</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 🎨 BROWSER HEADER -->
+    <header class="browser-header">
+        <!-- Navigation Controls -->
+        <div class="nav-controls">
+            <button id="back-btn" class="nav-btn" title="Go Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+            </button>
+            <button id="forward-btn" class="nav-btn" title="Go Forward">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+            </button>
+            <button id="reload-btn" class="nav-btn" title="Reload">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Address Bar -->
+        <div class="address-bar-container">
+            <div class="address-bar">
+                <div class="security-indicator" id="security-indicator">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H14V17H10V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                    </svg>
+                </div>
+                <input 
+                    type="text" 
+                    id="address-input" 
+                    placeholder="Search with Google or enter address"
+                    spellcheck="false"
+                >
+                <button id="go-btn" class="go-btn" title="Go">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Browser Actions -->
+        <div class="browser-actions">
+            <button id="bookmark-btn" class="action-btn" title="Bookmark this page">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17,3H7A2,2 0 0,0 5,5V21L12,18L19,21V5C19,3.89 18.1,3 17,3Z"/>
+                </svg>
+            </button>
+            <button id="menu-btn" class="action-btn" title="Menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- 📑 TAB BAR -->
+    <div class="tab-bar" id="tab-bar">
+        <div class="tabs-container" id="tabs-container">
+            <!-- Tabs will be dynamically added here -->
+        </div>
+        <button id="new-tab-btn" class="new-tab-btn" title="New Tab">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 📚 BOOKMARK BAR -->
+    <div class="bookmark-bar" id="bookmark-bar">
+        <div class="bookmarks-container" id="bookmarks-container">
+            <!-- Bookmarks will be dynamically added here -->
+        </div>
+        <button id="manage-bookmarks-btn" class="manage-bookmarks-btn" title="Manage Bookmarks">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 🌐 MAIN CONTENT AREA -->
+    <main class="content-area" id="content-area">
+        <!-- WebView Container für echte Webseiten -->
+        <div class="webview-container" id="webview-container" style="display: none;">
+            <iframe id="webview-frame" 
+                    src="about:blank" 
+                    frameborder="0" 
+                    style="width: 100%; height: 100%; border: none;"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation">
+            </iframe>
+        </div>
+        
+        <!-- WebView content will be displayed here -->
+        <div class="welcome-screen" id="welcome-screen">
+            <div class="welcome-content">
+                <h1>🌐 Welcome to Ora Browser</h1>
+                <p>Your modern, fast, and secure web browser</p>
+                
+                <div class="quick-actions">
+                    <div class="search-section">
+                        <input 
+                            type="text" 
+                            id="welcome-search" 
+                            placeholder="Search the web or enter URL"
+                            class="welcome-search-input"
+                        >
+                        <button id="welcome-search-btn" class="welcome-search-btn">Search</button>
+                    </div>
+                    
+                    <div class="quick-links">
+                        <h3>Quick Links</h3>
+                        <div class="link-grid">
+                            <a href="#" class="quick-link" data-url="https://www.google.com">
+                                <div class="link-icon">🔍</div>
+                                <span>Google</span>
+                            </a>
+                            <a href="#" class="quick-link" data-url="https://github.com">
+                                <div class="link-icon">🐙</div>
+                                <span>GitHub</span>
+                            </a>
+                            <a href="#" class="quick-link" data-url="https://stackoverflow.com">
+                                <div class="link-icon">📚</div>
+                                <span>Stack Overflow</span>
+                            </a>
+                            <a href="#" class="quick-link" data-url="https://www.youtube.com">
+                                <div class="link-icon">📺</div>
+                                <span>YouTube</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </main>
+
+    <!-- 📊 STATUS BAR -->
+    <footer class="status-bar" id="status-bar">
+        <div class="status-left">
+            <span id="status-text">Ready</span>
+        </div>
+        <div class="status-right">
+            <span id="security-status">🔒 Secure</span>
+            <span class="separator">|</span>
+            <span id="zoom-level">100%</span>
+        </div>
+    </footer>
+
+    <!-- 🎨 MODALS -->
+    
+    <!-- Bookmark Modal -->
+    <div class="modal" id="bookmark-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Bookmark</h3>
+                <button class="modal-close" id="bookmark-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="bookmark-title">Title:</label>
+                    <input type="text" id="bookmark-title" placeholder="Bookmark title">
+                </div>
+                <div class="form-group">
+                    <label for="bookmark-url">URL:</label>
+                    <input type="text" id="bookmark-url" placeholder="https://example.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="bookmark-cancel">Cancel</button>
+                <button class="btn btn-primary" id="bookmark-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Browser Settings</h3>
+                <button class="modal-close" id="settings-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>General</h4>
+                    <div class="form-group">
+                        <label for="homepage-input">Homepage:</label>
+                        <input type="text" id="homepage-input" placeholder="https://www.google.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-engine-input">Search Engine:</label>
+                        <input type="text" id="search-engine-input" placeholder="https://www.google.com/search?q=">
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Privacy & Security</h4>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="privacy-mode">
+                            <span class="checkmark"></span>
+                            Privacy Mode
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="ad-blocker">
+                            <span class="checkmark"></span>
+                            Ad Blocker
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="javascript-enabled">
+                            <span class="checkmark"></span>
+                            Enable JavaScript
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="cookies-enabled">
+                            <span class="checkmark"></span>
+                            Enable Cookies
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="settings-cancel">Cancel</button>
+                <button class="btn btn-primary" id="settings-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 

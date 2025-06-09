@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Ora Browser Launcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+        
+        .launcher {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .launch-btn {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .launch-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="launcher">
+        <h1>🚀 Ora Browser</h1>
+        <p>WebView2 Engine bereit - Wählen Sie Ihre Ansicht:</p>
+        
+        <button class="launch-btn" onclick="loadPremiumGUI()">
+            🎨 Premium GUI laden
+        </button>
+        
+        <button class="launch-btn" onclick="openURL()">
+            🌐 URL eingeben
+        </button>
+        
+        <button class="launch-btn" onclick="openBookmarks()">
+            🔖 Bookmarks
+        </button>
+        
+        <div class="status">
+            <h3>✅ WebView2 Engine: AKTIV</h3>
+            <p>Microsoft Edge Chromium-Engine läuft</p>
+        </div>
+    </div>
+
+    <script>
+        function loadPremiumGUI() {
+            console.log('🎨 Loading Premium GUI...');
+            
+            // Navigiere zur schönen HTML-Datei
+            const currentPath = window.location.href.replace('ora_webview2_browser_launcher.html', '');
+            const premiumURL = currentPath + 'ora_webview2_premium_beautiful.html';
+            
+            console.log('🌐 Navigating to:', premiumURL);
+            window.location.href = premiumURL;
+        }
+        
+        function openURL() {
+            const url = prompt('🌐 URL eingeben (z.B. google.de):');
+            if (url) {
+                if (!url.startsWith('http')) {
+                    window.location.href = 'https://' + url;
+                } else {
+                    window.location.href = url;
+                }
+            }
+        }
+        
+        function openBookmarks() {
+            alert('🔖 Bookmarks werden geladen...\n\n✅ Feature in Entwicklung!');
+        }
+        
+        // Auto-load nach 3 Sekunden
+        setTimeout(() => {
+            if (confirm('🎨 Soll die Premium GUI automatisch geladen werden?')) {
+                loadPremiumGUI();
+            }
+        }, 3000);
+        
+        console.log('🚀 Ora Browser Launcher bereit!');
+    </script>
+</body>
+</html> 

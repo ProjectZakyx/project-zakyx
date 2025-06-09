@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertikale Symbol-Lesezeichenleiste</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #1E1E1E 0%, #252526 100%);
+            color: #FFFFFF;
+            width: 60px;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 2px solid #3C3C3C;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .toolbar-header {
+            background: rgba(0, 122, 204, 0.2);
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #3C3C3C;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .bookmark-button {
+            width: 52px;
+            height: 52px;
+            margin: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bookmark-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 122, 204, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .bookmark-button:hover {
+            background: rgba(0, 122, 204, 0.2);
+            border-color: rgba(0, 122, 204, 0.5);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+        }
+        
+        .bookmark-button:hover::before {
+            left: 100%;
+        }
+        
+        .bookmark-button:active {
+            transform: scale(0.95);
+            background: rgba(0, 122, 204, 0.4);
+        }
+        
+        .button-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .button-label {
+            font-size: 8px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1;
+            opacity: 0.8;
+            max-width: 48px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .bookmark-button:hover .button-label {
+            opacity: 1;
+        }
+        
+        /* Spezielle Hover-Effekte für verschiedene Buttons */
+        .bookmark-button:nth-child(2):hover { /* Google */
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+        
+        .bookmark-button:nth-child(3):hover { /* GitHub */
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
+        }
+        
+        .bookmark-button:nth-child(4):hover { /* Stack Overflow */
+            box-shadow: 0 4px 12px rgba(244, 128, 36, 0.4);
+        }
+        
+        .bookmark-button:nth-child(5):hover { /* Rust */
+            box-shadow: 0 4px 12px rgba(222, 165, 132, 0.4);
+        }
+        
+        .bookmark-button:nth-child(6):hover { /* YouTube */
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+        }
+        
+        .toolbar-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            text-align: center;
+            font-size: 8px;
+            color: #888888;
+        }
+        
+        /* Tooltip-Styling */
+        .bookmark-button[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            left: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            animation: tooltipShow 0.2s ease;
+        }
+        
+        @keyframes tooltipShow {
+            from { opacity: 0; transform: translateY(-50%) translateX(-10px); }
+            to { opacity: 1; transform: translateY(-50%) translateX(0); }
+        }
+        
+        /* Scrollbar für mehr Bookmarks */
+        body::-webkit-scrollbar { width: 4px; }
+        body::-webkit-scrollbar-track { background: #1E1E1E; }
+        body::-webkit-scrollbar-thumb { 
+            background: #464647; 
+            border-radius: 2px;
+        }
+        body::-webkit-scrollbar-thumb:hover { background: #5A5A5C; }
+    </style>
+</head>
+<body>
+    <div class="toolbar-header">
+        📚 BOOKMARKS
+    </div>
+    
+    
+                <div class="bookmark-button" onclick="openBookmark('1001', 'https://google.com')" title="Google Suche">
+                    <div class="button-icon">🔍</div>
+                    <div class="button-label">Google</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1002', 'https://github.com')" title="GitHub Repository">
+                    <div class="button-icon">🐙</div>
+                    <div class="button-label">GitHub</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1003', 'https://stackoverflow.com')" title="Stack Overflow Q&A">
+                    <div class="button-icon">📚</div>
+                    <div class="button-label">Stack Overflow</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1004', 'https://doc.rust-lang.org')" title="Rust Programming Language">
+                    <div class="button-icon">🦀</div>
+                    <div class="button-label">Rust Documentation</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1005', 'https://youtube.com')" title="YouTube Videos">
+                    <div class="button-icon">📺</div>
+                    <div class="button-label">YouTube</div>
+                </div>
+            
+    
+    <div class="toolbar-footer">
+        ORA
+    </div>
+    
+    <script>
+        console.log('🔧 Vertical Bookmark Toolbar loaded!');
+        
+        function openBookmark(id, url) {
+            console.log('🔗 Opening bookmark:', id, url);
+            
+            // Visuelles Feedback
+            const button = event.currentTarget;
+            const originalTransform = button.style.transform;
+            
+            button.style.transform = 'scale(0.9)';
+            button.style.background = 'rgba(0, 122, 204, 0.6)';
+            
+            setTimeout(() => {
+                button.style.transform = originalTransform;
+                button.style.background = '';
+            }, 200);
+            
+            // Navigation (würde an Ora Browser gesendet)
+            alert(`🌐 Navigiere zu: ${url}`);
+            
+            // Hier würde die echte Navigation stattfinden
+            // window.location.href = url;
+        }
+        
+        // Keyboard-Shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case '1': openBookmark(1001, 'https://google.com'); break;
+                    case '2': openBookmark(1002, 'https://github.com'); break;
+                    case '3': openBookmark(1003, 'https://stackoverflow.com'); break;
+                    case '4': openBookmark(1004, 'https://doc.rust-lang.org'); break;
+                    case '5': openBookmark(1005, 'https://youtube.com'); break;
+                }
+            }
+        });
+        
+        // Animation bei Laden
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.bookmark-button');
+            buttons.forEach((button, index) => {
+                button.style.opacity = '0';
+                button.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    button.style.transition = 'all 0.5s ease';
+                    button.style.opacity = '1';
+                    button.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

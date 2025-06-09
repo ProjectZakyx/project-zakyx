@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Ora Browser - Modern HTML GUI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 🎨 Custom CSS Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        .pulse-anim { animation: pulse 2s infinite; }
+        
+        .tab-active {
+            @apply bg-blue-500 text-white shadow-lg transform scale-105;
+        }
+        
+        .hover-grow:hover {
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+        
+        .smooth-transition {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="h-full bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white font-sans">
+    <!-- 🌟 Main Browser Container -->
+    <div class="h-full flex flex-col">
+        
+        <!-- 📂 Tab Bar with Dynamic Management -->
+        <div class="bg-gray-800 border-b border-gray-700 px-4 py-2">
+            <div class="flex items-center space-x-2">
+                <div id="tabs-container" class="flex space-x-1 flex-1">
+                    <!-- Dynamic tabs will be inserted here -->
+                </div>
+                <button id="new-tab-btn" class="bg-green-500 hover:bg-green-600 px-3 py-1 rounded-full text-sm smooth-transition hover-grow">
+                    ➕ New Tab
+                </button>
+            </div>
+        </div>
+
+        <!-- 🧭 Smart Navigation Bar -->
+        <div class="bg-gray-800 border-b border-gray-700 px-4 py-3">
+            <div class="flex items-center space-x-3">
+                <!-- Navigation Controls -->
+                <div class="flex space-x-2">
+                    <button id="back-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg smooth-transition hover-grow" title="Zurück">
+                        ⬅️
+                    </button>
+                    <button id="forward-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg smooth-transition hover-grow" title="Vorwärts">
+                        ➡️
+                    </button>
+                    <button id="refresh-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg smooth-transition hover-grow" title="Neu laden">
+                        🔄
+                    </button>
+                </div>
+                
+                <!-- URL Address Bar -->
+                <div class="flex-1 relative">
+                    <input 
+                        id="address-bar" 
+                        type="text" 
+                        placeholder="🌐 URL eingeben (z.B. google.com)..." 
+                        class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 smooth-transition"
+                        value="google.com"
+                    >
+                    <div id="url-suggestions" class="absolute top-full left-0 right-0 bg-gray-700 rounded-b-lg shadow-lg hidden z-10">
+                        <!-- URL suggestions will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="flex space-x-2">
+                    <button id="bookmark-current" class="bg-yellow-500 hover:bg-yellow-600 p-2 rounded-lg smooth-transition hover-grow" title="Bookmark hinzufügen">
+                        ⭐
+                    </button>
+                    <button id="settings-btn" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg smooth-transition hover-grow" title="Einstellungen">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⭐ Live Bookmark System -->
+        <div id="bookmarks-bar" class="bg-gray-750 border-b border-gray-700 px-4 py-2">
+            <div class="flex items-center space-x-2 overflow-x-auto">
+                <span class="text-gray-400 text-sm whitespace-nowrap">📚 Bookmarks:</span>
+                <div id="bookmarks-container" class="flex space-x-2">
+                    <!-- Dynamic bookmarks will be inserted here -->
+                </div>
+                <button id="manage-bookmarks" class="bg-purple-500 hover:bg-purple-600 px-3 py-1 rounded text-sm smooth-transition hover-grow whitespace-nowrap">
+                    📝 Verwalten
+                </button>
+            </div>
+        </div>
+
+        <!-- 📱 Main Content Area (WebView2 Integration Point) -->
+        <div class="flex-1 bg-gray-900 relative overflow-hidden">
+            <div id="webview-container" class="w-full h-full flex items-center justify-center">
+                <div class="text-center slide-in">
+                    <div class="text-6xl mb-4 pulse-anim">🌐</div>
+                    <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        Ora WebView2 Browser
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-6">Moderne HTML GUI mit Tailwind Design</p>
+                    <div class="space-y-2 text-left max-w-md mx-auto bg-gray-800 p-6 rounded-xl">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-400">✅</span>
+                            <span>Responsive Tailwind Design</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-400">✅</span>
+                            <span>Smart Navigation mit Hover-Effekten</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-400">✅</span>
+                            <span>Dynamic Tab Management</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-400">✅</span>
+                            <span>Live Bookmark System</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-400">✅</span>
+                            <span>Smooth CSS Animations</span>
+                        </div>
+                    </div>
+                    <button id="load-url-btn" class="mt-6 bg-blue-500 hover:bg-blue-600 px-8 py-3 rounded-lg font-semibold smooth-transition hover-grow shadow-lg">
+                        🚀 URL laden
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📊 Real-time Status Bar with Counters -->
+        <div class="bg-gray-800 border-t border-gray-700 px-4 py-2">
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-4">
+                    <span id="status-text" class="text-gray-300">🎉 Browser bereit</span>
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <span>📂 Tabs: <span id="tab-count" class="text-blue-400 font-semibold">1</span></span>
+                        <span>⭐ Bookmarks: <span id="bookmark-count" class="text-yellow-400 font-semibold">0</span></span>
+                        <span>🔗 Aktiv: <span id="current-url" class="text-green-400 font-semibold">google.com</span></span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 text-gray-400">
+                    <span id="connection-status" class="text-green-400">🟢 Online</span>
+                    <span id="current-time">⏰ --:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🚀 Modern JavaScript Browser Logic
+        class OraBrowser {
+            constructor() {
+                this.tabs = [{ id: 1, title: "Google", url: "google.com", active: true }];
+                this.bookmarks = [];
+                this.tabCounter = 1;
+                this.init();
+            }
+
+            init() {
+                this.renderTabs();
+                this.renderBookmarks();
+                this.updateCounters();
+                this.setupEventListeners();
+                this.startClock();
+                this.showWelcomeAnimation();
+            }
+
+            // 📂 Tab Management
+            renderTabs() {
+                const container = document.getElementById('tabs-container');
+                container.innerHTML = '';
+                
+                this.tabs.forEach(tab => {
+                    const tabEl = document.createElement('div');
+                    tabEl.className = `px-4 py-2 rounded-t-lg cursor-pointer smooth-transition hover-grow ${
+                        tab.active ? 'tab-active' : 'bg-gray-700 hover:bg-gray-600'
+                    }`;
+                    tabEl.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm">${tab.title}</span>
+                            ${this.tabs.length > 1 ? `<button onclick="browser.closeTab(${tab.id})" class="text-red-400 hover:text-red-300 ml-2">✕</button>` : ''}
+                        </div>
+                    `;
+                    tabEl.onclick = () => this.switchTab(tab.id);
+                    container.appendChild(tabEl);
+                });
+            }
+
+            addTab(url = "about:blank", title = "Neuer Tab") {
+                this.tabCounter++;
+                const newTab = { 
+                    id: this.tabCounter, 
+                    title, 
+                    url, 
+                    active: false 
+                };
+                
+                // Deactivate all tabs
+                this.tabs.forEach(tab => tab.active = false);
+                newTab.active = true;
+                
+                this.tabs.push(newTab);
+                this.renderTabs();
+                this.updateCounters();
+                this.updateStatus(`✨ Neuer Tab erstellt: ${title}`);
+            }
+
+            closeTab(tabId) {
+                if (this.tabs.length <= 1) return;
+                
+                const tabIndex = this.tabs.findIndex(tab => tab.id === tabId);
+                const wasActive = this.tabs[tabIndex].active;
+                
+                this.tabs.splice(tabIndex, 1);
+                
+                if (wasActive && this.tabs.length > 0) {
+                    this.tabs[0].active = true;
+                }
+                
+                this.renderTabs();
+                this.updateCounters();
+                this.updateStatus(`🗑️ Tab geschlossen`);
+            }
+
+            switchTab(tabId) {
+                this.tabs.forEach(tab => {
+                    tab.active = tab.id === tabId;
+                });
+                this.renderTabs();
+                
+                const activeTab = this.tabs.find(tab => tab.active);
+                document.getElementById('address-bar').value = activeTab.url;
+                document.getElementById('current-url').textContent = activeTab.url;
+                this.updateStatus(`🔄 Gewechselt zu: ${activeTab.title}`);
+            }
+
+            // ⭐ Bookmark System
+            renderBookmarks() {
+                const container = document.getElementById('bookmarks-container');
+                container.innerHTML = '';
+                
+                this.bookmarks.forEach((bookmark, index) => {
+                    const bookmarkEl = document.createElement('button');
+                    bookmarkEl.className = 'bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm smooth-transition hover-grow whitespace-nowrap';
+                    bookmarkEl.innerHTML = `
+                        <span onclick="browser.openBookmark('${bookmark.url}')">${bookmark.title}</span>
+                        <button onclick="browser.removeBookmark(${index})" class="ml-2 text-red-300 hover:text-red-200">✕</button>
+                    `;
+                    container.appendChild(bookmarkEl);
+                });
+            }
+
+            addBookmark() {
+                const url = document.getElementById('address-bar').value;
+                const title = prompt("Bookmark Titel:", url) || url;
+                
+                if (url && !this.bookmarks.find(b => b.url === url)) {
+                    this.bookmarks.push({ title, url });
+                    this.renderBookmarks();
+                    this.updateCounters();
+                    this.updateStatus(`⭐ Bookmark hinzugefügt: ${title}`);
+                }
+            }
+
+            removeBookmark(index) {
+                const bookmark = this.bookmarks[index];
+                this.bookmarks.splice(index, 1);
+                this.renderBookmarks();
+                this.updateCounters();
+                this.updateStatus(`🗑️ Bookmark entfernt: ${bookmark.title}`);
+            }
+
+            openBookmark(url) {
+                document.getElementById('address-bar').value = url;
+                this.navigateToUrl(url);
+            }
+
+            // 🧭 Navigation
+            navigateToUrl(url = null) {
+                const addressBar = document.getElementById('address-bar');
+                const targetUrl = url || addressBar.value;
+                
+                if (!targetUrl) return;
+                
+                const fullUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
+                
+                // Update active tab
+                const activeTab = this.tabs.find(tab => tab.active);
+                if (activeTab) {
+                    activeTab.url = targetUrl;
+                    activeTab.title = this.getTitleFromUrl(targetUrl);
+                }
+                
+                this.renderTabs();
+                this.updateStatus(`🌐 Lade: ${fullUrl}`);
+                document.getElementById('current-url').textContent = targetUrl;
+                
+                // Simulate loading
+                setTimeout(() => {
+                    this.updateStatus(`✅ Geladen: ${fullUrl}`);
+                }, 1000);
+                
+                // Send to WebView2
+                this.loadInWebView(fullUrl);
+            }
+
+            loadInWebView(url) {
+                // This would communicate with the Rust WebView2 backend
+                console.log(`🌐 Loading in WebView2: ${url}`);
+                
+                // Show loading state
+                const container = document.getElementById('webview-container');
+                container.innerHTML = `
+                    <div class="text-center slide-in">
+                        <div class="text-6xl mb-4 pulse-anim">🔄</div>
+                        <h2 class="text-2xl font-bold mb-2">Lädt...</h2>
+                        <p class="text-gray-300">${url}</p>
+                        <div class="mt-4 bg-gray-800 p-4 rounded-lg max-w-md mx-auto">
+                            <p class="text-sm text-gray-400">In der finalen Version würde hier die WebView2-Komponente die echte Webseite anzeigen.</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getTitleFromUrl(url) {
+                return url.split('.')[0].charAt(0).toUpperCase() + url.split('.')[0].slice(1);
+            }
+
+            // 📊 UI Updates
+            updateCounters() {
+                document.getElementById('tab-count').textContent = this.tabs.length;
+                document.getElementById('bookmark-count').textContent = this.bookmarks.length;
+            }
+
+            updateStatus(message) {
+                document.getElementById('status-text').textContent = message;
+                
+                // Auto-clear status after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('status-text').textContent = '🎉 Browser bereit';
+                }, 3000);
+            }
+
+            startClock() {
+                const updateClock = () => {
+                    const now = new Date();
+                    const time = now.toLocaleTimeString('de-DE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    document.getElementById('current-time').textContent = `⏰ ${time}`;
+                };
+                
+                updateClock();
+                setInterval(updateClock, 1000);
+            }
+
+            showWelcomeAnimation() {
+                setTimeout(() => {
+                    document.getElementById('webview-container').classList.add('slide-in');
+                }, 100);
+            }
+
+            // 🎯 Event Listeners
+            setupEventListeners() {
+                // Address bar
+                document.getElementById('address-bar').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.navigateToUrl();
+                    }
+                });
+
+                // Navigation buttons
+                document.getElementById('back-btn').onclick = () => this.updateStatus('⬅️ Zurück');
+                document.getElementById('forward-btn').onclick = () => this.updateStatus('➡️ Vorwärts');
+                document.getElementById('refresh-btn').onclick = () => {
+                    this.updateStatus('🔄 Neu laden...');
+                    const url = document.getElementById('address-bar').value;
+                    this.loadInWebView(url.startsWith('http') ? url : `https://${url}`);
+                };
+
+                // Tab management
+                document.getElementById('new-tab-btn').onclick = () => this.addTab();
+
+                // Bookmarks
+                document.getElementById('bookmark-current').onclick = () => this.addBookmark();
+                document.getElementById('manage-bookmarks').onclick = () => {
+                    alert('📚 Bookmark-Manager\n\nAktuelle Bookmarks:\n' + 
+                          this.bookmarks.map(b => `• ${b.title}`).join('\n'));
+                };
+
+                // Main action button
+                document.getElementById('load-url-btn').onclick = () => this.navigateToUrl();
+            }
+        }
+
+        // 🚀 Initialize Browser
+        const browser = new OraBrowser();
+        
+        // 🎨 Add some demo bookmarks
+        browser.bookmarks = [
+            { title: "Google", url: "google.com" },
+            { title: "GitHub", url: "github.com" },
+            { title: "Stack Overflow", url: "stackoverflow.com" }
+        ];
+        browser.renderBookmarks();
+        browser.updateCounters();
+    </script>
+</body>
+</html> 

@@ -1,27 +1,79 @@
 [package]
-name = "projekt-ora"
-version = "0.1.0"
+name = "ora-browser"
+version = "1.0.0"
 edition = "2021"
+authors = ["Ora Browser Team"]
+description = "A modern, cross-platform web browser built with Rust and Tauri"
+homepage = "https://github.com/user/ora-browser"
+repository = "https://github.com/user/ora-browser"
+license = "MIT"
+keywords = ["browser", "tauri", "rust", "cross-platform", "web"]
+categories = ["web-programming", "gui"]
+
+# 🎯 TAURI KONFIGURATION MIT ICONS
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [], default-features = false }
 
 [dependencies]
-anyhow = "1.0.98"
-tokio = { version = "1.45.1", features = ["full"] }
-windows = { version = "0.39.0", features = [
-    "Win32_Foundation",
-    "Win32_UI_WindowsAndMessaging",
-    "Win32_UI_Controls",
-    "Win32_System_LibraryLoader",
-    "Win32_Graphics_Gdi",
-    "Win32_System_Threading",
-    "Win32_UI_Input_KeyboardAndMouse",
-    "Win32_System_WindowsProgramming",
-    "Win32_System_Com",
-    "Win32_System_WinRT",
-    "implement"
-]}
-webview2-com = { version = "0.19.1" }
-tokio-test = "0.4.4"
-futures = "0.3.31"
+# 🚀 TAURI CORE (PASSEND ZUR CONFIG)
+tauri = { version = "1.6.1", features = [
+    "shell-open",
+    "window-all"
+] }
+
+# 📊 SERIALISIERUNG & DATA
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+
+# 🔧 ERROR HANDLING
+thiserror = "1.0"
+anyhow = "1.0.98"
+
+# 🪟 WINDOWS APIS (Legacy Module Support)
+windows = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging", 
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+    "Win32_UI_Input_KeyboardAndMouse"
+] }
+
+# ⚡ ASYNC RUNTIME
+tokio = { version = "1.45.1", features = ["full"] }
+
+# 🌍 HTTP & NETWORKING
+reqwest = { version = "0.11", features = ["json", "stream", "brotli"] }
+
+# 🛡️ SICHERHEIT
+ring = "0.17"
+base64 = "0.22"
+
+# 🎲 UTILITIES
+rand = "0.8"
+uuid = { version = "1.0", features = ["v4"] }
+regex = "1.10"
+
+# 📊 LOGS
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 🗄️ STORAGE
+dirs = "5.0"
+
+# 🏗️ FEATURE FLAGS
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+# 🎯 TAURI APP CONFIGURATION
+[[bin]]
+name = "ora-browser"
+path = "src/main.rs"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

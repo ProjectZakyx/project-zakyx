@@ -1,0 +1,223 @@
+/* 🌙 Ora Browser - Dark Theme CSS */
+/* Advanced Dark Theme for Ora Browser */
+
+:root {
+    --dark-bg: #0a0a0a;
+    --dark-surface: #1a1a1a;
+    --dark-card: #262626;
+    --dark-border: #404040;
+    --dark-text: #ffffff;
+    --dark-text-secondary: #a0a0a0;
+    --dark-accent: #6366f1;
+    --dark-accent-hover: #4f46e5;
+    --dark-success: #22c55e;
+    --dark-warning: #f59e0b;
+    --dark-error: #ef4444;
+    --dark-glass: rgba(255, 255, 255, 0.05);
+    --dark-glass-strong: rgba(255, 255, 255, 0.1);
+    --dark-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark Theme Body */
+body.dark-theme {
+    background: linear-gradient(135deg, 
+        #0a0a0a 0%, 
+        #1a1a1a 25%, 
+        #262626 50%, 
+        #1a1a1a 75%, 
+        #0a0a0a 100%);
+    color: var(--dark-text);
+}
+
+/* Dark Navigation */
+.dark-theme .navbar {
+    background: var(--dark-glass);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark-theme .nav-links a {
+    color: var(--dark-text-secondary);
+}
+
+.dark-theme .nav-links a:hover {
+    color: var(--dark-text);
+    background: var(--dark-glass-strong);
+}
+
+/* Dark Cards */
+.dark-theme .feature-card {
+    background: var(--dark-glass);
+    border: 1px solid var(--dark-border);
+}
+
+.dark-theme .feature-card:hover {
+    background: var(--dark-glass-strong);
+    border-color: var(--dark-accent);
+    box-shadow: 0 20px 40px var(--dark-shadow);
+}
+
+/* Dark Status Panel */
+.dark-theme .status-panel {
+    background: linear-gradient(45deg, 
+        rgba(34, 197, 94, 0.1), 
+        rgba(99, 102, 241, 0.1));
+    border: 1px solid var(--dark-success);
+}
+
+/* Dark Buttons */
+.dark-theme .btn-primary {
+    background: linear-gradient(45deg, var(--dark-accent), var(--dark-accent-hover));
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-glass);
+    border: 1px solid var(--dark-border);
+}
+
+.dark-theme .btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(99, 102, 241, 0.3);
+}
+
+/* Dark Footer */
+.dark-theme .footer {
+    background: var(--dark-glass);
+    border-top: 1px solid var(--dark-border);
+}
+
+/* Scrollbar Dark Theme */
+.dark-theme ::-webkit-scrollbar {
+    width: 12px;
+}
+
+.dark-theme ::-webkit-scrollbar-track {
+    background: var(--dark-surface);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+    background: var(--dark-border);
+    border-radius: 6px;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-accent);
+}
+
+/* Dark Theme Toggle Animation */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    background: var(--dark-glass);
+    border: 1px solid var(--dark-border);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.5rem;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    background: var(--dark-accent);
+}
+
+/* Loading Spinner für Theme Switch */
+.theme-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3000;
+    background: var(--dark-glass-strong);
+    border-radius: 12px;
+    padding: 2rem;
+    display: none;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--dark-border);
+    border-top: 4px solid var(--dark-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Advanced Glass Morphism Effects */
+.dark-theme .glass-card {
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Neon Glow Effects */
+.dark-theme .neon-accent {
+    box-shadow: 
+        0 0 5px var(--dark-accent),
+        0 0 10px var(--dark-accent),
+        0 0 15px var(--dark-accent),
+        0 0 20px var(--dark-accent);
+    animation: neonPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes neonPulse {
+    from {
+        box-shadow: 
+            0 0 5px var(--dark-accent),
+            0 0 10px var(--dark-accent),
+            0 0 15px var(--dark-accent),
+            0 0 20px var(--dark-accent);
+    }
+    to {
+        box-shadow: 
+            0 0 2px var(--dark-accent),
+            0 0 5px var(--dark-accent),
+            0 0 8px var(--dark-accent),
+            0 0 12px var(--dark-accent);
+    }
+}
+
+/* Responsive Dark Theme */
+@media (max-width: 768px) {
+    .dark-theme .theme-toggle {
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .dark-theme {
+        --dark-text: #ffffff;
+        --dark-bg: #000000;
+        --dark-border: #ffffff;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .dark-theme * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+} 

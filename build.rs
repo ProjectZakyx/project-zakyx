@@ -1,23 +1,8 @@
 fn main() {
-    // Only link Windows-specific libraries when building for Windows
-    #[cfg(windows)]
-    {
-        println!("cargo:rustc-link-lib=advapi32");
-        println!("cargo:rustc-link-lib=wevtapi");
+    // Deaktiviere Windows Resource File Generation
+    if std::env::var("TARGET").unwrap_or_default().contains("windows") {
+        // Skip Windows Resource compilation
+        std::env::set_var("TAURI_SKIP_EMBEDDED_RESOURCE", "1");
     }
-    
-    // Linux-specific build configuration
-    #[cfg(target_os = "linux")]
-    {
-        println!("cargo:rustc-link-lib=gtk-3");
-        println!("cargo:rustc-link-lib=webkit2gtk-4.0");
-        println!("cargo:rustc-link-lib=glib-2.0");
-    }
-    
-    // macOS-specific build configuration
-    #[cfg(target_os = "macos")]
-    {
-        println!("cargo:rustc-link-lib=framework=Cocoa");
-        println!("cargo:rustc-link-lib=framework=WebKit");
-    }
+    tauri_build::build()
 }

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontale Symbol-Lesezeichenleiste</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(90deg, #1E1E1E 0%, #252526 100%);
+            color: #FFFFFF;
+            height: 50px;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-bottom: 2px solid #3C3C3C;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .toolbar-header {
+            background: rgba(0, 122, 204, 0.2);
+            padding: 8px 12px;
+            border-right: 1px solid #3C3C3C;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toolbar-buttons {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            padding: 0 8px;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        
+        .bookmark-button {
+            min-width: 70px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            padding: 4px;
+            margin: 0 2px;
+        }
+        
+        .bookmark-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 122, 204, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .bookmark-button:hover {
+            background: rgba(0, 122, 204, 0.2);
+            border-color: rgba(0, 122, 204, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+        }
+        
+        .bookmark-button:hover::before {
+            left: 100%;
+        }
+        
+        .bookmark-button:active {
+            transform: translateY(0);
+            background: rgba(0, 122, 204, 0.4);
+        }
+        
+        .button-icon {
+            font-size: 16px;
+            margin-bottom: 1px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .button-label {
+            font-size: 9px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1;
+            opacity: 0.8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 66px;
+        }
+        
+        .bookmark-button:hover .button-label {
+            opacity: 1;
+        }
+        
+        /* Spezielle Hover-Effekte für verschiedene Buttons */
+        .bookmark-button:nth-child(1):hover { /* Google */
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+        
+        .bookmark-button:nth-child(2):hover { /* GitHub */
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
+        }
+        
+        .bookmark-button:nth-child(3):hover { /* Stack Overflow */
+            box-shadow: 0 4px 12px rgba(244, 128, 36, 0.4);
+        }
+        
+        .bookmark-button:nth-child(4):hover { /* Rust */
+            box-shadow: 0 4px 12px rgba(222, 165, 132, 0.4);
+        }
+        
+        .bookmark-button:nth-child(5):hover { /* YouTube */
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+        }
+        
+        .bookmark-button:nth-child(6):hover { /* Wikipedia */
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+        }
+        
+        .bookmark-button:nth-child(7):hover { /* Reddit */
+            box-shadow: 0 4px 12px rgba(255, 69, 0, 0.4);
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 8px;
+            border-left: 1px solid #3C3C3C;
+        }
+        
+        .action-button {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .action-button:hover {
+            background: rgba(0, 122, 204, 0.2);
+            border-color: rgba(0, 122, 204, 0.5);
+        }
+        
+        /* Tooltip-Styling */
+        .bookmark-button[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            animation: tooltipShow 0.2s ease;
+        }
+        
+        @keyframes tooltipShow {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* Scrollbar für mehr Bookmarks */
+        .toolbar-buttons::-webkit-scrollbar { height: 4px; }
+        .toolbar-buttons::-webkit-scrollbar-track { background: #1E1E1E; }
+        .toolbar-buttons::-webkit-scrollbar-thumb { 
+            background: #464647; 
+            border-radius: 2px;
+        }
+        .toolbar-buttons::-webkit-scrollbar-thumb:hover { background: #5A5A5C; }
+        
+        /* Responsives Design für kleinere Bildschirme */
+        @media (max-width: 1200px) {
+            .bookmark-button { min-width: 60px; }
+            .button-label { font-size: 8px; max-width: 56px; }
+        }
+        
+        @media (max-width: 800px) {
+            .toolbar-header { min-width: 80px; font-size: 10px; }
+            .bookmark-button { min-width: 50px; }
+            .button-icon { font-size: 14px; }
+            .button-label { font-size: 7px; max-width: 46px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar-header">
+        📚 BOOKMARKS
+    </div>
+    
+    <div class="toolbar-buttons">
+        
+                <div class="bookmark-button" onclick="openBookmark('1001', 'https://google.com')" title="Google Suche">
+                    <div class="button-icon">🔍</div>
+                    <div class="button-label">Google</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1002', 'https://github.com')" title="GitHub Repository">
+                    <div class="button-icon">🐙</div>
+                    <div class="button-label">GitHub</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1003', 'https://stackoverflow.com')" title="Stack Overflow Q&A">
+                    <div class="button-icon">📚</div>
+                    <div class="button-label">Stack Overflow</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1004', 'https://doc.rust-lang.org')" title="Rust Programming Language">
+                    <div class="button-icon">🦀</div>
+                    <div class="button-label">Rust Documentation</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1005', 'https://youtube.com')" title="YouTube Videos">
+                    <div class="button-icon">📺</div>
+                    <div class="button-label">YouTube</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1006', 'https://wikipedia.org')" title="Wikipedia Enzyklopädie">
+                    <div class="button-icon">📖</div>
+                    <div class="button-label">Wikipedia</div>
+                </div>
+            
+                <div class="bookmark-button" onclick="openBookmark('1007', 'https://reddit.com')" title="Reddit Community">
+                    <div class="button-icon">🗨️</div>
+                    <div class="button-label">Reddit</div>
+                </div>
+            
+    </div>
+    
+    <div class="toolbar-actions">
+        <div class="action-button" onclick="addBookmark()" title="Bookmark hinzufügen">➕</div>
+        <div class="action-button" onclick="toggleToolbar()" title="Toolbar umschalten">👁️</div>
+        <div class="action-button" onclick="openSettings()" title="Einstellungen">⚙️</div>
+    </div>
+    
+    <script>
+        console.log('🔧 Horizontal Bookmark Toolbar loaded!');
+        
+        function openBookmark(id, url) {
+            console.log('🔗 Opening bookmark:', id, url);
+            
+            // Visuelles Feedback
+            const button = event.currentTarget;
+            const originalTransform = button.style.transform;
+            
+            button.style.transform = 'translateY(2px)';
+            button.style.background = 'rgba(0, 122, 204, 0.6)';
+            
+            setTimeout(() => {
+                button.style.transform = originalTransform;
+                button.style.background = '';
+            }, 200);
+            
+            // Navigation (würde an Ora Browser gesendet)
+            alert(`🌐 Navigiere zu: ${url}`);
+            
+            // Hier würde die echte Navigation stattfinden
+            // window.location.href = url;
+        }
+        
+        function addBookmark() {
+            console.log('➕ Adding new bookmark');
+            const url = prompt('🔗 URL des neuen Bookmarks:');
+            const title = prompt('📝 Titel des Bookmarks:');
+            
+            if (url && title) {
+                alert(`✅ Bookmark hinzugefügt: ${title} -> ${url}`);
+            }
+        }
+        
+        function toggleToolbar() {
+            console.log('👁️ Toggling toolbar visibility');
+            const body = document.body;
+            if (body.style.display === 'none') {
+                body.style.display = 'flex';
+                console.log('✅ Toolbar visible');
+            } else {
+                body.style.display = 'none';
+                console.log('❌ Toolbar hidden');
+            }
+        }
+        
+        function openSettings() {
+            console.log('⚙️ Opening settings');
+            alert('⚙️ Bookmark-Einstellungen werden geöffnet!');
+        }
+        
+        // Keyboard-Shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case '1': openBookmark(1001, 'https://google.com'); break;
+                    case '2': openBookmark(1002, 'https://github.com'); break;
+                    case '3': openBookmark(1003, 'https://stackoverflow.com'); break;
+                    case '4': openBookmark(1004, 'https://doc.rust-lang.org'); break;
+                    case '5': openBookmark(1005, 'https://youtube.com'); break;
+                    case '6': openBookmark(1006, 'https://wikipedia.org'); break;
+                    case '7': openBookmark(1007, 'https://reddit.com'); break;
+                    case 'b': toggleToolbar(); break;
+                    case 'd': addBookmark(); break;
+                }
+            }
+        });
+        
+        // Animation bei Laden
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.bookmark-button');
+            buttons.forEach((button, index) => {
+                button.style.opacity = '0';
+                button.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    button.style.transition = 'all 0.5s ease';
+                    button.style.opacity = '1';
+                    button.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+        
+        // Responsive Toolbar-Größe anpassen
+        function adjustToolbarSize() {
+            const toolbar = document.querySelector('.toolbar-buttons');
+            const buttons = document.querySelectorAll('.bookmark-button');
+            const availableWidth = toolbar.offsetWidth;
+            const buttonCount = buttons.length;
+            const maxButtonWidth = Math.min(80, (availableWidth - 32) / buttonCount);
+            
+            buttons.forEach(button => {
+                button.style.minWidth = Math.max(50, maxButtonWidth) + 'px';
+            });
+        }
+        
+        window.addEventListener('resize', adjustToolbarSize);
+        window.addEventListener('load', adjustToolbarSize);
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+🌐 Ora Browser v1.0.0
+=========================
+
+🎯 Release Information:
+- Version: 1.0.0
+- Build Date: 2025-06-07 12:02:48 UTC
+- Build Machine: W11
+- Windows Version: Microsoft Windows 11 Pro
+
+📁 Files included:
+- ora-browser.exe    - Main application binary
+- README.md         - Full documentation
+- LICENSE           - MIT License text
+- gui.html          - HTML GUI interface
+- resources/        - Icons and assets (if available)
+
+🛠️ System Requirements:
+- Windows 10/11 (64-bit)
+- Microsoft Edge WebView2 Runtime
+- Minimum 512 MB RAM
+
+📥 Installation:
+1. Extract all files to a folder
+2. Install WebView2 Runtime if needed:
+   https://developer.microsoft.com/en-us/microsoft-edge/webview2/
+3. Run ora-browser.exe
+
+🚀 Features:
+✅ WebView2 Integration for real web rendering
+✅ Tab Management System with navigation
+✅ Bookmark System with default bookmarks
+✅ History Tracking with auto-save
+✅ HTML GUI with Tailwind CSS
+✅ Fallback modes for compatibility
+
+💡 Usage:
+- Enter URLs in address bar (e.g., 'google.de')
+- Use commands: 'newtab', 'bookmarks', 'history', 'gui'
+- Press Enter to navigate
+
+🐛 Troubleshooting:
+- Install WebView2 Runtime if pages don't load
+- Add to antivirus whitelist if startup fails
+- Check Windows Defender SmartScreen settings
+
+📞 Support:
+- Issues: https://github.com/user/ora-browser/issues
+- Documentation: See README.md
+
+© 2024 Ora Browser Project - MIT License

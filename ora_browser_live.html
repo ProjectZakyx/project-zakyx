@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full bg-gray-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 Ora Browser - LIVE DEMO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'pulse-slow': 'pulse 3s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'rotate-slow': 'rotate 20s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)' },
+                            '100%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.8)' },
+                        },
+                        rotate: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+        }
+        .demo-notice {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInFromRight 0.5s ease-out;
+        }
+        @keyframes slideInFromRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white font-sans overflow-hidden">
+    <!-- LIVE DEMO NOTICE -->
+    <div class="demo-notice glass p-4 rounded-xl">
+        <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+            <span class="text-green-400 font-semibold">LIVE HTML RENDERING</span>
+        </div>
+        <p class="text-xs text-gray-300 mt-1">Ora Browser Premium Design</p>
+    </div>
+
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-full blur-3xl animate-rotate-slow"></div>
+        <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-emerald-600/20 to-blue-600/20 rounded-full blur-3xl animate-rotate-slow" style="animation-direction: reverse;"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-8">
+        
+        <!-- Main Logo Section -->
+        <div class="text-center mb-8 animate-float">
+            <div class="text-8xl mb-4 animate-glow filter drop-shadow-2xl">🌐</div>
+            <h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Ora Browser
+            </h1>
+            <p class="text-xl text-blue-200 mb-6 font-light">Premium Web Experience - LIVE DEMO</p>
+            <div class="glass-dark px-4 py-2 rounded-full inline-block">
+                <span class="text-green-400 text-sm">✅ Echtes HTML-Rendering aktiv!</span>
+            </div>
+        </div>
+
+        <!-- Enhanced Feature Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-8">
+            
+            <!-- Navigation Card -->
+            <div class="glass p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3 animate-pulse">🧭</span>
+                    <h3 class="text-xl font-semibold text-blue-300">Navigation</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">Schnelle URL-Navigation mit intelligenter Adressleiste</p>
+                <div class="space-y-2">
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        Instant Search
+                    </div>
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        Auto-Complete
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Card -->
+            <div class="glass p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3 animate-bounce">⚡</span>
+                    <h3 class="text-xl font-semibold text-purple-300">Performance</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">Optimierte WebView2 Engine</p>
+                <div class="space-y-2">
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        Hardware Acceleration
+                    </div>
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        Memory Management
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design Card -->
+            <div class="glass p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3 animate-spin" style="animation-duration: 3s;">🎨</span>
+                    <h3 class="text-xl font-semibold text-pink-300">Design</h3>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">Glassmorphism UI mit Animationen</p>
+                <div class="space-y-2">
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        LIVE HTML Rendering
+                    </div>
+                    <div class="flex items-center text-sm text-green-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        Smooth Animations
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Action Buttons -->
+        <div class="flex flex-wrap gap-4 justify-center mb-8">
+            <button class="glass px-8 py-3 rounded-full text-white font-semibold btn-glow transition-all duration-300 hover:bg-blue-600/30" onclick="showDemo()">
+                <span class="mr-2">🚀</span>
+                Demo Starten
+            </button>
+            <button class="glass px-8 py-3 rounded-full text-white font-semibold btn-glow transition-all duration-300 hover:bg-emerald-600/30" onclick="toggleAnimation()">
+                <span class="mr-2">⭐</span>
+                Animationen
+            </button>
+            <button class="glass px-8 py-3 rounded-full text-white font-semibold btn-glow transition-all duration-300 hover:bg-purple-600/30" onclick="changeTheme()">
+                <span class="mr-2">🔧</span>
+                Theme Wechseln
+            </button>
+        </div>
+
+        <!-- Live Status Display -->
+        <div class="glass-dark px-8 py-4 rounded-full">
+            <div class="flex items-center space-x-8 text-sm">
+                <div class="flex items-center">
+                    <span class="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse-slow"></span>
+                    <span class="text-green-400">WebView2 Engine</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-3 h-3 bg-blue-400 rounded-full mr-2 animate-pulse-slow"></span>
+                    <span class="text-blue-400">Glassmorphism UI</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-3 h-3 bg-purple-400 rounded-full mr-2 animate-pulse-slow"></span>
+                    <span class="text-purple-400">Live Rendering</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive JavaScript -->
+    <script>
+        function showDemo() {
+            alert('🎨 Ora Browser Premium Design LIVE!\\n\\n✅ Echtes HTML-Rendering funktioniert!\\n✅ Glassmorphism-Effekte aktiv!\\n✅ Animationen laufen smooth!\\n\\nDies ist das ECHTE visuelle Design statt nur Text!');
+        }
+
+        function toggleAnimation() {
+            const elements = document.querySelectorAll('.animate-pulse, .animate-bounce, .animate-spin');
+            elements.forEach(el => {
+                el.style.animationPlayState = el.style.animationPlayState === 'paused' ? 'running' : 'paused';
+            });
+        }
+
+        function changeTheme() {
+            document.body.style.background = document.body.style.background.includes('purple') 
+                ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)'
+                : 'linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)';
+        }
+
+        // Auto-Demo
+        setInterval(() => {
+            const cards = document.querySelectorAll('.glass');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                    }, 200);
+                }, index * 100);
+            });
+        }, 5000);
+
+        // Welcome message
+        setTimeout(() => {
+            console.log('🎉 Ora Browser Premium - Echtes HTML-Rendering aktiv!');
+        }, 1000);
+    </script>
+</body>
+</html>
