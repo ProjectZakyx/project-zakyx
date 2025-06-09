@@ -1,42 +1,16 @@
 {
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "Ora Browser",
+  "version": "1.0.0",
+  "identifier": "com.ora.browser",
   "build": {
     "beforeBuildCommand": "",
     "beforeDevCommand": "",
-    "devPath": "dist",
-    "distDir": "dist"
+    "frontendDist": "./dist"
   },
-  "package": {
-    "productName": "Ora Browser",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "open": true
-      },
-      "window": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": false,
-      "identifier": "com.ora.browser",
-      "icon": [
-        "icons/ora16x16.ico",
-        "icons/ora24x24.ico", 
-        "icons/ora32x32.ico",
-        "icons/ora48x48.ico",
-        "icons/ora64x64.ico",
-        "icons/ora96x96.ico",
-        "icons/ora128x128.ico"
-      ]
-    },
+  "app": {
     "security": {
       "csp": null
-    },
-    "updater": {
-      "active": false
     },
     "windows": [
       {
@@ -44,9 +18,12 @@
         "height": 800,
         "resizable": true,
         "title": "Ora Browser",
-        "width": 1200,
-        "url": "index.html"
+        "width": 1200
       }
     ]
-  }
+  },
+  "bundle": {
+    "active": false
+  },
+  "plugins": {}
 } 

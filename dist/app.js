@@ -1,9 +1,164 @@
 // 🌐 ORA BROWSER - TAURI FRONTEND APPLICATION
 // Modern cross-platform browser frontend with Tauri integration
 
-const { invoke } = window.__TAURI__.tauri;
-const { listen } = window.__TAURI__.event;
-const { appWindow } = window.__TAURI__.window;
+// 🚨 TAURI VERFÜGBARKEITSPRÜFUNG
+let invoke, listen, appWindow;
+
+if (typeof window.__TAURI__ !== 'undefined') {
+    console.log('✅ Tauri API available');
+    console.log('🔍 Tauri structure:', window.__TAURI__);
+    
+    // Check different possible API structures
+    if (window.__TAURI__.tauri && window.__TAURI__.tauri.invoke) {
+        console.log('🔧 Using __TAURI__.tauri.invoke');
+        invoke = window.__TAURI__.tauri.invoke;
+    } else if (window.__TAURI__.invoke) {
+        console.log('🔧 Using __TAURI__.invoke');
+        invoke = window.__TAURI__.invoke;
+    } else {
+        console.log('❌ invoke not found in Tauri API');
+        invoke = null;
+    }
+    
+    if (window.__TAURI__.event && window.__TAURI__.event.listen) {
+        listen = window.__TAURI__.event.listen;
+    } else if (window.__TAURI__.listen) {
+        listen = window.__TAURI__.listen;
+    } else {
+        console.log('❌ listen not found in Tauri API');
+        listen = null;
+    }
+    
+    if (window.__TAURI__.window && window.__TAURI__.window.appWindow) {
+        appWindow = window.__TAURI__.window.appWindow;
+    } else {
+        appWindow = null;
+    }
+    
+    // Fallback wenn Tauri-APIs nicht verfügbar sind
+    if (!invoke) {
+        console.log('⚠️ Using fallback invoke function');
+        invoke = async (command, args) => {
+            console.log(`🔄 FALLBACK invoke: ${command}`, args);
+            
+            if (command === 'open_external_url') {
+                console.log(`🚀 ÖFFNE BROWSER: ${args.url}`);
+                try {
+                    window.open(args.url, '_blank');
+                    return Promise.resolve({});
+                } catch (e) {
+                    console.error('❌ Fallback window.open auch fehlgeschlagen:', e);
+                    return Promise.reject('Fallback failed');
+                }
+            } else if (command === 'create_new_tab') {
+                console.log(`🚀 ERSTELLE TAB: ${args ? args.url : 'Neuer Tab'}`);
+                return Promise.resolve({
+                    id: 'tab-' + Date.now(),
+                    title: 'New Tab',
+                    url: args ? args.url : 'about:blank',
+                    favicon: null,
+                    is_active: true,
+                    is_loading: false
+                });
+            } else if (command === 'get_bookmarks') {
+                return Promise.resolve([]);
+            } else if (command === 'get_settings') {
+                return Promise.resolve({
+                    homepage: 'https://www.google.com',
+                    search_engine: 'https://www.google.com/search?q=',
+                    privacy_mode: false,
+                    ad_blocker: true,
+                    javascript_enabled: true,
+                    cookies_enabled: true
+                });
+            }
+            return Promise.resolve({});
+        };
+    }
+    
+    if (!listen) {
+        listen = (event, callback) => {
+            console.log(`🔄 FALLBACK listen: ${event}`);
+            return Promise.resolve();
+        };
+    }
+} else {
+    console.error('❌ Tauri API not available - using fallback functions');
+    
+    // Fallback functions when __TAURI__ is completely missing
+    invoke = async (command, args) => {
+        console.log(`🔄 FALLBACK invoke: ${command}`, args);
+        
+        if (command === 'open_external_url') {
+            try {
+                window.open(args.url, '_blank');
+                return Promise.resolve({});
+            } catch (e) {
+                console.error('❌ Fallback window.open auch fehlgeschlagen:', e);
+                return Promise.reject('Fallback failed');
+            }
+        } else if (command === 'get_bookmarks') {
+            return Promise.resolve([]);
+        } else if (command === 'get_settings') {
+            return Promise.resolve({
+                homepage: 'https://www.google.com',
+                search_engine: 'https://www.google.com/search?q=',
+                privacy_mode: false,
+                ad_blocker: true,
+                javascript_enabled: true,
+                cookies_enabled: true
+            });
+        } else if (command === 'create_new_tab') {
+            return Promise.resolve({
+                id: 'tab-' + Date.now(),
+                title: 'New Tab',
+                url: args ? args.url : 'about:blank',
+                favicon: null,
+                is_active: true,
+                is_loading: false
+            });
+        } else if (command === 'add_bookmark') {
+            return Promise.resolve({
+                id: 'bookmark-' + Date.now(),
+                title: args.title,
+                url: args.url
+            });
+        } else if (command === 'update_settings') {
+            return Promise.resolve({});
+        }
+        return Promise.resolve({});
+    };
+    
+    listen = (event, callback) => {
+        console.log(`🔄 FALLBACK listen: ${event}`);
+        return Promise.resolve();
+    };
+    
+    appWindow = {
+        emit: (event, data) => {
+            console.log(`🔄 FALLBACK emit: ${event}`, data);
+            return Promise.resolve();
+        }
+    };
+}
+
+// 🚨 ULTIMATE DEBUG LOGGING
+function debugLog(message, data = null) {
+    console.log(`🐛 DEBUG: ${message}`, data || '');
+    
+    // Show debug info in status bar
+    const statusText = document.getElementById('status-text');
+    if (statusText) {
+        statusText.textContent = `DEBUG: ${message}`;
+        statusText.style.color = '#ff6b6b';
+    }
+}
+
+// 🚨 ALERT DEBUGGING (shows what's happening step by step)
+function debugAlert(message) {
+    console.log(`🚨 ALERT DEBUG: ${message}`);
+    // alert(`🐛 DEBUG SCHRITT: ${message}`); // Deactivated - working fine now!
+}
 
 // 🗂️ APPLICATION STATE
 class BrowserApp {
@@ -81,6 +236,9 @@ class BrowserApp {
     }
     
     async navigateToUrl(url) {
+        console.log('🌐 Navigating to:', url);
+        
+        // NORMALIZE URL FIRST (before any URL parsing)
         if (!url.startsWith('http')) {
             if (url.includes('.')) {
                 url = 'https://' + url;
@@ -89,25 +247,98 @@ class BrowserApp {
             }
         }
         
+        console.log('🔧 Normalized URL:', url);
+        
+        // Create new tab if none exists
         if (!this.activeTabId) {
             await this.createNewTab(url);
             return;
         }
         
         try {
-            await invoke('navigate_to', { tabId: this.activeTabId, url });
+            // CLEAN UP: Hide any previous content first
+            this.hideWelcomeScreen();
+            document.getElementById('webview-container').style.display = 'none';
+            
+            // Update tab state immediately
             const tab = this.tabs.find(t => t.id === this.activeTabId);
             if (tab) {
                 tab.url = url;
                 tab.title = 'Loading...';
+                tab.is_loading = true;
             }
+            
+            // Update UI immediately to prevent duplicates
             this.renderTabs();
             this.updateAddressBar(url);
-            this.hideWelcomeScreen();
+            
+            // Update status
+            document.getElementById('status-text').textContent = `Opening ${url}...`;
+            
+            // Smart navigation: check iframe compatibility with detailed debugging
+            const iframeFriendly = this.isIframeFriendly(url);
+            console.log(`🔍 DEBUGGING URL: ${url}`);
+            console.log(`🔍 DOMAIN: ${new URL(url).hostname.toLowerCase()}`);
+            console.log(`🔍 IFRAME-FRIENDLY: ${iframeFriendly}`);
+            
+            if (iframeFriendly) {
+                console.log('✅ DECISION: Loading internally in iframe');
+                this.showWebViewContent(url);
+                if (tab) {
+                    tab.title = this.getTitleFromUrl(url);
+                    tab.is_loading = false;
+                    this.renderTabs();
+                }
+                document.getElementById('status-text').textContent = `Loaded ${url} internally`;
+            } else {
+                console.log('🌐 DECISION: Opening externally in system browser');
+                await this.fallbackToExternalBrowser(url);
+                // Reset tab state for external navigation
+                if (tab) {
+                    tab.title = `External: ${this.getTitleFromUrl(url)}`;
+                    tab.is_loading = false;
+                    this.renderTabs();
+                }
+            }
+            
         } catch (error) {
             console.error('Navigation failed:', error);
+            document.getElementById('status-text').textContent = `Failed to load ${url}`;
+            
+            // Reset tab state on error
+            const tab = this.tabs.find(t => t.id === this.activeTabId);
+            if (tab) {
+                tab.title = 'Error';
+                tab.is_loading = false;
+                this.renderTabs();
+            }
         }
     }
+    
+    async openInNewWindow(url) {
+        // DEPRECATED: Don't create new Tauri windows, use system browser instead
+        console.log('🚫 Redirecting new window request to system browser:', url);
+        await this.fallbackToExternalBrowser(url);
+    }
+    
+    async fallbackToExternalBrowser(url) {
+        try {
+            await invoke('open_external_url', { url });
+            document.getElementById('status-text').textContent = 'Opened in system browser';
+            
+            // Update tab title
+            const tab = this.tabs.find(t => t.id === this.activeTabId);
+            if (tab) {
+                tab.title = `External: ${this.getTitleFromUrl(url)}`;
+                this.renderTabs();
+            }
+        } catch (error) {
+            console.error('❌ Failed to open external URL:', error);
+            document.getElementById('status-text').textContent = 'Navigation failed';
+        }
+    }
+    
+    // WebView container nicht mehr benötigt - verwenden echte Tauri Windows
     
     getTitleFromUrl(url) {
         try {
@@ -118,12 +349,73 @@ class BrowserApp {
         }
     }
     
+    // 🔍 SMART NAVIGATION - Check if URL should be loaded internally or externally
+    isIframeFriendly(url) {
+        // 🚫 KNOWN IFRAME-BLOCKING DOMAINS (X-Frame-Options: DENY/SAMEORIGIN)
+        const blockedDomains = [
+            'google.com', 'www.google.com', 'google.de', 'www.google.de',
+            'facebook.com', 'www.facebook.com',
+            'youtube.com', 'www.youtube.com',
+            'github.com', 'www.github.com',
+            'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
+            'instagram.com', 'www.instagram.com',
+            'linkedin.com', 'www.linkedin.com',
+            'amazon.com', 'www.amazon.com', 'amazon.de', 'www.amazon.de',
+            'ebay.com', 'www.ebay.com', 'ebay.de', 'www.ebay.de',
+            'paypal.com', 'www.paypal.com',
+            'microsoft.com', 'www.microsoft.com',
+            'apple.com', 'www.apple.com',
+            'wikipedia.org', 'www.wikipedia.org', 'de.wikipedia.org',
+            'yahoo.com', 'www.yahoo.com', 'yahoo.de', 'www.yahoo.de',
+            'bing.com', 'www.bing.com',
+            'reddit.com', 'www.reddit.com',
+            'stackoverflow.com', 'www.stackoverflow.com',
+            'netflix.com', 'www.netflix.com',
+            'twitch.tv', 'www.twitch.tv'
+        ];
+        
+        // ✅ IFRAME-FRIENDLY DOMAINS (usually allow embedding)
+        const friendlyDomains = [
+            'jsonplaceholder.typicode.com',
+            'httpbin.org',
+            'example.com', 'www.example.com',
+            'codepen.io',
+            'jsfiddle.net',
+            'codesandbox.io'
+        ];
+        
+        try {
+            const domain = new URL(url).hostname.toLowerCase();
+            
+            // Check if explicitly friendly
+            if (friendlyDomains.some(friendly => domain === friendly || domain.endsWith('.' + friendly))) {
+                return true;
+            }
+            
+            // Check if explicitly blocked
+            if (blockedDomains.some(blocked => domain === blocked || domain.endsWith('.' + blocked))) {
+                return false;
+            }
+            
+            // Default to false for unknown domains (safer approach)
+            return false;
+        } catch (e) {
+            console.warn('🚨 Invalid URL for iframe check:', url);
+            return false;
+        }
+    }
+    
     // 📚 BOOKMARK MANAGEMENT
     async loadBookmarks() {
         try {
             this.bookmarks = await invoke('get_bookmarks');
+            // Ensure bookmarks is always an array
+            if (!Array.isArray(this.bookmarks)) {
+                this.bookmarks = [];
+            }
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
+            this.bookmarks = []; // Fallback to empty array
         }
     }
     
@@ -188,10 +480,21 @@ class BrowserApp {
                 <button class="tab-close">×</button>
             `;
             
-            tabEl.addEventListener('click', () => {
+            // Tab click to switch
+            tabEl.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-close')) {
+                    return; // Don't switch tab when closing
+                }
                 this.activeTabId = tab.id;
                 this.renderTabs();
                 this.updateAddressBar(tab.url);
+            });
+            
+            // Tab close button
+            const closeBtn = tabEl.querySelector('.tab-close');
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.closeTab(tab.id);
             });
             
             container.appendChild(tabEl);
@@ -201,6 +504,11 @@ class BrowserApp {
     renderBookmarks() {
         const container = document.getElementById('bookmarks-container');
         container.innerHTML = '';
+        
+        // Safety check - ensure bookmarks is an array
+        if (!Array.isArray(this.bookmarks)) {
+            this.bookmarks = [];
+        }
         
         this.bookmarks.forEach(bookmark => {
             const bookmarkEl = document.createElement('a');
@@ -223,21 +531,67 @@ class BrowserApp {
     
     showWelcomeScreen() {
         document.getElementById('welcome-screen').style.display = 'flex';
+        document.getElementById('webview-container').style.display = 'none';
     }
     
     hideWelcomeScreen() {
         document.getElementById('welcome-screen').style.display = 'none';
     }
     
+    showWebViewContent(url) {
+        console.log(`🎯 showWebViewContent called with: ${url}`);
+        
+        // Hide welcome screen
+        this.hideWelcomeScreen();
+        console.log(`🎯 Welcome screen hidden`);
+        
+        // Show webview container
+        const webviewContainer = document.getElementById('webview-container');
+        const webviewFrame = document.getElementById('webview-frame');
+        
+        console.log(`🎯 Elements found: container=${!!webviewContainer}, frame=${!!webviewFrame}`);
+        
+        if (webviewContainer && webviewFrame) {
+            webviewContainer.style.display = 'block';
+            webviewFrame.src = url;
+            
+            console.log(`✅ IFRAME SHOULD LOAD: ${url} in internal iframe`);
+            console.log(`✅ Container display: ${webviewContainer.style.display}`);
+            console.log(`✅ Frame src: ${webviewFrame.src}`);
+            
+            // Update current tab
+            const tab = this.tabs.find(t => t.id === this.activeTabId);
+            if (tab) {
+                tab.url = url;
+                tab.title = this.getTitleFromUrl(url);
+                this.renderTabs();
+                console.log(`✅ Tab updated: ${tab.title}`);
+            }
+        } else {
+            console.error(`❌ Missing elements: container=${!!webviewContainer}, frame=${!!webviewFrame}`);
+        }
+    }
+    
     // 🎯 EVENT LISTENERS
     setupEventListeners() {
+        console.log('🔧 Setting up event listeners...');
+        
         // Address bar
         const addressInput = document.getElementById('address-input');
         const goBtn = document.getElementById('go-btn');
         
+        console.log('🔍 Found elements:', {
+            addressInput: !!addressInput,
+            goBtn: !!goBtn,
+            menuBtn: !!document.getElementById('menu-btn'),
+            bookmarkBtn: !!document.getElementById('bookmark-btn')
+        });
+        
         const navigate = () => {
             const url = addressInput.value.trim();
-            if (url) this.navigateToUrl(url);
+            if (url) {
+                this.navigateToUrl(url);
+            }
         };
         
         goBtn.addEventListener('click', navigate);
@@ -249,6 +603,22 @@ class BrowserApp {
         document.getElementById('new-tab-btn').addEventListener('click', () => {
             this.createNewTab();
         });
+        
+        // Bookmark button
+        document.getElementById('bookmark-btn').addEventListener('click', () => {
+            this.showBookmarkModal();
+        });
+        
+        // Menu button  
+        const menuBtn = document.getElementById('menu-btn');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                console.log('🔧 Menu button clicked!');
+                this.showSettingsModal();
+            });
+        } else {
+            console.error('❌ Menu button not found!');
+        }
         
         // Quick links
         document.querySelectorAll('.quick-link').forEach(link => {
@@ -420,13 +790,21 @@ class BrowserApp {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🌐 Starting Ora Browser Frontend...');
     
-    // Initialize the browser application
-    window.browserApp = new BrowserApp();
-    
-    // Update status bar
-    document.getElementById('status-text').textContent = 'Ora Browser Ready';
-    
-    console.log('✅ Ora Browser Frontend started successfully!');
+    try {
+        // Initialize the browser application
+        window.browserApp = new BrowserApp();
+        
+        // Update status bar
+        const statusElement = document.getElementById('status-text');
+        if (statusElement) {
+            statusElement.textContent = 'Ora Browser Ready';
+        }
+        
+        console.log('✅ Ora Browser Frontend started successfully!');
+        
+    } catch (error) {
+        console.error('Startup error:', error);
+    }
 });
 
 // 🔧 UTILITY FUNCTIONS
@@ -447,4 +825,7 @@ function showNotification(message, type = 'info') {
 
 // 🎯 EXPORT FOR DEBUGGING
 window.showNotification = showNotification;
-window.updateStatusText = updateStatusText; 
+window.updateStatusText = updateStatusText;
+
+// ✅ JAVASCRIPT SUCCESSFULLY LOADED
+console.log('🚨 JavaScript file fully loaded and executed'); 

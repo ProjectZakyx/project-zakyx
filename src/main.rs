@@ -1,12 +1,10 @@
-// 🌐 ORA BROWSER - TAURI EDITION
+// 🌐 ORA BROWSER - TAURI v2 EDITION
 // Modern Cross-Platform Web Browser built with Rust + Tauri
 // Copyright © 2024 Ora Browser Team
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{
-    CustomMenuItem, Manager, Menu, Submenu, WindowBuilder, WindowUrl,
-};
+use tauri::{Manager, Emitter};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -212,9 +210,34 @@ async fn update_settings(
 
 #[tauri::command]
 async fn open_external_url(url: String) -> Result<(), String> {
-    // Vereinfachte externe URL-Öffnung
-    println!("🌐 External URL requested: {}", url);
-    Ok(())
+    println!("🌐 Opening external URL: {}", url);
+    
+    // Use std::process to open URL in system browser
+    #[cfg(target_os = "windows")]
+    let result = std::process::Command::new("cmd")
+        .args(&["/C", "start", &url])
+        .spawn();
+    
+    #[cfg(target_os = "macos")]
+    let result = std::process::Command::new("open")
+        .arg(&url)
+        .spawn();
+    
+    #[cfg(target_os = "linux")]
+    let result = std::process::Command::new("xdg-open")
+        .arg(&url)
+        .spawn();
+    
+    match result {
+        Ok(_) => {
+            println!("✅ Successfully opened URL in system browser");
+            Ok(())
+        },
+        Err(e) => {
+            println!("❌ Failed to open URL: {}", e);
+            Err(format!("Failed to open URL: {}", e))
+        }
+    }
 }
 
 #[tauri::command]
@@ -240,55 +263,7 @@ async fn update_tab_title(
     Ok(())
 }
 
-// 🎨 MENU SETUP
-fn create_menu() -> Menu {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let close = CustomMenuItem::new("close".to_string(), "Close");
-    let new_tab = CustomMenuItem::new("new_tab".to_string(), "New Tab");
-    let new_window = CustomMenuItem::new("new_window".to_string(), "New Window");
-    
-    let file_menu = Submenu::new(
-        "File",
-        Menu::new()
-            .add_item(new_tab)
-            .add_item(new_window)
-            .add_native_item(tauri::MenuItem::Separator)
-            .add_item(close)
-            .add_item(quit),
-    );
-    
-    let edit_menu = Submenu::new(
-        "Edit",
-        Menu::new()
-            .add_native_item(tauri::MenuItem::Undo)
-            .add_native_item(tauri::MenuItem::Redo)
-            .add_native_item(tauri::MenuItem::Separator)
-            .add_native_item(tauri::MenuItem::Cut)
-            .add_native_item(tauri::MenuItem::Copy)
-            .add_native_item(tauri::MenuItem::Paste),
-    );
-    
-    let view_menu = Submenu::new(
-        "View",
-        Menu::new()
-            .add_native_item(tauri::MenuItem::EnterFullScreen),
-    );
-    
-    let window_menu = Submenu::new(
-        "Window",
-        Menu::new()
-            .add_native_item(tauri::MenuItem::Minimize)
-            .add_native_item(tauri::MenuItem::CloseWindow),
-    );
-    
-    Menu::new()
-        .add_submenu(file_menu)
-        .add_submenu(edit_menu)
-        .add_submenu(view_menu)
-        .add_submenu(window_menu)
-}
-
-// 🚀 MAIN FUNCTION
+// 🚀 MAIN FUNCTION - TAURI v2
 fn main() {
     // Initialize default browser state
     let default_settings = BrowserSettings {
@@ -322,38 +297,13 @@ fn main() {
         history: Arc::new(RwLock::new(vec![])),
     };
     
-    println!("🚀 Starting Ora Browser with Tauri...");
+    println!("🚀 Starting Ora Browser with Tauri v2...");
     
     tauri::Builder::default()
         .manage(state)
-        .menu(create_menu())
-        .on_menu_event(|event| match event.menu_item_id() {
-            "quit" => {
-                std::process::exit(0);
-            }
-            "close" => {
-                event.window().close().unwrap();
-            }
-            "new_tab" => {
-                // Emit event to frontend
-                event.window().emit("menu:new_tab", {}).unwrap();
-            }
-            "new_window" => {
-                let _new_window = WindowBuilder::new(
-                    &event.window().app_handle(),
-                    "new_window",
-                    WindowUrl::App("index.html".into()),
-                )
-                .title("Ora Browser - New Window")
-                .resizable(true)
-                .inner_size(1200.0, 800.0)
-                .min_inner_size(800.0, 600.0)
-                .build()
-                .unwrap();
-            }
-            _ => {}
-        })
-
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![
             create_new_tab,
             close_tab,
@@ -369,7 +319,7 @@ fn main() {
             update_tab_title
         ])
         .setup(|app| {
-            let window = app.get_window("main").unwrap();
+            let window = app.get_webview_window("main").unwrap();
             
             // Set window properties
             window.set_title("Ora Browser").unwrap();

@@ -141,10 +141,8 @@ impl WebView2Controller {
     fn integrate_with_edge_webview2(&self, url: &str) -> Result<()> {
         println!("🌐 Integrating with Microsoft Edge WebView2...");
         
-        unsafe {
-            // Erstelle eine echte WebView2-Integration im Browser-Fenster
-            self.create_embedded_webview2_control(url)?;
-        }
+        // Erstelle eine echte WebView2-Integration im Browser-Fenster
+        self.create_embedded_webview2_control(url)?;
         
         Ok(())
     }
