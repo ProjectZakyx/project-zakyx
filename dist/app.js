@@ -129,7 +129,25 @@ class OraBrowser {
         this.renderTabs();
         this.switchToTab(tabId);
         
-        console.log(`📑 New tab created: ${tabId} - ${title}`);
+        console.log(`📑 New tab created: ${tabId} - ${title} - ${url}`);
+        return tabId;
+    }
+
+    // Neue Funktion: Tab mit URL erstellen und sofort navigieren
+    createNewTabWithUrl(url, title = null) {
+        const normalizedUrl = this.normalizeUrl(url);
+        const tabTitle = title || this.extractDomain(normalizedUrl);
+        
+        console.log(`📑 Creating new tab with URL: ${normalizedUrl}`);
+        
+        const tabId = this.createNewTab(tabTitle, normalizedUrl);
+        
+        // Sofort zur URL navigieren
+        setTimeout(() => {
+            console.log(`📑 Navigating new tab ${tabId} to: ${normalizedUrl}`);
+            this.navigateToUrl(normalizedUrl, true, true);
+        }, 100);
+        
         return tabId;
     }
 
@@ -146,10 +164,14 @@ class OraBrowser {
             this.updateUrlInput(tab.url);
             this.updateStatus(`Tab aktiv: ${tab.title}`);
             
+            console.log(`📑 Switching to tab ${tabId} with URL: ${tab.url}`);
+            
             // Wenn es nicht der Welcome Screen ist, lade die URL
-            if (tab.url !== 'about:blank') {
-                this.navigateToUrl(tab.url, false); // false = don't create new tab
+            if (tab.url !== 'about:blank' && tab.url !== '') {
+                console.log(`📑 Loading content for tab: ${tab.url}`);
+                this.navigateToUrl(tab.url, false, false); // false = don't create new tab, false = don't add to history
             } else {
+                console.log(`📑 Showing welcome screen for empty tab`);
                 this.showWelcomeScreen();
             }
         }
@@ -1358,59 +1380,123 @@ class OraBrowser {
     }
 
     displayContent(htmlContent) {
-        console.log('📄 Displaying content...');
+        console.log('📄 🚀 ULTIMATE DISPLAY CONTENT - Starting...');
         console.log('📄 HTML content length:', htmlContent ? htmlContent.length : 'null/undefined');
         
-        const contentArea = document.getElementById('content-area');
-        const welcomeScreen = document.getElementById('welcome-screen');
+        if (!htmlContent || !htmlContent.trim()) {
+            console.error('❌ HTML content is empty or invalid!');
+            return false;
+        }
         
-        console.log('📄 Content area found:', !!contentArea);
-        console.log('📄 Welcome screen found:', !!welcomeScreen);
+        // 🎯 SCHRITT 1: ALLE MÖGLICHEN CONTAINER FINDEN
+        const possibleContainers = [
+            'content-area',
+            'webview-container', 
+            'main-content',
+            'browser-content',
+            'page-content'
+        ];
         
-        if (contentArea) {
-            // Verstecke Welcome Screen falls vorhanden
-            if (welcomeScreen) {
-                welcomeScreen.style.display = 'none';
-                welcomeScreen.style.visibility = 'hidden';
-                console.log('📄 Welcome screen hidden');
+        let targetContainer = null;
+        for (const containerId of possibleContainers) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                targetContainer = container;
+                console.log(`📄 ✅ Found target container: ${containerId}`);
+                break;
             }
-            
-            // Erstelle Content-Container falls nicht vorhanden
-            let contentContainer = document.getElementById('content-container');
-            console.log('📄 Existing content container found:', !!contentContainer);
-            
-            if (!contentContainer) {
-                contentContainer = document.createElement('div');
-                contentContainer.id = 'content-container';
-                contentContainer.style.cssText = `
-                    width: 100%;
-                    height: 100%;
-                    overflow: auto;
-                    background: white;
-                    position: relative;
-                    z-index: 1000;
+        }
+        
+        if (!targetContainer) {
+            console.error('❌ No suitable container found! Creating fallback...');
+            targetContainer = document.body;
+        }
+        
+        // 🎯 SCHRITT 2: WELCOME SCREEN AGGRESSIV VERSTECKEN
+        const elementsToHide = [
+            'welcome-screen',
+            'welcome-container',
+            'start-screen',
+            'home-screen'
+        ];
+        
+        elementsToHide.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.cssText = `
+                    display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                    position: absolute !important;
+                    left: -9999px !important;
+                    z-index: -1000 !important;
                 `;
-                contentArea.appendChild(contentContainer);
-                console.log('📄 New content container created and appended');
+                console.log(`📄 ✅ Hidden element: ${id}`);
+            }
+        });
+        
+        // 🎯 SCHRITT 3: CONTENT CONTAINER ERSTELLEN/FINDEN
+        let contentContainer = document.getElementById('content-container');
+        
+        if (contentContainer) {
+            console.log('📄 ✅ Existing content container found - clearing it');
+            contentContainer.innerHTML = '';
+        } else {
+            console.log('📄 🆕 Creating new content container');
+            contentContainer = document.createElement('div');
+            contentContainer.id = 'content-container';
+            targetContainer.appendChild(contentContainer);
+        }
+        
+        // 🎯 SCHRITT 4: ULTIMATE STYLING
+        contentContainer.style.cssText = `
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 100vh !important;
+            overflow: auto !important;
+            background: white !important;
+            position: relative !important;
+            z-index: 10000 !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            top: 0 !important;
+            left: 0 !important;
+        `;
+        
+        // 🎯 SCHRITT 5: CONTENT EINFÜGEN
+        try {
+            contentContainer.innerHTML = htmlContent;
+            console.log('📄 ✅ Content successfully inserted into container');
+            console.log('📄 ✅ Container dimensions:', contentContainer.offsetWidth + 'x' + contentContainer.offsetHeight);
+            console.log('📄 ✅ Container display:', window.getComputedStyle(contentContainer).display);
+            console.log('📄 ✅ Container visibility:', window.getComputedStyle(contentContainer).visibility);
+            
+            // 🎯 SCHRITT 6: PARENT CONTAINER AUCH SICHTBAR MACHEN
+            if (targetContainer !== document.body) {
+                targetContainer.style.cssText = `
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                `;
+                console.log('📄 ✅ Parent container made visible');
             }
             
-            // Zeige Content
-            if (htmlContent && htmlContent.trim()) {
-                contentContainer.innerHTML = htmlContent;
-                contentContainer.style.display = 'block';
-                contentContainer.style.visibility = 'visible';
-                console.log('📄 Content set to container, display:', contentContainer.style.display);
-                console.log('📄 Content container visibility:', contentContainer.style.visibility);
-                console.log('📄 Content displayed successfully, HTML length:', htmlContent.length);
-            } else {
-                console.error('❌ HTML content is empty or invalid!');
-            }
-        } else {
-            console.error('❌ Content area not found!');
-            // Debug: Liste alle verfügbaren Elemente auf
-            console.log('📄 Available elements with IDs:');
-            const allElements = document.querySelectorAll('[id]');
-            allElements.forEach(el => console.log('  -', el.id, el.tagName));
+            // 🎯 SCHRITT 7: SCROLL TO TOP
+            contentContainer.scrollTop = 0;
+            window.scrollTo(0, 0);
+            
+            console.log('📄 🎉 ULTIMATE DISPLAY CONTENT - SUCCESS!');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error inserting content:', error);
+            return false;
         }
     }
 
@@ -4212,10 +4298,56 @@ window.debugOra = {
         }
     },
     
+    // 📑 Neuen Tab mit URL erstellen
+    newTab: (url = 'https://duckduckgo.com') => {
+        if (window.oraBrowser) {
+            console.log('📑 Creating new tab with URL:', url);
+            window.oraBrowser.createNewTabWithUrl(url);
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
     // 📱 Display-Logic testen
     testDisplay: () => {
         if (window.oraBrowser) {
             window.oraBrowser.testDisplayLogic();
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
+    // 🔧 DuckDuckGo direkt laden
+    loadDuckDuckGo: () => {
+        if (window.oraBrowser) {
+            console.log('🦆 Loading DuckDuckGo directly...');
+            window.oraBrowser.navigateToUrl('https://duckduckgo.com/');
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
+    // 🔧 Display-System testen mit echtem Content
+    testRealDisplay: () => {
+        if (window.oraBrowser) {
+            console.log('🔧 Testing display system with real content...');
+            const testContent = `
+                <!DOCTYPE html>
+                <html>
+                <head><title>Test Page</title></head>
+                <body style="font-family: Arial; padding: 20px;">
+                    <h1>🎉 DISPLAY TEST ERFOLGREICH!</h1>
+                    <p>Wenn Sie das sehen, funktioniert das Display-System!</p>
+                    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
+                        <strong>Test-Informationen:</strong><br>
+                        Zeit: ${new Date().toLocaleString()}<br>
+                        Browser: Ora Browser v1.0.0<br>
+                        Status: ✅ Display-System funktioniert
+                    </div>
+                </body>
+                </html>
+            `;
+            window.oraBrowser.displayContent(testContent);
         } else {
             console.error('❌ oraBrowser instance not found!');
         }
