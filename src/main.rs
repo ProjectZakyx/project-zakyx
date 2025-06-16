@@ -4,331 +4,213 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{Manager, Emitter};
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use tauri::Manager;
 
-// 🗂️ BROWSER STATE & DATA STRUCTURES
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tab {
-    pub id: String,
-    pub title: String,
-    pub url: String,
-    pub favicon: Option<String>,
-    pub is_active: bool,
-    pub is_loading: bool,
-}
+// 📦 INTERNAL MODULES
+mod internal_webview2_navigation;
+mod proxy_server;
+mod smart_proxy;
+mod browser_features;
+mod ethical_safeguards;
+mod browser_state;
+mod tauri_commands;
+mod url_utils;
+mod plugin_manager;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Bookmark {
-    pub id: String,
-    pub title: String,
-    pub url: String,
-    pub favicon: Option<String>,
-    pub folder: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BrowserSettings {
-    pub homepage: String,
-    pub search_engine: String,
-    pub privacy_mode: bool,
-    pub ad_blocker: bool,
-    pub javascript_enabled: bool,
-    pub cookies_enabled: bool,
-}
-
-impl Default for BrowserSettings {
-    fn default() -> Self {
-        Self {
-            homepage: "https://www.google.com".to_string(),
-            search_engine: "https://www.google.com/search?q=".to_string(),
-            privacy_mode: false,
-            ad_blocker: true,
-            javascript_enabled: true,
-            cookies_enabled: true,
-        }
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct BrowserState {
-    pub tabs: Arc<RwLock<Vec<Tab>>>,
-    pub bookmarks: Arc<RwLock<Vec<Bookmark>>>,
-    pub settings: Arc<RwLock<BrowserSettings>>,
-    pub history: Arc<RwLock<Vec<String>>>,
-}
-
-// 🎯 TAURI COMMANDS
-
-#[tauri::command]
-async fn create_new_tab(
-    state: tauri::State<'_, BrowserState>,
-    url: Option<String>,
-) -> Result<Tab, String> {
-    let mut tabs = state.tabs.write().await;
-    
-    // Deactivate all existing tabs
-    for tab in tabs.iter_mut() {
-        tab.is_active = false;
-    }
-    
-    let new_tab = Tab {
-        id: uuid::Uuid::new_v4().to_string(),
-        title: "New Tab".to_string(),
-        url: url.unwrap_or_else(|| "about:blank".to_string()),
-        favicon: None,
-        is_active: true,
-        is_loading: false,
-    };
-    
-    tabs.push(new_tab.clone());
-    
-    println!("📑 New tab created: {}", new_tab.id);
-    Ok(new_tab)
-}
-
-#[tauri::command]
-async fn close_tab(
-    state: tauri::State<'_, BrowserState>,
-    tab_id: String,
-) -> Result<(), String> {
-    let mut tabs = state.tabs.write().await;
-    
-    if let Some(pos) = tabs.iter().position(|tab| tab.id == tab_id) {
-        tabs.remove(pos);
-        println!("❌ Tab closed: {}", tab_id);
-        
-        // Activate another tab if available
-        if !tabs.is_empty() && !tabs.iter().any(|tab| tab.is_active) {
-            tabs[0].is_active = true;
-        }
-    }
-    
-    Ok(())
-}
-
-#[tauri::command]
-async fn navigate_to(
-    state: tauri::State<'_, BrowserState>,
-    tab_id: String,
-    url: String,
-    window: tauri::Window,
-) -> Result<(), String> {
-    let mut tabs = state.tabs.write().await;
-    let mut history = state.history.write().await;
-    
-    if let Some(tab) = tabs.iter_mut().find(|tab| tab.id == tab_id) {
-        tab.url = url.clone();
-        tab.is_loading = true;
-        tab.title = "Loading...".to_string();
-        
-        // Add to history
-        history.push(url.clone());
-        
-        // Emit event to frontend to actually load the URL
-        window.emit("webview_navigate", &url).map_err(|e| e.to_string())?;
-        
-        println!("🌐 Navigating tab {} to: {}", tab_id, url);
-        
-        // Simulate loading completion after a short delay
-        tokio::spawn(async move {
-            tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-            let _ = window.emit("webview_loaded", &tab_id);
-        });
-    }
-    
-    Ok(())
-}
-
-#[tauri::command]
-async fn get_tabs(state: tauri::State<'_, BrowserState>) -> Result<Vec<Tab>, String> {
-    let tabs = state.tabs.read().await;
-    Ok(tabs.clone())
-}
-
-#[tauri::command]
-async fn add_bookmark(
-    state: tauri::State<'_, BrowserState>,
-    title: String,
-    url: String,
-) -> Result<Bookmark, String> {
-    let mut bookmarks = state.bookmarks.write().await;
-    
-    let bookmark = Bookmark {
-        id: uuid::Uuid::new_v4().to_string(),
-        title,
-        url,
-        favicon: None,
-        folder: None,
-    };
-    
-    bookmarks.push(bookmark.clone());
-    println!("⭐ Bookmark added: {}", bookmark.title);
-    
-    Ok(bookmark)
-}
-
-#[tauri::command]
-async fn get_bookmarks(state: tauri::State<'_, BrowserState>) -> Result<Vec<Bookmark>, String> {
-    let bookmarks = state.bookmarks.read().await;
-    Ok(bookmarks.clone())
-}
-
-#[tauri::command]
-async fn remove_bookmark(
-    state: tauri::State<'_, BrowserState>,
-    bookmark_id: String,
-) -> Result<(), String> {
-    let mut bookmarks = state.bookmarks.write().await;
-    
-    if let Some(pos) = bookmarks.iter().position(|b| b.id == bookmark_id) {
-        let bookmark = bookmarks.remove(pos);
-        println!("🗑️ Bookmark removed: {}", bookmark.title);
-    }
-    
-    Ok(())
-}
-
-#[tauri::command]
-async fn get_settings(state: tauri::State<'_, BrowserState>) -> Result<BrowserSettings, String> {
-    let settings = state.settings.read().await;
-    Ok(settings.clone())
-}
-
-#[tauri::command]
-async fn update_settings(
-    state: tauri::State<'_, BrowserState>,
-    new_settings: BrowserSettings,
-) -> Result<(), String> {
-    let mut settings = state.settings.write().await;
-    *settings = new_settings;
-    println!("⚙️ Settings updated");
-    Ok(())
-}
-
-#[tauri::command]
-async fn open_external_url(url: String) -> Result<(), String> {
-    println!("🌐 Opening external URL: {}", url);
-    
-    // Use std::process to open URL in system browser
-    #[cfg(target_os = "windows")]
-    let result = std::process::Command::new("cmd")
-        .args(&["/C", "start", &url])
-        .spawn();
-    
-    #[cfg(target_os = "macos")]
-    let result = std::process::Command::new("open")
-        .arg(&url)
-        .spawn();
-    
-    #[cfg(target_os = "linux")]
-    let result = std::process::Command::new("xdg-open")
-        .arg(&url)
-        .spawn();
-    
-    match result {
-        Ok(_) => {
-            println!("✅ Successfully opened URL in system browser");
-            Ok(())
-        },
-        Err(e) => {
-            println!("❌ Failed to open URL: {}", e);
-            Err(format!("Failed to open URL: {}", e))
-        }
-    }
-}
-
-#[tauri::command]
-async fn get_history(state: tauri::State<'_, BrowserState>) -> Result<Vec<String>, String> {
-    let history = state.history.read().await;
-    Ok(history.clone())
-}
-
-#[tauri::command]
-async fn update_tab_title(
-    state: tauri::State<'_, BrowserState>,
-    tab_id: String,
-    title: String,
-) -> Result<(), String> {
-    let mut tabs = state.tabs.write().await;
-    
-    if let Some(tab) = tabs.iter_mut().find(|tab| tab.id == tab_id) {
-        tab.title = title;
-        tab.is_loading = false;
-        println!("📄 Tab {} title updated: {}", tab_id, tab.title);
-    }
-    
-    Ok(())
-}
+// 📥 IMPORTS
+use browser_state::BrowserState;
+use proxy_server::ProxyServer;
+use tauri_commands::*;
 
 // 🚀 MAIN FUNCTION - TAURI v2
 fn main() {
-    // Initialize default browser state
-    let default_settings = BrowserSettings {
-        homepage: "https://www.google.com".to_string(),
-        search_engine: "https://www.google.com/search?q=".to_string(),
-        privacy_mode: false,
-        ad_blocker: true,
-        javascript_enabled: true,
-        cookies_enabled: true,
-    };
-    
-    let state = BrowserState {
-        tabs: Arc::new(RwLock::new(vec![])),
-        bookmarks: Arc::new(RwLock::new(vec![
-            Bookmark {
-                id: "1".to_string(),
-                title: "Google".to_string(),
-                url: "https://www.google.com".to_string(),
-                favicon: None,
-                folder: None,
-            },
-            Bookmark {
-                id: "2".to_string(),
-                title: "GitHub".to_string(),
-                url: "https://github.com".to_string(),
-                favicon: None,
-                folder: None,
-            },
-        ])),
-        settings: Arc::new(RwLock::new(default_settings)),
-        history: Arc::new(RwLock::new(vec![])),
-    };
-    
     println!("🚀 Starting Ora Browser with Tauri v2...");
     
-    tauri::Builder::default()
-        .manage(state)
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_http::init())
-        .invoke_handler(tauri::generate_handler![
-            create_new_tab,
-            close_tab,
-            navigate_to,
-            get_tabs,
-            add_bookmark,
-            get_bookmarks,
-            remove_bookmark,
-            get_settings,
-            update_settings,
-            open_external_url,
-            get_history,
-            update_tab_title
-        ])
-        .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-            
-            // Set window properties
-            window.set_title("Ora Browser").unwrap();
-            
-            println!("✅ Ora Browser window created successfully!");
-            println!("🌐 Ready for cross-platform browsing!");
-            
-            Ok(())
-        })
-        .run(tauri::generate_context!())
-        .expect("Error while running Tauri application");
+    // Verbesserte Fehlerbehandlung für kritische Initialisierung
+    let result = std::panic::catch_unwind(|| {
+        tauri::Builder::default()
+            .plugin(tauri_plugin_shell::init())
+            .setup(|app| {
+                // Sichere Initialisierung mit Fehlerbehandlung
+                match setup_browser_state(app) {
+                    Ok(_) => {
+                        println!("✅ Ora Browser window created successfully!");
+                        println!("🌐 Ready for cross-platform browsing!");
+                        Ok(())
+                    },
+                    Err(e) => {
+                        eprintln!("❌ Failed to setup browser state: {}", e);
+                        Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
+                    }
+                }
+            })
+                         .invoke_handler(tauri::generate_handler![
+                 create_new_tab,
+                 close_tab,
+                 internal_webview_navigate,
+                 navigate_to,
+                 get_tabs,
+                 add_bookmark,
+                 get_bookmarks,
+                 remove_bookmark,
+                 get_settings,
+                 update_settings,
+                 open_external_url,
+                 get_history,
+                 update_tab_title,
+                 navigate_internally,
+                 check_internal_navigation,
+                 get_webview_config,
+                 get_proxy_url,
+                 navigate_and_get_content,
+                 get_all_plugins,
+                 get_loaded_plugins,
+                 enable_plugin,
+                 disable_plugin,
+                 load_plugin,
+                 unload_plugin,
+             ])
+             .on_window_event(|window, event| {
+                 if let tauri::WindowEvent::CloseRequested { .. } = event {
+                     let app_handle = window.app_handle();
+                     if let Some(state) = app_handle.try_state::<BrowserState>() {
+                         state.save_all_state();
+                     }
+                 }
+             })
+             .run(tauri::generate_context!())
+    });
+    
+    match result {
+        Ok(run_result) => {
+            if let Err(e) = run_result {
+                eprintln!("❌ Tauri application error: {}", e);
+                std::process::exit(1);
+            }
+        },
+        Err(_) => {
+            eprintln!("❌ Critical panic occurred during startup");
+            std::process::exit(1);
+        }
+    }
 }
+
+fn setup_browser_state(app: &mut tauri::App) -> Result<(), String> {
+    println!("🔧 Setting up browser state...");
+    
+    // 1. Proxy Server starten
+    start_proxy_server()?;
+    
+    // 2. Browser State initialisieren
+    let state = BrowserState::new();
+    app.manage(state);
+    
+    // 3. Window konfigurieren
+    setup_main_window(app)?;
+    
+    // 4. Event Handler registrieren
+    setup_event_handlers(app);
+    
+    println!("✅ Browser state setup completed");
+    Ok(())
+}
+
+fn start_proxy_server() -> Result<(), String> {
+    println!("🌐 Starting proxy server on port 3030...");
+    
+    let proxy_handle = std::thread::Builder::new()
+        .name("proxy-server".to_string())
+        .stack_size(4 * 1024 * 1024) // 4MB Stack
+        .spawn(|| {
+            let rt = tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(2)
+                .max_blocking_threads(2)
+                .enable_all()
+                .build();
+                
+            match rt {
+                Ok(runtime) => {
+                    runtime.block_on(async {
+                        let mut proxy_server = ProxyServer::new(3030);
+                        match proxy_server.start().await {
+                            Ok(_) => println!("✅ Proxy server started successfully on port 3030"),
+                            Err(e) => {
+                                eprintln!("❌ Failed to start proxy server: {}", e);
+                                // Versuche alternativen Port
+                                println!("🔄 Trying alternative port 3031...");
+                                let mut alt_proxy = ProxyServer::new(3031);
+                                if let Err(e2) = alt_proxy.start().await {
+                                    eprintln!("❌ Alternative port also failed: {}", e2);
+                                }
+                            }
+                        }
+                    });
+                }
+                Err(e) => {
+                    eprintln!("❌ Failed to create Tokio runtime: {}", e);
+                }
+            }
+        });
+    
+    match proxy_handle {
+        Ok(_) => {
+            println!("✅ Proxy server thread spawned successfully");
+            // Längere Pause um dem Proxy-Server Zeit zum Starten zu geben
+            std::thread::sleep(std::time::Duration::from_millis(2000));
+            
+            // Teste ob der Proxy-Server tatsächlich läuft
+            let test_result = std::thread::spawn(|| {
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    match reqwest::get("http://localhost:3030/health").await {
+                        Ok(response) => {
+                            if response.status().is_success() {
+                                println!("✅ Proxy server health check passed");
+                                true
+                            } else {
+                                println!("⚠️ Proxy server health check failed: {}", response.status());
+                                false
+                            }
+                        },
+                        Err(e) => {
+                            println!("⚠️ Proxy server not reachable: {}", e);
+                            false
+                        }
+                    }
+                })
+            }).join();
+            
+            match test_result {
+                Ok(true) => {
+                    println!("✅ Proxy server confirmed running");
+                    Ok(())
+                },
+                _ => {
+                    println!("⚠️ Proxy server may not be running properly, but continuing...");
+                    Ok(())
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("⚠️ Failed to spawn proxy server thread: {}", e);
+            println!("🔄 Browser will continue without proxy server");
+            // Nicht kritisch - Browser kann ohne Proxy laufen
+            Ok(())
+        }
+    }
+}
+
+fn setup_main_window(app: &tauri::App) -> Result<(), String> {
+    let window = app.get_webview_window("main")
+        .ok_or("Failed to get main window")?;
+    
+    window.set_title("Ora Browser")
+        .map_err(|e| format!("Failed to set window title: {}", e))?;
+    
+    Ok(())
+}
+
+fn setup_event_handlers(_app: &tauri::App) {
+    // Event Handler werden in der setup-Funktion über .on_window_event registriert
+    // Diese Funktion ist für zukünftige Event-Handler reserviert
+} 
