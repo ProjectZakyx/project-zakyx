@@ -7,6 +7,7 @@ use windows::Win32::Foundation::HWND;
 
 // 📂 TAB MANAGEMENT SYSTEM
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct BrowserTab {
     pub id: u32,
     pub title: String,
@@ -19,6 +20,7 @@ pub struct BrowserTab {
 }
 
 impl BrowserTab {
+    #[allow(dead_code)]
     pub fn new(id: u32, url: &str) -> Self {
         BrowserTab {
             id,
@@ -32,6 +34,7 @@ impl BrowserTab {
         }
     }
 
+    #[allow(dead_code)]
     pub fn navigate_to(&mut self, url: &str) {
         // Add to history if different from current
         if self.history.is_empty() || self.history[self.history_position] != url {
@@ -46,14 +49,17 @@ impl BrowserTab {
         self.update_title_from_url(url);
     }
 
+    #[allow(dead_code)]
     pub fn can_go_back(&self) -> bool {
         self.history_position > 0
     }
 
+    #[allow(dead_code)]
     pub fn can_go_forward(&self) -> bool {
         self.history_position < self.history.len() - 1
     }
 
+    #[allow(dead_code)]
     pub fn go_back(&mut self) -> Option<String> {
         if self.can_go_back() {
             self.history_position -= 1;
@@ -66,6 +72,7 @@ impl BrowserTab {
         }
     }
 
+    #[allow(dead_code)]
     pub fn go_forward(&mut self) -> Option<String> {
         if self.can_go_forward() {
             self.history_position += 1;
@@ -78,6 +85,7 @@ impl BrowserTab {
         }
     }
 
+    #[allow(dead_code)]
     fn update_title_from_url(&mut self, url: &str) {
         self.title = if url == "gui" || url == "home" {
             "🏠 HTML GUI".to_string()
@@ -94,10 +102,12 @@ impl BrowserTab {
         };
     }
 
+    #[allow(dead_code)]
     pub fn set_loading(&mut self, loading: bool) {
         self.loading = loading;
     }
 
+    #[allow(dead_code)]
     pub fn set_title(&mut self, title: &str) {
         if !title.trim().is_empty() {
             self.title = title.to_string();
@@ -106,6 +116,8 @@ impl BrowserTab {
 }
 
 // 📂 TAB MANAGER
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct TabManager {
     tabs: Vec<BrowserTab>,
     active_tab_id: Option<u32>,
@@ -114,6 +126,7 @@ pub struct TabManager {
 }
 
 impl TabManager {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         let mut manager = TabManager {
             tabs: Vec::new(),
@@ -127,6 +140,7 @@ impl TabManager {
         manager
     }
 
+    #[allow(dead_code)]
     pub fn create_new_tab(&mut self, url: &str) -> u32 {
         if self.tabs.len() >= self.max_tabs {
             println!("⚠️ Maximum tabs ({}) reached!", self.max_tabs);
@@ -151,6 +165,7 @@ impl TabManager {
         tab_id
     }
 
+    #[allow(dead_code)]
     pub fn close_tab(&mut self, tab_id: u32) -> bool {
         if self.tabs.len() <= 1 {
             println!("⚠️ Cannot close last tab!");
@@ -177,6 +192,7 @@ impl TabManager {
         }
     }
 
+    #[allow(dead_code)]
     pub fn switch_to_tab(&mut self, tab_id: u32) -> Option<&BrowserTab> {
         // Deactivate all tabs
         for tab in &mut self.tabs {
@@ -194,18 +210,26 @@ impl TabManager {
         }
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_active_tab(&mut self) -> Option<&mut BrowserTab> {
         self.active_tab_id.and_then(|id| self.tabs.iter_mut().find(|t| t.id == id))
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_active_tab_readonly(&self) -> Option<&BrowserTab> {
         self.active_tab_id.and_then(|id| self.tabs.iter().find(|t| t.id == id))
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_all_tabs(&self) -> &Vec<BrowserTab> {
         &self.tabs
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn navigate_active_tab(&mut self, url: &str) -> Option<&BrowserTab> {
         if let Some(tab) = self.get_active_tab() {
             tab.navigate_to(url);
@@ -215,14 +239,20 @@ impl TabManager {
         }
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn go_back_active_tab(&mut self) -> Option<String> {
         self.get_active_tab().and_then(|tab| tab.go_back())
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn go_forward_active_tab(&mut self) -> Option<String> {
         self.get_active_tab().and_then(|tab| tab.go_forward())
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_tab_count(&self) -> usize {
         self.tabs.len()
     }
@@ -230,6 +260,7 @@ impl TabManager {
 
 // ⭐ BOOKMARK SYSTEM
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Bookmark {
     pub id: u32,
     pub title: String,
@@ -254,6 +285,7 @@ impl Bookmark {
     }
 }
 
+#[derive(Debug)]
 pub struct BookmarkManager {
     bookmarks: Vec<Bookmark>,
     next_bookmark_id: u32,
@@ -309,10 +341,14 @@ impl BookmarkManager {
         &self.bookmarks
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn find_bookmark_by_url(&self, url: &str) -> Option<&Bookmark> {
         self.bookmarks.iter().find(|b| b.url == url)
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_bookmark_count(&self) -> usize {
         self.bookmarks.len()
     }
@@ -364,6 +400,7 @@ impl BookmarkManager {
 
 // 📚 HISTORY SYSTEM
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct HistoryEntry {
     pub id: u32,
     pub url: String,
@@ -372,6 +409,8 @@ pub struct HistoryEntry {
     pub visit_count: u32,
 }
 
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct HistoryManager {
     history: Vec<HistoryEntry>,
     next_history_id: u32,
@@ -379,7 +418,9 @@ pub struct HistoryManager {
     max_history_entries: usize,
 }
 
+#[allow(dead_code)]
 impl HistoryManager {
+    #[allow(dead_code)]
     pub fn new() -> Result<Self> {
         let history_file = std::env::current_dir()?.join("history.json");
         let mut manager = HistoryManager {
@@ -393,6 +434,8 @@ impl HistoryManager {
         Ok(manager)
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn add_history_entry(&mut self, url: &str, title: &str) {
         // Check if URL already exists in recent history
         if let Some(entry) = self.history.iter_mut().find(|h| h.url == url) {
@@ -420,10 +463,14 @@ impl HistoryManager {
         println!("📚 History entry added: {} -> {}", title, url);
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_recent_history(&self, limit: usize) -> Vec<&HistoryEntry> {
         self.history.iter().take(limit).collect()
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn search_history(&self, query: &str) -> Vec<&HistoryEntry> {
         let query_lower = query.to_lowercase();
         self.history.iter()
@@ -435,16 +482,22 @@ impl HistoryManager {
             .collect()
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn clear_history(&mut self) {
         self.history.clear();
         self.next_history_id = 1;
         println!("🧹 History cleared");
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_history_count(&self) -> usize {
         self.history.len()
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     fn load_history(&mut self) -> Result<()> {
         if self.history_file.exists() {
             let content = fs::read_to_string(&self.history_file)?;
@@ -473,6 +526,8 @@ impl HistoryManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn save_history(&self) -> Result<()> {
         let history_data: Vec<Value> = self.history.iter().map(|h| {
             json!({
@@ -496,6 +551,8 @@ impl HistoryManager {
 }
 
 // 🚀 BROWSER FEATURES MANAGER
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct BrowserFeaturesManager {
     pub tab_manager: TabManager,
     pub bookmark_manager: BookmarkManager,
@@ -503,7 +560,9 @@ pub struct BrowserFeaturesManager {
     hwnd: HWND,
 }
 
+#[allow(dead_code)]
 impl BrowserFeaturesManager {
+    #[allow(dead_code)]
     pub fn new(hwnd: HWND) -> Result<Self> {
         Ok(BrowserFeaturesManager {
             tab_manager: TabManager::new(),
@@ -513,6 +572,8 @@ impl BrowserFeaturesManager {
         })
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn navigate_to_url(&mut self, url: &str) -> Result<()> {
         // Add to history
         let title = if let Some(tab) = self.tab_manager.get_active_tab_readonly() {
@@ -531,6 +592,8 @@ impl BrowserFeaturesManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn add_bookmark_current_tab(&mut self) -> Result<Option<u32>> {
         if let Some(tab) = self.tab_manager.get_active_tab_readonly() {
             let bookmark_id = self.bookmark_manager.add_bookmark(&tab.title, &tab.url);
@@ -541,6 +604,8 @@ impl BrowserFeaturesManager {
         }
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_status_info(&self) -> HashMap<String, String> {
         let mut info = HashMap::new();
 
@@ -558,6 +623,8 @@ impl BrowserFeaturesManager {
         info
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn cleanup(&self) -> Result<()> {
         self.bookmark_manager.save_bookmarks()?;
         self.history_manager.save_history()?;
@@ -567,12 +634,16 @@ impl BrowserFeaturesManager {
 }
 
 // 🎯 URL SUGGESTIONS SYSTEM
+#[derive(Debug)]
+#[allow(dead_code)]
 pub struct UrlSuggestionEngine {
     bookmark_manager: *const BookmarkManager,
     history_manager: *const HistoryManager,
 }
 
+#[allow(dead_code)]
 impl UrlSuggestionEngine {
+    #[allow(dead_code)]
     pub fn new(bookmark_manager: &BookmarkManager, history_manager: &HistoryManager) -> Self {
         UrlSuggestionEngine {
             bookmark_manager,
@@ -580,6 +651,8 @@ impl UrlSuggestionEngine {
         }
     }
 
+    #[allow(dead_code)]
+    #[allow(dead_code)]
     pub fn get_suggestions(&self, query: &str) -> Vec<String> {
         let mut suggestions = Vec::new();
 
@@ -605,7 +678,7 @@ impl UrlSuggestionEngine {
         unsafe {
             // Add bookmark suggestions
             if !self.bookmark_manager.is_null() {
-                let bookmarks = &(*self.bookmark_manager).get_bookmarks();
+                let bookmarks = (*self.bookmark_manager).get_bookmarks();
                 for bookmark in bookmarks {
                     if bookmark.url.to_lowercase().contains(&query.to_lowercase()) ||
                        bookmark.title.to_lowercase().contains(&query.to_lowercase()) {

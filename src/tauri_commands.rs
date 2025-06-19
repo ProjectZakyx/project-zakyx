@@ -262,8 +262,17 @@ pub async fn add_bookmark(
     let mut bookmarks = state.bookmarks.write().await;
     let mut bookmark_manager = state.bookmark_manager.write().await;
     
+    // Add to persistent bookmark manager first
+    let persistent_id = bookmark_manager.add_bookmark(&title, &url);
+    
+    // Save to file immediately
+    if let Err(e) = bookmark_manager.save_bookmarks() {
+        println!("❌ Failed to save bookmarks to file: {}", e);
+        return Err(format!("Failed to save bookmark: {}", e));
+    }
+    
     let new_bookmark = Bookmark {
-        id: uuid::Uuid::new_v4().to_string(),
+        id: persistent_id.to_string(),
         title: title.clone(),
         url: url.clone(),
     };
@@ -271,17 +280,14 @@ pub async fn add_bookmark(
     // Add to in-memory bookmarks
     bookmarks.push(new_bookmark.clone());
     
-    // Add to persistent bookmark manager
-    let bookmark_id = bookmark_manager.add_bookmark(&title, &url);
-    println!("🔖 Bookmark added with ID: {}", bookmark_id);
-    
-    println!("🔖 Bookmark added: {} -> {}", title, url);
+    println!("🔖 Bookmark added and saved: {} -> {} (ID: {})", title, url, persistent_id);
     Ok(new_bookmark)
 }
 
 #[tauri::command]
 pub async fn get_bookmarks(state: tauri::State<'_, BrowserState>) -> Result<Vec<Bookmark>, String> {
     let bookmarks = state.bookmarks.read().await;
+    println!("📚 Retrieved {} bookmarks from memory", bookmarks.len());
     Ok(bookmarks.clone())
 }
 
@@ -291,28 +297,53 @@ pub async fn remove_bookmark(
     bookmark_id: String,
 ) -> Result<(), String> {
     let mut bookmarks = state.bookmarks.write().await;
-    let bookmark_manager = state.bookmark_manager.read().await;
+    let mut bookmark_manager = state.bookmark_manager.write().await;
     
+    // Parse bookmark ID
+    let id_num: u32 = bookmark_id.parse().map_err(|_| "Invalid bookmark ID".to_string())?;
+    
+    // Remove from persistent storage first
+    if !bookmark_manager.remove_bookmark(id_num) {
+        println!("❌ Failed to remove bookmark from persistent storage");
+        return Err("Bookmark not found in persistent storage".to_string());
+    }
+    
+    // Save to file immediately
+    if let Err(e) = bookmark_manager.save_bookmarks() {
+        println!("❌ Failed to save bookmarks after removal: {}", e);
+        return Err(format!("Failed to save after removal: {}", e));
+    }
+    
+    // Remove from in-memory storage
     if let Some(pos) = bookmarks.iter().position(|b| b.id == bookmark_id) {
-        let bookmark = &bookmarks[pos];
-        
-        // Find bookmark by URL in persistent storage
-        let all_bookmarks = bookmark_manager.get_bookmarks();
-        if let Some(persistent_bookmark) = all_bookmarks.iter().find(|b| b.url == bookmark.url) {
-            // Remove from persistent storage using the correct ID
-            let mut bookmark_manager_mut = state.bookmark_manager.write().await;
-            if !bookmark_manager_mut.remove_bookmark(persistent_bookmark.id) {
-                println!("❌ Failed to remove bookmark from persistent storage");
-                return Err("Failed to remove bookmark from persistent storage".to_string());
-            }
-        }
-        
-        // Remove from in-memory storage
-        bookmarks.remove(pos);
-        println!("🗑️ Bookmark removed: {}", bookmark_id);
+        let removed = bookmarks.remove(pos);
+        println!("🗑️ Bookmark removed and saved: {} (ID: {})", removed.title, bookmark_id);
     }
     
     Ok(())
+}
+
+#[tauri::command]
+pub async fn sync_bookmarks(
+    state: tauri::State<'_, BrowserState>,
+) -> Result<Vec<Bookmark>, String> {
+    let mut bookmarks = state.bookmarks.write().await;
+    let bookmark_manager = state.bookmark_manager.read().await;
+    
+    // Synchronize in-memory bookmarks with persistent storage
+    let persistent_bookmarks: Vec<Bookmark> = bookmark_manager.get_bookmarks()
+        .iter()
+        .map(|b| Bookmark {
+            id: b.id.to_string(),
+            title: b.title.clone(),
+            url: b.url.clone(),
+        })
+        .collect();
+    
+    *bookmarks = persistent_bookmarks.clone();
+    
+    println!("🔄 Synchronized {} bookmarks between memory and persistent storage", bookmarks.len());
+    Ok(persistent_bookmarks)
 }
 
 // ⚙️ SETTINGS COMMANDS

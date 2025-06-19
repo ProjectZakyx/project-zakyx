@@ -1,0 +1,388 @@
+/* 🤖 Anti-Bot Plugin Popup Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+    width: 380px;
+    min-height: 500px;
+    overflow-x: hidden;
+}
+
+.popup-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    margin: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header */
+.popup-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    position: relative;
+}
+
+.plugin-icon {
+    font-size: 32px;
+    margin-right: 12px;
+}
+
+.plugin-info h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.version {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.status-indicator {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Main Toggle */
+.main-toggle-section {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.main-toggle {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.main-toggle input {
+    display: none;
+}
+
+.toggle-slider {
+    display: block;
+    width: 200px;
+    height: 50px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border-radius: 25px;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.main-toggle input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.toggle-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.toggle-text.off {
+    left: 20px;
+    opacity: 1;
+}
+
+.toggle-text.on {
+    right: 20px;
+    opacity: 0;
+}
+
+.main-toggle input:checked + .toggle-slider .toggle-text.off {
+    opacity: 0;
+}
+
+.main-toggle input:checked + .toggle-slider .toggle-text.on {
+    opacity: 1;
+}
+
+/* Strategies Section */
+.strategies-section {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.strategies-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.strategies-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.strategy-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.strategy-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(79, 172, 254, 0.3);
+    transform: translateY(-1px);
+}
+
+.strategy-item input {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.strategy-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.strategy-icon {
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+.strategy-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.strategy-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.strategy-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Ethics Section */
+.ethics-section {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ethics-toggle {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(69, 160, 73, 0.1));
+    border: 2px solid rgba(76, 175, 80, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ethics-toggle:hover {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(69, 160, 73, 0.2));
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+.ethics-toggle input {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.ethics-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.ethics-icon {
+    font-size: 20px;
+    margin-right: 12px;
+}
+
+.ethics-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ethics-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.ethics-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Statistics Section */
+.stats-section {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.stats-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+    border-radius: 12px;
+    border: 1px solid rgba(79, 172, 254, 0.2);
+}
+
+.stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: #4facfe;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Actions Section */
+.actions-section {
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-icon {
+    font-size: 14px;
+}
+
+.btn-text {
+    font-size: 11px;
+}
+
+/* Footer */
+.popup-footer {
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.plugin-credits {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: #666;
+}
+
+.plugin-credits a {
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.plugin-credits a:hover {
+    text-decoration: underline;
+}
+
+/* Disabled States */
+.popup-container.disabled .strategies-section,
+.popup-container.disabled .ethics-section,
+.popup-container.disabled .stats-section {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.popup-container.disabled .status-dot {
+    background: #ff6b6b;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    body {
+        width: 320px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-section {
+        flex-direction: column;
+    }
+} 

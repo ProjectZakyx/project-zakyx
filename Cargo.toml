@@ -16,7 +16,7 @@ tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
 # 🚀 TAURI CORE v2 (KOMPATIBEL MIT CLI v2.5.0)
-tauri = { version = "2.0", features = ["config-json5", "config-toml"] }
+tauri = { version = "2.0", features = [ "protocol-asset", "config-json5", "config-toml"] }
 tauri-plugin-shell = "2.0"
 tauri-plugin-dialog = "2.0"
 tauri-plugin-http = "2.0"
@@ -30,7 +30,7 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 anyhow = "1.0.98"
 
-# 🪟 WINDOWS APIS (Legacy Module Support)
+# 🪟 WINDOWS APIS (für Windows-spezifische Features)
 windows = { version = "0.52", features = [
     "Win32_Foundation",
     "Win32_UI_WindowsAndMessaging", 
@@ -43,27 +43,21 @@ windows = { version = "0.52", features = [
 tokio = { version = "1.45.1", features = ["full"] }
 
 # 🌍 HTTP & NETWORKING
-reqwest = { version = "0.11", features = ["json", "stream", "brotli"] }
-
-# 🛡️ SICHERHEIT
-ring = "0.17"
-base64 = "0.22"
+reqwest = { version = "0.11", features = ["json", "stream", "brotli", "rustls-tls", "gzip", "deflate"], default-features = false }
+url = "2.4"
+warp = "0.3"
+urlencoding = "2.1"
 
 # 🎲 UTILITIES
-rand = "0.8"
 uuid = { version = "1.0", features = ["v4"] }
 regex = "1.10"
-
-# 📊 LOGS
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # 🗄️ STORAGE
 dirs = "5.0"
 
-# 🧪 TESTING UTILITIES
-once_cell = "1.19"
-env_logger = "0.10"
+# 🧪 COMPRESSION (für Smart-Proxy)
+flate2 = "1.1.2"
+brotli = "8.0.1"
 
 # 🏗️ FEATURE FLAGS
 [features]

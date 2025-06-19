@@ -4,13 +4,12 @@ use tokio::sync::mpsc;
 use warp::Filter;
 use chrono;
 use regex;
+use url;
 
 #[derive(Debug, Clone)]
 pub struct ProxyResponse {
     pub content: String,
-    #[allow(dead_code)]
     pub content_type: String,
-    #[allow(dead_code)]
     pub status_code: u16,
 }
 
@@ -52,6 +51,19 @@ impl ProxyServer {
             .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
             .allow_credentials(true);
         
+        // 🌐 UNIVERSELLE RESSOURCEN-ROUTE für alle externen Anfragen
+        let universal_proxy_route = warp::path("universal")
+            .and(warp::query::<std::collections::HashMap<String, String>>())
+            .and_then(|params: std::collections::HashMap<String, String>| async move {
+                if let Some(url) = params.get("url") {
+                    Self::handle_universal_resource(url.clone()).await
+                } else {
+                    let reply = warp::reply::with_status("Missing URL parameter", warp::http::StatusCode::BAD_REQUEST);
+                    Ok(Box::new(reply) as Box<dyn warp::Reply>)
+                }
+            })
+            .with(cors.clone());
+        
         // Proxy-Route mit verbesserter CORS-Behandlung
         let proxy_route = warp::path("proxy")
             .and(warp::query::<std::collections::HashMap<String, String>>())
@@ -81,16 +93,60 @@ impl ProxyServer {
                 }))
             })
             .with(cors.clone());
+
+        // 🚀 NEUE CATCH-ALL-ROUTE für relative URLs (aber nicht für lokale Assets)
+        let catch_all_route = warp::path::tail()
+            .and(warp::query::<std::collections::HashMap<String, String>>())
+            .and_then(|path: warp::path::Tail, params: std::collections::HashMap<String, String>| async move {
+                let relative_path = path.as_str();
+                
+                // 🚫 IGNORIERE LOKALE ASSET-DATEIEN
+                if relative_path.ends_with(".js") || 
+                   relative_path.ends_with(".css") || 
+                   relative_path.ends_with(".html") ||
+                   relative_path.ends_with(".ico") ||
+                   relative_path.ends_with(".png") ||
+                   relative_path.ends_with(".jpg") ||
+                   relative_path.ends_with(".gif") ||
+                   relative_path.starts_with("assets/") ||
+                   relative_path == "index.html" ||
+                   relative_path == "app.js" ||
+                   relative_path == "styles.css" ||
+                   relative_path == "favicon.ico" {
+                    println!("🚫 Ignoring local asset request: {}", relative_path);
+                    let reply = warp::reply::with_status("Asset not handled by proxy", warp::http::StatusCode::NOT_FOUND);
+                    return Ok(Box::new(reply) as Box<dyn warp::Reply>);
+                }
+                
+                println!("🔄 Catch-all route handling: {}", relative_path);
+                
+                // Prüfe ob es eine relative URL ist die mit einer Basis-URL kombiniert werden muss
+                if let Some(base_url) = params.get("base") {
+                    let full_url = Self::combine_base_and_relative_url(base_url, relative_path);
+                    println!("🔗 Combined URL: {} + {} = {}", base_url, relative_path, full_url);
+                    Self::handle_proxy(full_url).await
+                } else {
+                    // Versuche intelligent zu erraten was gemeint ist
+                    let potential_url = Self::intelligent_url_guess(relative_path);
+                    println!("🤔 Intelligent guess: {} -> {}", relative_path, potential_url);
+                    Self::handle_proxy(potential_url).await
+                }
+            })
+            .with(cors.clone());
         
-        // Kombiniere alle Routen
-        let routes = proxy_route
+        // Kombiniere alle Routen in der richtigen Reihenfolge (spezifisch zu allgemein)
+        let routes = universal_proxy_route
+            .or(proxy_route)
             .or(assets_route)
             .or(health_route)
+            .or(catch_all_route)  // Catch-all sollte zuletzt kommen
             .with(warp::log("proxy"));
         
         println!("✅ Proxy server routes configured");
         println!("🔗 Proxy URL: http://localhost:{}/proxy?url=<URL>", self.port);
+        println!("🌐 Universal Resource URL: http://localhost:{}/universal?url=<URL>", self.port);
         println!("🏥 Health check: http://localhost:{}/health", self.port);
+        println!("🚀 Catch-all route: http://localhost:{}/<path>?base=<base_url>", self.port);
         
         // Starte den Server
         warp::serve(routes)
@@ -100,8 +156,209 @@ impl ProxyServer {
         Ok(())
     }
 
-    #[allow(dead_code)]
-    #[allow(dead_code)]
+    // 🌐 UNIVERSELLE RESSOURCEN-HANDLER
+    async fn handle_universal_resource(
+        url: String,
+    ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
+        println!("🔄 Universal resource request for: {}", url);
+        
+        // Bestimme Content-Type basierend auf URL-Endung
+        let content_type = Self::determine_content_type(&url);
+        
+        match Self::fetch_resource(&url).await {
+            Ok(response) => {
+                println!("✅ Resource loaded: {} bytes, type: {}", response.content.len(), content_type);
+                
+                let response = warp::http::Response::builder()
+                    .status(response.status_code)
+                    .header("Content-Type", content_type)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH")
+                    .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma")
+                    .header("Access-Control-Allow-Credentials", "true")
+                    .header("Cache-Control", "public, max-age=3600")
+                    .header("Cross-Origin-Resource-Policy", "cross-origin")
+                    .body(response.content)
+                    .unwrap();
+                
+                Ok(Box::new(response))
+            }
+            Err(e) => {
+                println!("❌ Resource loading failed: {}", e);
+                
+                // Für JavaScript-Dateien: Rückgabe eines leeren Skripts
+                if url.contains(".js") {
+                    let fallback_content = format!("// Fallback for {}\nconsole.log('Resource {} could not be loaded');", url, url);
+                    let response = warp::http::Response::builder()
+                        .status(200)
+                        .header("Content-Type", "application/javascript")
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(fallback_content)
+                        .unwrap();
+                    
+                    return Ok(Box::new(response));
+                }
+                
+                // Für CSS-Dateien: Rückgabe eines leeren Stylesheets
+                if url.contains(".css") {
+                    let fallback_content = format!("/* Fallback for {} */\n/* Resource could not be loaded */", url);
+                    let response = warp::http::Response::builder()
+                        .status(200)
+                        .header("Content-Type", "text/css")
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(fallback_content)
+                        .unwrap();
+                    
+                    return Ok(Box::new(response));
+                }
+                
+                // Für andere Ressourcen: 404
+                let response = warp::http::Response::builder()
+                    .status(404)
+                    .header("Content-Type", "text/plain")
+                    .header("Access-Control-Allow-Origin", "*")
+                    .body(format!("Resource not found: {}", url))
+                    .unwrap();
+                
+                Ok(Box::new(response))
+            }
+        }
+    }
+
+    // 🎯 BESTIMME CONTENT-TYPE
+    fn determine_content_type(url: &str) -> &'static str {
+        if url.contains(".js") || url.contains("javascript") {
+            "application/javascript"
+        } else if url.contains(".css") {
+            "text/css"
+        } else if url.contains(".json") {
+            "application/json"
+        } else if url.contains(".xml") {
+            "application/xml"
+        } else if url.contains(".png") {
+            "image/png"
+        } else if url.contains(".jpg") || url.contains(".jpeg") {
+            "image/jpeg"
+        } else if url.contains(".gif") {
+            "image/gif"
+        } else if url.contains(".svg") {
+            "image/svg+xml"
+        } else if url.contains(".woff") || url.contains(".woff2") {
+            "font/woff2"
+        } else if url.contains(".ttf") {
+            "font/ttf"
+        } else {
+            "text/plain"
+        }
+    }
+
+    // 🔄 FETCH RESOURCE MIT ERWEITERTEN STRATEGIEN
+    async fn fetch_resource(url: &str) -> Result<ProxyResponse, Box<dyn std::error::Error + Send + Sync>> {
+        println!("🔄 Fetching resource with advanced strategies: {}", url);
+        
+        // Versuche zuerst mit den bereits verfügbaren erweiterten Strategien
+        match Self::fetch_with_method(url, "GET", "").await {
+            Ok(response) => {
+                println!("✅ Resource fetched successfully: {} bytes", response.content.len());
+                return Ok(response);
+            }
+            Err(e) => {
+                println!("⚠️ Primary fetch failed, trying alternative strategies: {}", e);
+            }
+        }
+        
+        // Fallback: Versuche mit verschiedenen User-Agents
+        let user_agents = vec![
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+            "curl/7.68.0",
+            "OraResource/1.0",
+        ];
+        
+        for (i, user_agent) in user_agents.iter().enumerate() {
+            println!("🔄 Trying user agent {}: {}", i + 1, user_agent);
+            
+            match Self::try_fetch_with_user_agent(url, user_agent).await {
+                Ok(response) => {
+                    println!("✅ Success with user agent {}: {} bytes", i + 1, response.content.len());
+                    return Ok(response);
+                }
+                Err(e) => {
+                    println!("❌ User agent {} failed: {}", i + 1, e);
+                }
+            }
+        }
+        
+        // Letzter Fallback: Minimale Anfrage
+        println!("🔄 Trying minimal request as final fallback");
+        Self::try_minimal_resource_fetch(url).await
+    }
+    
+    // 🎯 MINIMALE RESSOURCEN-ANFRAGE
+    async fn try_minimal_resource_fetch(url: &str) -> Result<ProxyResponse, Box<dyn std::error::Error + Send + Sync>> {
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(15))
+            .connect_timeout(std::time::Duration::from_secs(5))
+            .redirect(reqwest::redirect::Policy::limited(3))
+            .danger_accept_invalid_certs(true)
+            .build()?;
+
+        let response = client.get(url)
+            .header("Accept", "*/*")
+            .send()
+            .await?;
+
+        let status_code = response.status().as_u16();
+        let content_type = response.headers()
+            .get("content-type")
+            .and_then(|h| h.to_str().ok())
+            .unwrap_or("text/plain")
+            .to_string();
+        
+        let content = response.text().await?;
+        
+        Ok(ProxyResponse {
+            content,
+            content_type,
+            status_code,
+        })
+    }
+    
+    // 🎯 FETCH MIT SPEZIFISCHEN USER-AGENT
+    async fn try_fetch_with_user_agent(url: &str, user_agent: &str) -> Result<ProxyResponse, Box<dyn std::error::Error + Send + Sync>> {
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(20))
+            .connect_timeout(std::time::Duration::from_secs(8))
+            .redirect(reqwest::redirect::Policy::limited(5))
+            .danger_accept_invalid_certs(true)
+            .user_agent(user_agent)
+            .build()?;
+
+        let response = client.get(url)
+            .header("Accept", "*/*")
+            .header("Accept-Language", "de-DE,de;q=0.9,en;q=0.8")
+            .header("Cache-Control", "no-cache")
+            .header("DNT", "1")
+            .send()
+            .await?;
+
+        let status_code = response.status().as_u16();
+        let content_type = response.headers()
+            .get("content-type")
+            .and_then(|h| h.to_str().ok())
+            .unwrap_or("text/plain")
+            .to_string();
+        
+        let content = response.text().await?;
+        
+        Ok(ProxyResponse {
+            content,
+            content_type,
+            status_code,
+        })
+    }
+
     async fn handle_proxy_request_with_cors(
         params: HashMap<String, String>,
         method: warp::http::Method,
@@ -261,6 +518,14 @@ impl ProxyServer {
     }
 
     pub async fn fetch_with_method(url: &str, method: &str, form_data: &str) -> Result<ProxyResponse, Box<dyn std::error::Error + Send + Sync>> {
+        // 🔍 SPEZIELLE GOOGLE-BEHANDLUNG
+        if url.contains("google.com") || url.contains("google.de") {
+            println!("🔍 Google URL detected - using Google-optimized strategy");
+            if let Ok(response) = Self::try_google_optimized_request(url, method, form_data).await {
+                return Self::process_response(response, url).await;
+            }
+        }
+        
         println!("🌐 Fetching URL with method {} and universal strategies: {}", method, url);
 
         // Versuche zuerst eine minimale Verbindung
@@ -318,6 +583,192 @@ impl ProxyServer {
         }
 
         Err(format!("All connection strategies failed for URL: {}", url).into())
+    }
+    
+    // 🔍 GOOGLE-OPTIMIERTE REQUEST-FUNKTION
+    async fn try_google_optimized_request(url: &str, method: &str, form_data: &str) -> Result<reqwest::Response, Box<dyn std::error::Error + Send + Sync>> {
+        println!("🔍 Using Google-optimized headers and client configuration");
+        
+        // 🔍 GOOGLE-SPEZIFISCHER CLIENT
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .connect_timeout(std::time::Duration::from_secs(15))
+            .redirect(reqwest::redirect::Policy::limited(5))
+            .danger_accept_invalid_certs(false)  // Google benötigt valide Zertifikate
+            .use_rustls_tls()
+            .tcp_keepalive(std::time::Duration::from_secs(60))
+            .pool_idle_timeout(std::time::Duration::from_secs(90))
+            .pool_max_idle_per_host(4)
+            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .gzip(true)
+            .brotli(true)
+            .deflate(true)
+            .build()?;
+        
+        let mut request_builder = match method.to_uppercase().as_str() {
+            "POST" => client.post(url),
+            "PUT" => client.put(url),
+            "DELETE" => client.delete(url),
+            "HEAD" => client.head(url),
+            "PATCH" => client.patch(url),
+            _ => client.get(url),
+        };
+        
+        // 🔍 GOOGLE-SPEZIFISCHE HEADERS
+        request_builder = request_builder
+            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+            .header("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
+            .header("Accept-Encoding", "gzip, deflate, br")
+            .header("Sec-Fetch-Dest", "document")
+            .header("Sec-Fetch-Mode", "navigate")
+            .header("Sec-Fetch-Site", "same-origin")
+            .header("Sec-Fetch-User", "?1")
+            .header("Upgrade-Insecure-Requests", "1")
+            .header("Sec-CH-UA", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"")
+            .header("Sec-CH-UA-Mobile", "?0")
+            .header("Sec-CH-UA-Platform", "\"Windows\"")
+            .header("Sec-CH-UA-Full-Version-List", "\"Not_A Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"120.0.6099.130\", \"Google Chrome\";v=\"120.0.6099.130\"")
+            .header("Sec-CH-UA-Arch", "\"x86\"")
+            .header("Sec-CH-UA-Bitness", "\"64\"")
+            .header("Sec-CH-UA-Model", "\"\"")
+            .header("Cache-Control", "max-age=0");
+        
+        // 🔍 GOOGLE-SUCH-SPEZIFISCHE HEADERS
+        if url.contains("/search") {
+            request_builder = request_builder
+                .header("Referer", "https://www.google.com/")
+                .header("Origin", "https://www.google.com")
+                .header("Sec-Fetch-Site", "same-origin");
+        } else {
+            request_builder = request_builder
+                .header("Sec-Fetch-Site", "none");
+        }
+        
+        // 📝 FORM DATA HANDLING FÜR GOOGLE
+        if !form_data.is_empty() && (method.to_uppercase() == "POST" || method.to_uppercase() == "PUT" || method.to_uppercase() == "PATCH") {
+            request_builder = request_builder
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Origin", "https://www.google.com")
+                .header("Referer", "https://www.google.com/")
+                .body(form_data.to_string());
+        }
+        
+        println!("🔍 Sending Google-optimized {} request...", method.to_uppercase());
+        let response = request_builder.send().await?;
+        
+        println!("🔍 Google response: {} {}", response.status(), response.status().canonical_reason().unwrap_or("Unknown"));
+        Ok(response)
+    }
+    
+    // 🔍 GOOGLE-EXTERNE RESSOURCEN ÜBER PROXY WEITERLEITEN
+    fn fix_google_external_resources(html: &str) -> String {
+        let mut fixed_html = html.to_string();
+        
+        // 1. Alle gstatic.com URLs über Proxy weiterleiten
+        fixed_html = regex::Regex::new(r#"(?i)https://(?:www\.)?gstatic\.com([^"'\s]*)"#)
+            .unwrap()
+            .replace_all(&fixed_html, "http://localhost:3030/proxy?url=https%3A//www.gstatic.com$1")
+            .to_string();
+        
+        // 2. Alle fonts.gstatic.com URLs über Proxy weiterleiten  
+        fixed_html = regex::Regex::new(r#"(?i)https://fonts\.gstatic\.com([^"'\s]*)"#)
+            .unwrap()
+            .replace_all(&fixed_html, "http://localhost:3030/proxy?url=https%3A//fonts.gstatic.com$1")
+            .to_string();
+        
+        // 3. Google APIs über Proxy weiterleiten
+        fixed_html = regex::Regex::new(r#"(?i)https://(?:www\.)?googleapis\.com([^"'\s]*)"#)
+            .unwrap()
+            .replace_all(&fixed_html, "http://localhost:3030/proxy?url=https%3A//www.googleapis.com$1")
+            .to_string();
+        
+        // 4. Google Analytics und andere externe Services über Proxy
+        fixed_html = regex::Regex::new(r#"(?i)https://(?:www\.)?google-analytics\.com([^"'\s]*)"#)
+            .unwrap()
+            .replace_all(&fixed_html, "http://localhost:3030/proxy?url=https%3A//www.google-analytics.com$1")
+            .to_string();
+        
+        // 5. Füge ultimatives Resource-Proxy-Script hinzu
+        let resource_proxy_script = r#"
+<script>
+// 🔍 GOOGLE RESOURCE PROXY OVERRIDE
+(function() {
+    'use strict';
+    
+    console.log('🔍 Google Resource Proxy activated');
+    
+             // Überschreibe alle Resource-Loading-Funktionen
+         const originalCreateElement = document.createElement;
+         document.createElement = function(tagName) {
+             const element = originalCreateElement.call(this, tagName);
+             
+             if (tagName.toLowerCase() === 'link' || tagName.toLowerCase() === 'script' || tagName.toLowerCase() === 'img') {
+                 const originalSetAttribute = element.setAttribute;
+                 element.setAttribute = function(name, value) {
+                     if ((name === 'href' || name === 'src') && typeof value === 'string') {
+                         // Prüfe auf externe Ressourcen
+                         if (value.startsWith('http://') || value.startsWith('https://')) {
+                             try {
+                                 const urlObj = new URL(value);
+                                 const isExternal = !urlObj.hostname.includes('localhost') && 
+                                                   !urlObj.hostname.includes('127.0.0.1') &&
+                                                   !urlObj.hostname.includes('local');
+                                 
+                                 if (isExternal) {
+                                     // Universelle Weiterleitung für ALLE externen Ressourcen
+                                     const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(value);
+                                     console.log('🌐 Proxying external resource:', value, '->', proxyUrl);
+                                     return originalSetAttribute.call(this, name, proxyUrl);
+                                 }
+                             } catch (e) {
+                                 console.log('🔄 URL parsing failed for resource:', value, e);
+                             }
+                         }
+                     }
+                     return originalSetAttribute.call(this, name, value);
+                 };
+             }
+             
+             return element;
+         };
+    
+    // Überschreibe auch direkte Assignments
+    function proxyResourceUrls() {
+        const elements = document.querySelectorAll('link[href*="gstatic"], script[src*="gstatic"], img[src*="gstatic"], link[href*="googleapis"], script[src*="googleapis"]');
+        elements.forEach(el => {
+            if (el.href && el.href.includes('gstatic.com')) {
+                el.href = 'http://localhost:3030/proxy?url=' + encodeURIComponent(el.href);
+            }
+            if (el.src && (el.src.includes('gstatic.com') || el.src.includes('googleapis.com'))) {
+                el.src = 'http://localhost:3030/proxy?url=' + encodeURIComponent(el.src);
+            }
+        });
+    }
+    
+    // Führe sofort aus und dann regelmäßig
+    proxyResourceUrls();
+    setTimeout(proxyResourceUrls, 1000);
+    setTimeout(proxyResourceUrls, 3000);
+    
+    // MutationObserver für dynamisch hinzugefügte Ressourcen
+    const observer = new MutationObserver(proxyResourceUrls);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    
+})();
+</script>
+"#;
+        
+        // Füge das Script vor </head> ein
+        if fixed_html.contains("</head>") {
+            fixed_html = fixed_html.replace("</head>", &format!("{}</head>", resource_proxy_script));
+        } else if fixed_html.contains("</body>") {
+            fixed_html = fixed_html.replace("</body>", &format!("{}</body>", resource_proxy_script));
+        } else {
+            fixed_html = fixed_html + resource_proxy_script;
+        }
+        
+        println!("🔍 Applied Google external resource fixes");
+        fixed_html
     }
 
     async fn try_minimal_connection_with_method(url: &str, method: &str, form_data: &str) -> Result<reqwest::Response, Box<dyn std::error::Error + Send + Sync>> {
@@ -566,6 +1017,10 @@ impl ProxyServer {
     }
 
     async fn process_response(response: reqwest::Response, url: &str) -> Result<ProxyResponse, Box<dyn std::error::Error + Send + Sync>> {
+        // 🔍 SPEZIELLE BEHANDLUNG FÜR GOOGLE-RESSOURCEN
+        if url.contains("gstatic.com") || url.contains("googleapis.com") || url.contains("google-analytics.com") {
+            println!("🔍 Processing Google external resource: {}", url);
+        }
         let status_code = response.status().as_u16();
         
         // 🛡️ ENTFERNE CSP-RELEVANTE HTTP-HEADER
@@ -1395,8 +1850,13 @@ impl ProxyServer {
         "#, domain, url, error, specific_solutions, url)
     }
 
-    fn inject_cors_and_security_fixes(html: &str, _url: &str) -> String {
+    fn inject_cors_and_security_fixes(html: &str, url: &str) -> String {
         let mut enhanced_html = html.to_string();
+        
+        // 🔍 SPEZIELLE GOOGLE-BEHANDLUNG FÜR EXTERNE RESSOURCEN
+        if url.contains("google.com") || url.contains("google.de") {
+            enhanced_html = Self::fix_google_external_resources(&enhanced_html);
+        }
         
         // 🔧 ERWEITERTE CSP-ENTFERNUNG UND CORS-FIXES
         
@@ -1443,7 +1903,22 @@ impl ProxyServer {
 (function() {
     'use strict';
     
-    console.log('🔧 Ora Browser: Applying ULTIMATE universal security fixes...');
+        console.log('🔧 Ora Browser: Applying ULTIMATE universal security fixes...');
+
+    // 🔇 UNTERDRÜCKE VERALTETE KONSOLEN-WARNUNGEN
+    const originalConsoleWarn = console.warn;
+    console.warn = function(...args) {
+        const message = args.join(' ');
+        // Unterdrücke bekannte harmlose Deprecation-Warnungen
+        if (message.includes('-ms-high-contrast') || 
+            message.includes('Deprecation') ||
+            message.includes('deprecated') ||
+            message.includes('Intervention') ||
+            message.includes('Images loaded lazily')) {
+            return; // Unterdrücke diese Warnungen
+        }
+        return originalConsoleWarn.apply(this, args);
+    };
     
     // 🛡️ TOTALER CSP-BYPASS: Überschreibe alle CSP-relevanten Funktionen
     
@@ -1489,40 +1964,60 @@ impl ProxyServer {
         }
     };
     
-    // 🌐 ULTIMATIVE FETCH API OVERRIDE
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options = {}) {
-        // Entferne alle CORS-Beschränkungen
-        options.mode = 'no-cors';
-        options.credentials = 'include';
-        options.headers = options.headers || {};
-        
-        // Füge ultimative universelle Headers hinzu
-        if (typeof options.headers === 'object') {
-            Object.assign(options.headers, {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': '*',
-                'Access-Control-Allow-Headers': '*',
-                'Access-Control-Allow-Credentials': 'true',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OraBrowser/1.0'
-            });
-        }
-        
-        return originalFetch.call(this, url, options).catch(error => {
-            console.log('🔄 Fetch failed, trying ultimate fallback:', error);
-            // Ultimativer Fallback - versuche alle Modi
-            const fallbackModes = ['cors', 'no-cors', 'same-origin'];
-            return fallbackModes.reduce((promise, mode) => {
-                return promise.catch(() => {
-                    const fallbackOptions = { ...options, mode };
-                    return originalFetch.call(this, url, fallbackOptions);
-                });
-            }, Promise.reject(error));
-        });
-    };
+             // 🌐 ULTIMATIVE FETCH API OVERRIDE MIT UNIVERSELLER RESSOURCENWEITERLEITUNG
+         const originalFetch = window.fetch;
+         window.fetch = function(url, options = {}) {
+             // Leite externe Ressourcen über den Ora Browser Proxy weiter
+             if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+                 // Prüfe auf externe URLs
+                 try {
+                     const urlObj = new URL(url);
+                     const isExternal = !urlObj.hostname.includes('localhost') && 
+                                       !urlObj.hostname.includes('127.0.0.1') &&
+                                       !urlObj.hostname.includes('local');
+                     
+                     if (isExternal) {
+                         // Weiterleitung über universelle Ressourcen-Route
+                         const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(url);
+                         console.log('🌐 Proxying external resource:', url, '->', proxyUrl);
+                         url = proxyUrl;
+                     }
+                 } catch (e) {
+                     console.log('🔄 URL parsing failed, using direct request:', e);
+                 }
+             }
+             
+             // Entferne alle CORS-Beschränkungen
+             options.mode = 'no-cors';
+             options.credentials = 'include';
+             options.headers = options.headers || {};
+             
+             // Füge ultimative universelle Headers hinzu
+             if (typeof options.headers === 'object') {
+                 Object.assign(options.headers, {
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Methods': '*',
+                     'Access-Control-Allow-Headers': '*',
+                     'Access-Control-Allow-Credentials': 'true',
+                     'X-Requested-With': 'XMLHttpRequest',
+                     'Cache-Control': 'no-cache',
+                     'Pragma': 'no-cache',
+                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OraBrowser/1.0'
+                 });
+             }
+             
+             return originalFetch.call(this, url, options).catch(error => {
+                 console.log('🔄 Fetch failed, trying ultimate fallback:', error);
+                 // Ultimativer Fallback - versuche alle Modi
+                 const fallbackModes = ['cors', 'no-cors', 'same-origin'];
+                 return fallbackModes.reduce((promise, mode) => {
+                     return promise.catch(() => {
+                         const fallbackOptions = { ...options, mode };
+                         return originalFetch.call(this, url, fallbackOptions);
+                     });
+                 }, Promise.reject(error));
+             });
+         };
     
     // 🌐 XMLHTTPREQUEST OVERRIDE
     const originalXHR = window.XMLHttpRequest;
@@ -1531,10 +2026,29 @@ impl ProxyServer {
         const originalOpen = xhr.open;
         const originalSend = xhr.send;
         
-        xhr.open = function(method, url, async, user, password) {
-            console.log('🌐 XHR Override:', method, url);
-            return originalOpen.call(this, method, url, async, user, password);
-        };
+                 xhr.open = function(method, url, async, user, password) {
+             console.log('🌐 XHR Override:', method, url);
+             
+             // Leite externe URLs über universelle Ressourcen-Route weiter
+             if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+                 try {
+                     const urlObj = new URL(url);
+                     const isExternal = !urlObj.hostname.includes('localhost') && 
+                                       !urlObj.hostname.includes('127.0.0.1') &&
+                                       !urlObj.hostname.includes('local');
+                     
+                     if (isExternal) {
+                         const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(url);
+                         console.log('🌐 XHR proxying external resource:', url, '->', proxyUrl);
+                         url = proxyUrl;
+                     }
+                 } catch (e) {
+                     console.log('🔄 XHR URL parsing failed:', e);
+                 }
+             }
+             
+             return originalOpen.call(this, method, url, async, user, password);
+         };
         
         xhr.send = function(data) {
             // Setze universelle Headers
@@ -1556,7 +2070,7 @@ impl ProxyServer {
     function enableAllInteractions() {
         console.log('🖱️ Ora Browser: Enabling ALL interactions...');
         
-        // Entferne alle pointer-events: none Styles AGGRESSIV
+        // Entferne alle pointer-events: none Styles AGGRESSIV + Modernisiere veraltete CSS-Features
         const style = document.createElement('style');
         style.textContent = `
             *, *::before, *::after { 
@@ -1565,6 +2079,21 @@ impl ProxyServer {
                 -webkit-user-select: auto !important;
                 -moz-user-select: auto !important;
                 -ms-user-select: auto !important;
+            }
+            
+            /* 🎨 MODERNISIERE VERALTETE CSS-FEATURES */
+            /* Ersetze -ms-high-contrast mit modernen forced-colors */
+            @media (prefers-contrast: high) {
+                * {
+                    forced-color-adjust: auto !important;
+                }
+            }
+            
+            /* Unterdrücke veraltete MS-spezifische CSS-Features */
+            * {
+                -ms-high-contrast: none !important;
+                -ms-filter: none !important;
+                -ms-touch-action: auto !important;
             }
             button, input, select, textarea, a, [onclick], [role="button"], [data-ved], [jsaction] { 
                 pointer-events: auto !important; 
@@ -1705,11 +2234,13 @@ impl ProxyServer {
         });
     }
     
-    // 🔗 ULTIMATIVE LINK-FIXES
+    // 🔗 ULTIMATIVE LINK-FIXES MIT INTELLIGENTER URL-BEHANDLUNG
     function fixAllLinks() {
-        console.log('🔗 Ora Browser: Fixing ALL links...');
+        console.log('🔗 Ora Browser: Fixing ALL links with intelligent URL handling...');
         
         const allLinks = document.querySelectorAll('a, [href], [data-href], [onclick*="location"], [onclick*="window.open"]');
+        let fixedCount = 0;
+        
         allLinks.forEach(link => {
             link.style.pointerEvents = 'auto';
             link.style.cursor = 'pointer';
@@ -1725,9 +2256,66 @@ impl ProxyServer {
             if (link.hasAttribute('rel')) {
                 link.removeAttribute('rel');
             }
+            
+            // 🚀 INTELLIGENTE URL-BEHANDLUNG FÜR RELATIVE LINKS
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('http') && !href.startsWith('javascript:') && !href.startsWith('#') && !href.startsWith('mailto:')) {
+                // Entferne alten Click-Handler falls vorhanden
+                if (link.dataset.oraFixedLink) return;
+                
+                // Markiere als bearbeitet
+                link.dataset.oraFixedLink = 'true';
+                
+                // Füge intelligenten Click-Handler hinzu
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const currentUrl = window.location.href;
+                    const baseUrl = currentUrl.replace('http://localhost:3030/proxy?url=', '');
+                    const relativeUrl = this.getAttribute('href');
+                    
+                    console.log('🔗 Intelligent link click detected:');
+                    console.log('   Current URL:', currentUrl);
+                    console.log('   Base URL:', baseUrl);
+                    console.log('   Relative URL:', relativeUrl);
+                    
+                    // Kombiniere URLs über den Proxy-Server
+                    let targetUrl;
+                    
+                    if (relativeUrl.startsWith('/')) {
+                        // Absoluter Pfad - verwende nur Domain der Basis-URL
+                        try {
+                            const baseUrlObj = new URL(decodeURIComponent(baseUrl));
+                            targetUrl = `${baseUrlObj.protocol}//${baseUrlObj.host}${relativeUrl}`;
+                        } catch (e) {
+                            console.warn('🔄 Failed to parse base URL, using fallback');
+                            targetUrl = `${baseUrl}${relativeUrl}`;
+                        }
+                    } else {
+                        // Relativer Pfad - verwende Proxy-Server für intelligente Kombination
+                        targetUrl = `http://localhost:3030/${relativeUrl}?base=${encodeURIComponent(baseUrl)}`;
+                    }
+                    
+                    console.log('   Target URL:', targetUrl);
+                    
+                    // Navigiere zur neuen URL
+                    if (e.ctrlKey || e.metaKey) {
+                        // Neuer Tab
+                        window.open(targetUrl, '_blank');
+                    } else {
+                        // Gleicher Tab
+                        window.location.href = targetUrl;
+                    }
+                    
+                    return false;
+                }, true);
+                
+                fixedCount++;
+            }
         });
         
-        console.log(`✅ Fixed ${allLinks.length} links`);
+        console.log(`✅ Fixed ${allLinks.length} links (${fixedCount} with intelligent URL handling)`);
     }
     
     // 📑 ULTIMATIVE TAB-FIXES
@@ -1819,6 +2407,85 @@ impl ProxyServer {
         });
     };
     
+    // 🔄 AUTOMATISCHE RESSOURCENPRÜFUNG UND -KORREKTUR
+    function fixMissingResources() {
+        console.log('🔄 Ora Browser: Checking and fixing missing resources...');
+        
+        // Prüfe alle externen Ressourcen auf der Seite
+        const resourceSelectors = [
+            'link[href^="http"]',
+            'script[src^="http"]',
+            'img[src^="http"]',
+            'video[src^="http"]',
+            'audio[src^="http"]',
+            'source[src^="http"]',
+            'embed[src^="http"]',
+            'object[data^="http"]',
+            'iframe[src^="http"]'
+        ];
+        
+        resourceSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                const resourceUrl = element.getAttribute('src') || element.getAttribute('href') || element.getAttribute('data');
+                
+                if (resourceUrl && (resourceUrl.startsWith('http://') || resourceUrl.startsWith('https://'))) {
+                    try {
+                        const urlObj = new URL(resourceUrl);
+                        const isExternal = !urlObj.hostname.includes('localhost') && 
+                                          !urlObj.hostname.includes('127.0.0.1') &&
+                                          !urlObj.hostname.includes('local');
+                        
+                        if (isExternal) {
+                            const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(resourceUrl);
+                            console.log('🔗 Auto-fixing resource:', element.tagName, resourceUrl, '->', proxyUrl);
+                            
+                            // Aktualisiere das entsprechende Attribut
+                            if (element.hasAttribute('src')) {
+                                element.src = proxyUrl;
+                            } else if (element.hasAttribute('href')) {
+                                element.href = proxyUrl;
+                            } else if (element.hasAttribute('data')) {
+                                element.setAttribute('data', proxyUrl);
+                            }
+                        }
+                    } catch (e) {
+                        console.log('🔄 Resource URL parsing failed:', resourceUrl, e);
+                    }
+                }
+            });
+        });
+        
+        // Prüfe auf CSS-Hintergrundbilder
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(element => {
+            const computedStyle = window.getComputedStyle(element);
+            const backgroundImage = computedStyle.backgroundImage;
+            
+            if (backgroundImage && backgroundImage !== 'none' && backgroundImage.includes('url(')) {
+                const urlMatch = backgroundImage.match(/url\\(["']?([^"')]+)["']?\\)/);
+                if (urlMatch && urlMatch[1] && (urlMatch[1].startsWith('http://') || urlMatch[1].startsWith('https://'))) {
+                    try {
+                        const urlObj = new URL(urlMatch[1]);
+                        const isExternal = !urlObj.hostname.includes('localhost') && 
+                                          !urlObj.hostname.includes('127.0.0.1') &&
+                                          !urlObj.hostname.includes('local');
+                        
+                        if (isExternal) {
+                            const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(urlMatch[1]);
+                            console.log('🎨 Auto-fixing background image:', urlMatch[1], '->', proxyUrl);
+                            element.style.backgroundImage = `url("${proxyUrl}")`;
+                        }
+                    } catch (e) {
+                        console.log('🔄 Background image URL parsing failed:', urlMatch[1], e);
+                    }
+                }
+            }
+        });
+        
+        console.log('✅ Resource fixing completed');
+    }
+    
     // Starte alle Fixes
     function initializeAllFixes() {
         enableAllInteractions();
@@ -1826,13 +2493,17 @@ impl ProxyServer {
         fixAllLinks();
         fixAllTabs();
         
+        // Fix missing resources immediately and periodically
+        fixMissingResources();
+        setInterval(fixMissingResources, 5000); // Check every 5 seconds
+        
         // Starte Observer
         if (document.body) {
             observer.observe(document.body, { 
                 childList: true, 
                 subtree: true, 
                 attributes: true,
-                attributeFilter: ['disabled', 'readonly', 'style', 'class']
+                attributeFilter: ['disabled', 'readonly', 'style', 'class', 'src', 'href', 'data']
             });
         }
     }
@@ -2085,5 +2756,106 @@ impl ProxyServer {
             url.replace("https://", "http://"),
             url.replace("www.", "m.")
         )
+    }
+
+    // 🔗 KOMBINIERE BASIS-URL UND RELATIVE URL
+    fn combine_base_and_relative_url(base_url: &str, relative_path: &str) -> String {
+        match url::Url::parse(base_url) {
+            Ok(base) => {
+                match base.join(relative_path) {
+                    Ok(full_url) => {
+                        println!("✅ URL joined successfully: {}", full_url);
+                        full_url.to_string()
+                    }
+                    Err(e) => {
+                        println!("❌ Failed to join URLs: {} + {} ({})", base_url, relative_path, e);
+                        // Fallback: Einfache String-Kombination
+                        if relative_path.starts_with('/') {
+                            format!("{}://{}{}", base.scheme(), base.host_str().unwrap_or(""), relative_path)
+                        } else {
+                            let mut path = base.path().to_string();
+                            if !path.ends_with('/') {
+                                // Entferne den letzten Teil des Pfads (Dateiname)
+                                if let Some(last_slash) = path.rfind('/') {
+                                    path = path[..=last_slash].to_string();
+                                } else {
+                                    path = "/".to_string();
+                                }
+                            }
+                            format!("{}://{}{}{}", base.scheme(), base.host_str().unwrap_or(""), path, relative_path)
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                println!("❌ Failed to parse base URL: {} ({})", base_url, e);
+                // Fallback für ungültige Basis-URLs
+                Self::intelligent_url_guess(relative_path)
+            }
+        }
+    }
+
+    // 🤔 INTELLIGENTE URL-SCHÄTZUNG
+    fn intelligent_url_guess(path: &str) -> String {
+        println!("🤔 Making intelligent guess for path: {}", path);
+        
+        // Bereits vollständige URLs
+        if path.starts_with("http://") || path.starts_with("https://") {
+            return path.to_string();
+        }
+        
+        // Lokale URLs
+        if path.starts_with("localhost") || path.starts_with("127.0.0.1") {
+            return format!("http://{}", path);
+        }
+        
+        // Häufige Pfadmuster analysieren
+        let path_lower = path.to_lowercase();
+        
+        // News-Artikel (typische Muster)
+        if path_lower.contains("news/") || path_lower.contains("artikel/") || path_lower.contains("article/") {
+            // Versuche häufige deutsche News-Seiten
+            let news_sites = [
+                "https://www.heise.de/",
+                "https://www.spiegel.de/", 
+                "https://www.zeit.de/",
+                "https://www.welt.de/",
+                "https://www.faz.net/",
+                "https://www.sueddeutsche.de/"
+            ];
+            
+            // Nimm die erste als Standard (kann später intelligenter gemacht werden)
+            return format!("{}{}", news_sites[0], path.trim_start_matches('/'));
+        }
+        
+        // Blog oder Content-Artikel
+        if path_lower.contains("blog/") || path_lower.contains("post/") || path_lower.ends_with(".html") {
+            // Standard-Fallback für Content
+            return format!("https://www.heise.de/{}", path.trim_start_matches('/'));
+        }
+        
+        // GitHub-Pfade
+        if path_lower.contains("github") || path_lower.contains("git") {
+            return format!("https://github.com/{}", path.trim_start_matches('/'));
+        }
+        
+        // YouTube-Pfade
+        if path_lower.contains("watch") || path_lower.contains("youtube") {
+            return format!("https://www.youtube.com/{}", path.trim_start_matches('/'));
+        }
+        
+        // Wikipedia-Pfade
+        if path_lower.contains("wiki") {
+            return format!("https://de.wikipedia.org/{}", path.trim_start_matches('/'));
+        }
+        
+        // Domain-ähnliche Pfade
+        if path.contains('.') && !path.contains(' ') && !path.starts_with('/') {
+            return format!("https://{}", path);
+        }
+        
+        // Standard-Fallback: Als relativer Pfad zu einer populären Seite
+        println!("🔄 Using default fallback for: {}", path);
+        format!("https://www.heise.de/{}", path.trim_start_matches('/'))
     }
 } 

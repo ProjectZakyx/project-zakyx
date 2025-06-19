@@ -64,20 +64,21 @@ impl BrowserState {
             println!("⚠️ Failed to initialize plugin manager: {}", e);
         }
         
+        // Lade persistente Bookmarks in In-Memory-Liste
+        let persistent_bookmarks: Vec<Bookmark> = bookmark_manager.get_bookmarks()
+            .iter()
+            .map(|b| Bookmark {
+                id: b.id.to_string(),
+                title: b.title.clone(),
+                url: b.url.clone(),
+            })
+            .collect();
+        
+        println!("📚 Loaded {} persistent bookmarks into memory", persistent_bookmarks.len());
+        
         Self {
             tabs: Arc::new(RwLock::new(vec![])),
-            bookmarks: Arc::new(RwLock::new(vec![
-                Bookmark {
-                    id: "1".to_string(),
-                    title: "Google".to_string(),
-                    url: "https://www.google.com".to_string(),
-                },
-                Bookmark {
-                    id: "2".to_string(),
-                    title: "GitHub".to_string(),
-                    url: "https://github.com".to_string(),
-                },
-            ])),
+            bookmarks: Arc::new(RwLock::new(persistent_bookmarks)),
             bookmark_manager: Arc::new(RwLock::new(bookmark_manager)),
             settings: Arc::new(RwLock::new(BrowserSettings::default())),
             history: Arc::new(RwLock::new(vec![])),
@@ -113,11 +114,15 @@ mod tests {
         assert!(state.settings.try_read().is_ok());
         assert!(state.history.try_read().is_ok());
         
-        // Test default bookmarks
+        // Test that bookmarks are loaded from persistent storage
         let bookmarks = state.bookmarks.blocking_read();
-        assert_eq!(bookmarks.len(), 2);
-        assert_eq!(bookmarks[0].title, "Google");
-        assert_eq!(bookmarks[1].title, "GitHub");
+        // Should have at least the default bookmarks from BookmarkManager
+        assert!(bookmarks.len() >= 4); // Default bookmarks: Google, GitHub, Wikipedia, HTML GUI
+        
+        // Check if default bookmarks are present
+        let titles: Vec<&str> = bookmarks.iter().map(|b| b.title.as_str()).collect();
+        assert!(titles.contains(&"🔍 Google"));
+        assert!(titles.contains(&"👨‍💻 GitHub"));
     }
     
     #[test]

@@ -55,7 +55,24 @@ class OraBrowser {
 
     // 🔗 TAURI API PRÜFUNG
     checkTauriAPI() {
-        return !!(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);
+        console.log('🔧 === TAURI API DEBUG ===');
+        console.log('🔧 window.__TAURI__:', window.__TAURI__);
+        console.log('🔧 window.__TAURI_INTERNALS__:', window.__TAURI_INTERNALS__);
+        console.log('🔧 window.__TAURI_METADATA__:', window.__TAURI_METADATA__);
+        console.log('🔧 window.location.protocol:', window.location.protocol);
+        
+        if (window.__TAURI__) {
+            console.log('🔧 __TAURI__ keys:', Object.keys(window.__TAURI__));
+            if (window.__TAURI__.core) {
+                console.log('🔧 __TAURI__.core keys:', Object.keys(window.__TAURI__.core));
+            }
+        }
+        
+        const hasAPI = !!(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke);
+        console.log('🔧 Tauri API available:', hasAPI);
+        console.log('🔧 === END TAURI DEBUG ===');
+        
+        return hasAPI;
     }
 
     async init() {
@@ -63,11 +80,29 @@ class OraBrowser {
         
         try {
             // Warte auf Tauri API (falls verfügbar)
-            await waitForTauri();
+            const tauriAvailable = await waitForTauri();
+            console.log('🔧 Tauri API Status after wait:', tauriAvailable);
             
             // Lade Settings beim Start
             this.settings = this.getSettings();
             console.log('⚙️ Settings loaded:', this.settings);
+            
+            // Lade Bookmarks vom Backend
+            console.log('📚 Starting bookmark loading process...');
+            await this.loadBookmarksFromBackend();
+            
+            // Zusätzliche Bookmark-Prüfung
+            if (this.bookmarks.length === 0) {
+                console.log('⚠️ No bookmarks loaded, forcing defaults...');
+                this.bookmarks = [
+                    { id: '1', title: '🔍 Google', url: 'https://google.com' },
+                    { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
+                    { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
+                    { id: '4', title: '🏠 HTML GUI', url: 'gui' }
+                ];
+                this.renderBookmarks();
+                console.log('📚 Forced default bookmarks loaded');
+            }
             
             // Initialisiere UI-Komponenten
             this.initializeUI();
@@ -75,16 +110,36 @@ class OraBrowser {
             // Erstelle ersten Tab
             this.createInitialTab();
             
-            // Zeige Welcome Screen
-            this.showWelcomeScreen();
+            // Zeige Welcome Screen - DEAKTIVIERT
+            // this.showWelcomeScreen();
             
-            // Rendere Bookmarks
+            // Rendere Bookmarks (falls nicht schon vom Backend geladen)
+            console.log('📚 Initial bookmark rendering...');
             this.renderBookmarks();
+            
+            // Zusätzliche Bookmark-Prüfung nach kurzer Verzögerung
+            setTimeout(() => {
+                console.log('📚 Delayed bookmark check...');
+                if (this.bookmarks.length === 0) {
+                    console.log('📚 No bookmarks found, loading defaults...');
+                    this.bookmarks = [
+                        { id: '1', title: '🔍 Google', url: 'https://google.com' },
+                        { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
+                        { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
+                        { id: '4', title: '🏠 HTML GUI', url: 'gui' }
+                    ];
+                    this.renderBookmarks();
+                    console.log('📚 Default bookmarks loaded after delay');
+                }
+            }, 2000);
             
             // DEBUG: Teste alle wichtigen Elemente
             this.debugTestElements();
             
-            console.log('✅ OraBrowser initialization complete');
+            // 🚨 KRITISCH: Stelle sicher, dass GUI immer sichtbar bleibt
+            this.ensureOraBrowserGUIVisible();
+            
+            console.log('✅ OraBrowser initialization complete with GUI protection');
             
         } catch (error) {
             console.error('❌ Initialization error:', error);
@@ -171,8 +226,8 @@ class OraBrowser {
                 console.log(`📑 Loading content for tab: ${tab.url}`);
                 this.navigateToUrl(tab.url, false, false); // false = don't create new tab, false = don't add to history
             } else {
-                console.log(`📑 Showing welcome screen for empty tab`);
-                this.showWelcomeScreen();
+                console.log(`📑 Empty tab - NOT showing welcome screen`);
+                // this.showWelcomeScreen(); // DEAKTIVIERT - verhindert Navigation-Probleme
             }
         }
         
@@ -805,36 +860,209 @@ class OraBrowser {
         console.log('✅ Bookmark event listeners configured');
     }
 
-    addBookmarkManual(title, url) {
+    async addBookmarkManual(title, url) {
+        console.log('📚 === ADDING BOOKMARK MANUALLY ===');
+        console.log('📚 Title:', title);
+        console.log('📚 URL:', url);
+        
+        const normalizedUrl = this.normalizeUrl(url);
+        console.log('📚 Normalized URL:', normalizedUrl);
+        
+        // Versuche über Tauri Backend zu speichern
+        const tauriAvailable = this.checkTauriAPI();
+        console.log('📚 Tauri API available:', tauriAvailable);
+        
+        if (tauriAvailable) {
+            try {
+                console.log('📚 Attempting to save bookmark to backend...');
+                const bookmark = await window.__TAURI__.core.invoke('add_bookmark', {
+                    title: title,
+                    url: normalizedUrl
+                });
+                
+                console.log('✅ Bookmark saved to backend:', bookmark);
+                this.updateStatus(`Lesezeichen gespeichert: ${title}`);
+                
+                // Lade alle Bookmarks neu vom Backend
+                console.log('📚 Reloading bookmarks from backend...');
+                await this.loadBookmarksFromBackend();
+                console.log('📚 === END ADDING BOOKMARK (BACKEND) ===');
+                return;
+                
+            } catch (error) {
+                console.warn('⚠️ Backend bookmark save failed, using frontend only:', error);
+                console.warn('⚠️ Error details:', error.message);
+            }
+        }
+        
+        // Fallback: Nur Frontend
+        console.log('📚 Using frontend-only bookmark storage...');
         const bookmark = {
             id: Date.now().toString(),
             title: title,
-            url: this.normalizeUrl(url)
+            url: normalizedUrl
         };
         
+        console.log('📚 New bookmark object:', bookmark);
+        console.log('📚 Current bookmarks before adding:', this.bookmarks.length);
+        
         this.bookmarks.push(bookmark);
+        console.log('📚 Current bookmarks after adding:', this.bookmarks.length);
+        
         this.renderBookmarks();
         this.updateStatus(`Lesezeichen hinzugefügt: ${title}`);
         
-        console.log('📚 Bookmark added:', bookmark);
+        console.log('📚 Bookmark added (frontend only):', bookmark);
+        console.log('📚 === END ADDING BOOKMARK (FRONTEND) ===');
     }
 
-    removeBookmark(index) {
+    async removeBookmark(index) {
         if (index >= 0 && index < this.bookmarks.length) {
+            const bookmark = this.bookmarks[index];
+            
+            // Versuche über Tauri Backend zu löschen
+            if (this.checkTauriAPI()) {
+                try {
+                    await window.__TAURI__.core.invoke('remove_bookmark', {
+                        bookmarkId: bookmark.id
+                    });
+                    
+                    console.log('✅ Bookmark removed from backend:', bookmark.id);
+                    this.updateStatus(`Lesezeichen gelöscht: ${bookmark.title}`);
+                    
+                    // Lade alle Bookmarks neu vom Backend
+                    await this.loadBookmarksFromBackend();
+                    return;
+                    
+                } catch (error) {
+                    console.warn('⚠️ Backend bookmark removal failed, using frontend only:', error);
+                }
+            }
+            
+            // Fallback: Nur Frontend
             const removed = this.bookmarks.splice(index, 1)[0];
             this.renderBookmarks();
             this.updateStatus(`Lesezeichen entfernt: ${removed.title}`);
-            console.log('📚 Bookmark removed:', removed);
+            console.log('📚 Bookmark removed (frontend only):', removed);
         }
     }
 
+    // 📚 LADE BOOKMARKS VOM BACKEND
+    async loadBookmarksFromBackend() {
+        console.log('📚 === LOADING BOOKMARKS FROM BACKEND ===');
+        
+        // Erweiterte Tauri-API-Prüfung
+        const tauriAvailable = this.checkTauriAPI();
+        
+        if (!tauriAvailable) {
+            console.log('🔄 No Tauri API - using default bookmarks');
+            // Setze Standard-Bookmarks, falls keine Tauri-API verfügbar ist
+            if (this.bookmarks.length === 0) {
+                this.bookmarks = [
+                    { id: '1', title: '🔍 Google', url: 'https://google.com' },
+                    { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
+                    { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
+                    { id: '4', title: '🏠 HTML GUI', url: 'gui' }
+                ];
+                this.renderBookmarks();
+                console.log('📚 Default bookmarks loaded and rendered');
+            }
+            return;
+        }
+        
+        try {
+            console.log('📚 Attempting to sync bookmarks...');
+            // Verwende sync_bookmarks für bessere Synchronisation
+            const backendBookmarks = await window.__TAURI__.core.invoke('sync_bookmarks');
+            console.log('📚 Sync response:', backendBookmarks);
+            
+            if (backendBookmarks && Array.isArray(backendBookmarks)) {
+                this.bookmarks = backendBookmarks;
+                this.renderBookmarks();
+                console.log(`✅ Synchronized ${backendBookmarks.length} bookmarks from persistent storage`);
+                console.log('📚 Bookmarks loaded:', this.bookmarks);
+            } else {
+                console.log('⚠️ No bookmarks received from sync, trying get_bookmarks...');
+                // Fallback: Versuche get_bookmarks
+                const fallbackBookmarks = await window.__TAURI__.core.invoke('get_bookmarks');
+                console.log('📚 Get bookmarks response:', fallbackBookmarks);
+                
+                if (fallbackBookmarks && Array.isArray(fallbackBookmarks)) {
+                    this.bookmarks = fallbackBookmarks;
+                    this.renderBookmarks();
+                    console.log(`✅ Loaded ${fallbackBookmarks.length} bookmarks from backend (fallback)`);
+                } else {
+                    console.log('⚠️ No bookmarks from fallback either, using defaults');
+                    // Verwende Standard-Bookmarks als letzter Fallback
+                    this.bookmarks = [
+                        { id: '1', title: '🔍 Google', url: 'https://google.com' },
+                        { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
+                        { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
+                        { id: '4', title: '🏠 HTML GUI', url: 'gui' }
+                    ];
+                    this.renderBookmarks();
+                    console.log('📚 Default bookmarks loaded as fallback');
+                }
+            }
+            
+        } catch (error) {
+            console.warn('⚠️ Failed to sync bookmarks from backend:', error);
+            console.warn('⚠️ Error details:', error.message);
+            
+            // Fallback: Versuche get_bookmarks
+            try {
+                console.log('📚 Trying fallback get_bookmarks...');
+                const fallbackBookmarks = await window.__TAURI__.core.invoke('get_bookmarks');
+                console.log('📚 Fallback response:', fallbackBookmarks);
+                
+                if (fallbackBookmarks && Array.isArray(fallbackBookmarks)) {
+                    this.bookmarks = fallbackBookmarks;
+                    this.renderBookmarks();
+                    console.log(`✅ Loaded ${fallbackBookmarks.length} bookmarks from backend (fallback)`);
+                }
+            } catch (fallbackError) {
+                console.warn('⚠️ Fallback bookmark loading also failed:', fallbackError);
+                console.warn('⚠️ Fallback error details:', fallbackError.message);
+                
+                // Verwende Standard-Bookmarks als letzter Fallback
+                this.bookmarks = [
+                    { id: '1', title: '🔍 Google', url: 'https://google.com' },
+                    { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
+                    { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
+                    { id: '4', title: '🏠 HTML GUI', url: 'gui' }
+                ];
+                this.renderBookmarks();
+                console.log('📚 Default bookmarks loaded as final fallback');
+            }
+        }
+        
+        console.log('📚 === END LOADING BOOKMARKS ===');
+        console.log('📚 Final bookmark count:', this.bookmarks.length);
+    }
+
     renderBookmarks() {
+        console.log('📚 === RENDERING BOOKMARKS ===');
+        console.log('📚 Bookmarks to render:', this.bookmarks.length);
+        console.log('📚 Bookmarks data:', this.bookmarks);
+        
         const bookmarksContainer = document.getElementById('bookmarks-container');
-        if (!bookmarksContainer) return;
+        console.log('📚 Bookmarks container found:', !!bookmarksContainer);
+        
+        if (!bookmarksContainer) {
+            console.error('❌ bookmarks-container not found!');
+            return;
+        }
 
         bookmarksContainer.innerHTML = '';
         
+        if (this.bookmarks.length === 0) {
+            console.log('⚠️ No bookmarks to render');
+            return;
+        }
+        
         this.bookmarks.forEach((bookmark, index) => {
+            console.log(`📚 Rendering bookmark ${index}:`, bookmark);
+            
             const bookmarkElement = document.createElement('button');
             bookmarkElement.className = 'bookmark-item';
             bookmarkElement.title = `${bookmark.title}\n${bookmark.url}`;
@@ -850,7 +1078,9 @@ class OraBrowser {
             bookmarksContainer.appendChild(bookmarkElement);
         });
         
-        console.log(`📚 Rendered ${this.bookmarks.length} bookmarks`);
+        console.log(`✅ Successfully rendered ${this.bookmarks.length} bookmarks`);
+        console.log('📚 Bookmarks container HTML:', bookmarksContainer.innerHTML.substring(0, 200));
+        console.log('📚 === END RENDERING BOOKMARKS ===');
     }
 
     getPageTitle() {
@@ -1171,23 +1401,47 @@ class OraBrowser {
         }
     }
 
-    saveBookmarkFromModal() {
+    async saveBookmarkFromModal() {
+        console.log('📚 === SAVING BOOKMARK FROM MODAL ===');
+        
         const titleInput = document.getElementById('bookmark-title');
         const urlInput = document.getElementById('bookmark-url');
+        
+        console.log('📚 Title input found:', !!titleInput);
+        console.log('📚 URL input found:', !!urlInput);
         
         if (titleInput && urlInput) {
             const title = titleInput.value.trim();
             const url = urlInput.value.trim();
             
+            console.log('📚 Title value:', title);
+            console.log('📚 URL value:', url);
+            
             if (title && url) {
-                this.addBookmarkManual(title, url);
+                console.log('📚 Both values valid, calling addBookmarkManual...');
+                await this.addBookmarkManual(title, url);
+                
+                console.log('📚 Bookmark added, hiding modal...');
                 this.hideBookmarkModal();
                 
                 // Clear inputs
                 titleInput.value = '';
                 urlInput.value = '';
+                
+                console.log('📚 Modal closed and inputs cleared');
+                console.log('📚 Current bookmark count:', this.bookmarks.length);
+            } else {
+                console.log('❌ Title or URL missing');
+                if (!title) console.log('❌ Missing title');
+                if (!url) console.log('❌ Missing URL');
             }
+        } else {
+            console.log('❌ Input elements not found');
+            if (!titleInput) console.log('❌ bookmark-title input not found');
+            if (!urlInput) console.log('❌ bookmark-url input not found');
         }
+        
+        console.log('📚 === END SAVING BOOKMARK FROM MODAL ===');
     }
 
     showBookmarkManager() {
@@ -1238,7 +1492,7 @@ class OraBrowser {
                                 style="background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
                             Öffnen
                         </button>
-                        <button onclick="window.oraBrowser.removeBookmark(${index}); document.getElementById('bookmark-manager').remove(); window.oraBrowser.showBookmarkManager();" 
+                        <button onclick="window.oraBrowser.removeBookmark(${index}).then(() => { document.getElementById('bookmark-manager').remove(); window.oraBrowser.showBookmarkManager(); });" 
                                 style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
                             Löschen
                         </button>
@@ -1268,10 +1522,82 @@ class OraBrowser {
     }
 
     // Backend-Navigation verwenden
+    // 🚀 NAVIGATION MIT HTTP-METHODEN FÜR FORM-SUBMISSIONS
+    async navigateWithMethod(url, method = 'GET', formData = '') {
+        console.log(`🔄 Navigation with method ${method} to:`, url);
+        console.log(`📝 Form data:`, formData);
+        
+        this.setLoading(true);
+        
+        try {
+            // Normalisiere URL
+            const normalizedUrl = this.normalizeUrl(url);
+            
+            // Konstruiere Proxy-URL mit Methode und Daten
+            const proxyUrl = new URL('http://localhost:3030/proxy');
+            proxyUrl.searchParams.set('url', normalizedUrl);
+            proxyUrl.searchParams.set('method', method);
+            if (formData) {
+                proxyUrl.searchParams.set('data', formData);
+            }
+            
+            console.log('🔄 Using proxy URL for form submission:', proxyUrl.toString());
+            
+            const response = await fetch(proxyUrl.toString(), {
+                method: 'GET', // Proxy-Request ist immer GET, die eigentliche Methode wird als Parameter übertragen
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+            
+            if (response.ok) {
+                const content = await response.text();
+                console.log(`✅ Form submission successful: ${content.length} bytes`);
+                
+                                        const optimizedContent = this.injectCORSHeaders(content);
+                        this.displayContent(optimizedContent);
+                        this.currentUrl = normalizedUrl;
+                        this.updateUrlInput(normalizedUrl);
+                        
+                        // Update active tab info
+                        if (updateTab) {
+                            const activeTab = this.tabs.find(tab => tab.isActive);
+                            if (activeTab) {
+                                activeTab.url = normalizedUrl;
+                                activeTab.title = this.extractTitleFromContent(content) || this.extractDomain(normalizedUrl);
+                                this.renderTabs();
+                                console.log('📑 Updated active tab:', activeTab.title, normalizedUrl);
+                            }
+                        }
+                        
+                        this.setLoading(false);
+                        return true;
+            } else {
+                console.error('❌ Form submission failed:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('❌ Form submission error:', error);
+        }
+        
+        // Fallback zu normaler Navigation
+        console.log('🔄 Falling back to normal navigation');
+        return await this.navigateToUrl(url, updateTab, addToHistoryFlag);
+    }
+
     async navigateToUrl(url, updateTab = true, addToHistoryFlag = true) {
         if (!url || url.trim() === '') {
             console.log('❌ Empty URL provided');
             return false;
+        }
+        
+        // Reset Link-Interception für neue Navigation
+        this.linkInterceptionSetup = false;
+        this.guiVisibilityEnsured = false; // Reset GUI-Schutz
+        if (this.linkObserver) {
+            this.linkObserver.disconnect();
+            this.linkObserver = null;
         }
         
         const normalizedUrl = this.normalizeUrl(url.trim());
@@ -1343,9 +1669,28 @@ class OraBrowser {
                         console.log(`✅ Content loaded via proxy: ${content.length} bytes`);
                         console.log('🔧 Content preview:', content.substring(0, 200) + '...');
                         
-                        const optimizedContent = this.injectCORSHeaders(content);
-                        console.log('🔧 About to display content...');
-                        this.displayContent(optimizedContent);
+                        // 🔍 DEBUG: Prüfe ob Content HTML ist
+                        const isHTML = content.includes('<html') || content.includes('<!DOCTYPE');
+                        console.log('🔍 Content appears to be HTML:', isHTML);
+                        
+                        if (!isHTML) {
+                            console.log('⚠️ Content does not appear to be HTML, showing as text...');
+                            const htmlWrapper = `
+                                <!DOCTYPE html>
+                                <html>
+                                <head><title>Content Preview</title></head>
+                                <body>
+                                    <h1>Received Content:</h1>
+                                    <pre style="white-space: pre-wrap; font-family: monospace;">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                                </body>
+                                </html>
+                            `;
+                            this.displayContent(htmlWrapper);
+                        } else {
+                            const optimizedContent = this.injectCORSHeaders(content);
+                            console.log('🔧 About to display HTML content...');
+                            this.displayContent(optimizedContent);
+                        }
                         console.log('🔧 Content display completed');
                         this.setLoading(false);
                         
@@ -1388,23 +1733,28 @@ class OraBrowser {
             return false;
         }
         
-        // 🎯 SCHRITT 1: ALLE MÖGLICHEN CONTAINER FINDEN
-        const possibleContainers = [
-            'content-area',
-            'webview-container', 
-            'main-content',
-            'browser-content',
-            'page-content'
-        ];
+        // 🎯 SCHRITT 1: WEBVIEW-CONTAINER DIREKT VERWENDEN
+        let targetContainer = document.getElementById('webview-container');
         
-        let targetContainer = null;
-        for (const containerId of possibleContainers) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                targetContainer = container;
-                console.log(`📄 ✅ Found target container: ${containerId}`);
-                break;
+        if (!targetContainer) {
+            console.log('🔍 webview-container not found, trying alternatives...');
+            const possibleContainers = [
+                'content-area',
+                'main-content',
+                'browser-content',
+                'page-content'
+            ];
+            
+            for (const containerId of possibleContainers) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    targetContainer = container;
+                    console.log(`📄 ✅ Found target container: ${containerId}`);
+                    break;
+                }
             }
+        } else {
+            console.log('📄 ✅ Found webview-container');
         }
         
         if (!targetContainer) {
@@ -1412,7 +1762,7 @@ class OraBrowser {
             targetContainer = document.body;
         }
         
-        // 🎯 SCHRITT 2: WELCOME SCREEN AGGRESSIV VERSTECKEN
+        // 🎯 SCHRITT 2: WELCOME SCREEN KOMPLETT ENTFERNEN UND VERSTECKEN
         const elementsToHide = [
             'welcome-screen',
             'welcome-container',
@@ -1423,75 +1773,131 @@ class OraBrowser {
         elementsToHide.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                element.style.cssText = `
-                    display: none !important;
-                    visibility: hidden !important;
-                    opacity: 0 !important;
-                    position: absolute !important;
-                    left: -9999px !important;
-                    z-index: -1000 !important;
-                `;
-                console.log(`📄 ✅ Hidden element: ${id}`);
+                // Komplettes Entfernen aus DOM
+                element.remove();
+                console.log(`📄 ✅ Completely removed element: ${id}`);
             }
         });
         
-        // 🎯 SCHRITT 3: CONTENT CONTAINER ERSTELLEN/FINDEN
-        let contentContainer = document.getElementById('content-container');
+        // Zusätzliche Cleanup für alle möglichen Welcome-Elemente
+        const welcomeSelectors = [
+            '.welcome-screen',
+            '.welcome-container', 
+            '.start-screen',
+            '.home-screen',
+            '[id*="welcome"]',
+            '[class*="welcome"]'
+        ];
         
-        if (contentContainer) {
-            console.log('📄 ✅ Existing content container found - clearing it');
-            contentContainer.innerHTML = '';
-        } else {
-            console.log('📄 🆕 Creating new content container');
-            contentContainer = document.createElement('div');
-            contentContainer.id = 'content-container';
-            targetContainer.appendChild(contentContainer);
-        }
+        welcomeSelectors.forEach(selector => {
+            try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    el.remove();
+                    console.log(`📄 ✅ Removed welcome element:`, el.tagName, el.id || el.className);
+                });
+            } catch (e) {
+                // Ignore selector errors
+            }
+        });
         
-        // 🎯 SCHRITT 4: ULTIMATE STYLING
-        contentContainer.style.cssText = `
+        // 🎯 SCHRITT 3: CLEAR TARGET CONTAINER UND CONTENT DIREKT EINFÜGEN
+        console.log('📄 🧹 Clearing target container completely...');
+        targetContainer.innerHTML = '';
+        
+        // 🎯 SCHRITT 4: TARGET CONTAINER ULTIMATE STYLING (FIXED)
+        targetContainer.style.cssText = `
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100% !important;
             height: 100% !important;
-            min-height: 100vh !important;
+            min-height: 100% !important;
             overflow: auto !important;
             background: white !important;
-            position: relative !important;
-            z-index: 10000 !important;
+            z-index: 1000 !important;
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
-            top: 0 !important;
-            left: 0 !important;
         `;
         
-        // 🎯 SCHRITT 5: CONTENT EINFÜGEN
+        // 🎯 SCHRITT 5: CONTENT DIREKT IN TARGET CONTAINER EINFÜGEN
         try {
-            contentContainer.innerHTML = htmlContent;
-            console.log('📄 ✅ Content successfully inserted into container');
-            console.log('📄 ✅ Container dimensions:', contentContainer.offsetWidth + 'x' + contentContainer.offsetHeight);
-            console.log('📄 ✅ Container display:', window.getComputedStyle(contentContainer).display);
-            console.log('📄 ✅ Container visibility:', window.getComputedStyle(contentContainer).visibility);
+            console.log('📄 💉 Injecting content directly into target container...');
+            console.log('📄 🔍 Target container ID:', targetContainer.id);
+            console.log('📄 🔍 Target container tag:', targetContainer.tagName);
+            console.log('📄 🔍 Content length to inject:', htmlContent.length);
             
-            // 🎯 SCHRITT 6: PARENT CONTAINER AUCH SICHTBAR MACHEN
-            if (targetContainer !== document.body) {
-                targetContainer.style.cssText = `
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                `;
-                console.log('📄 ✅ Parent container made visible');
+            targetContainer.innerHTML = htmlContent;
+            
+            console.log('📄 ✅ Content successfully inserted into target container');
+            console.log('📄 ✅ Target container dimensions:', targetContainer.offsetWidth + 'x' + targetContainer.offsetHeight);
+            console.log('📄 ✅ Target container display:', window.getComputedStyle(targetContainer).display);
+            console.log('📄 ✅ Target container visibility:', window.getComputedStyle(targetContainer).visibility);
+            console.log('📄 ✅ Target container has children:', targetContainer.children.length);
+            console.log('📄 ✅ Target container innerHTML length:', targetContainer.innerHTML.length);
+            
+            // 🔗 KRITISCH: UNIVERSELLE LINK-INTERCEPTION FÜR ALLE LINKS (nur einmal)
+            if (!this.linkInterceptionSetup) {
+                this.setupUniversalLinkInterception(targetContainer);
+            } else {
+                console.log('🔗 Link interception already setup, skipping...');
             }
             
-            // 🎯 SCHRITT 7: SCROLL TO TOP
-            contentContainer.scrollTop = 0;
+            // 🎯 SCHRITT 6: SCROLL TO TOP
+            targetContainer.scrollTop = 0;
             window.scrollTo(0, 0);
             
             console.log('📄 🎉 ULTIMATE DISPLAY CONTENT - SUCCESS!');
+            
+            // 🎯 SCHRITT 7: FORCE BROWSER TO SHOW CONTENT IMMEDIATELY
+            setTimeout(() => {
+                console.log('📄 🚀 Forcing content visibility after timeout...');
+                targetContainer.style.display = 'block !important';
+                targetContainer.style.visibility = 'visible !important';
+                targetContainer.style.opacity = '1 !important';
+                
+                // 🔍 ULTIMATE FALLBACK: Falls Content immer noch nicht sichtbar ist
+                if (targetContainer.offsetHeight === 0 || targetContainer.offsetWidth === 0) {
+                    console.log('⚠️ Container still not visible, applying ultimate fallback...');
+                    
+                    // Setze absolute Positionierung und feste Größe
+                    targetContainer.style.cssText = `
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: white !important;
+                        z-index: 99999 !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                        overflow: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border: none !important;
+                    `;
+                    
+                    console.log('🚨 Applied emergency full-screen styling');
+                }
+                
+                // Hide any remaining welcome elements that might have appeared
+                document.querySelectorAll('[id*="welcome"], [class*="welcome"]').forEach(el => {
+                    if (el !== targetContainer && !targetContainer.contains(el)) {
+                        el.remove();
+                    }
+                });
+                
+                // Ensure content area is in focus
+                targetContainer.focus();
+                console.log('📄 ✅ Forced content display completed');
+                console.log('📄 🔍 Final container dimensions:', targetContainer.offsetWidth + 'x' + targetContainer.offsetHeight);
+            }, 100);
+            
             return true;
             
         } catch (error) {
@@ -1522,6 +1928,406 @@ class OraBrowser {
             reloadBtn.disabled = loading;
             reloadBtn.style.opacity = loading ? '0.5' : '1';
         }
+    }
+
+    // 🔗 UNIVERSELLE LINK-INTERCEPTION - LÖST DAS HAUPTPROBLEM
+    setupUniversalLinkInterception(container = document) {
+        console.log('🔗 === SETTING UP UNIVERSAL LINK INTERCEPTION ===');
+        
+        // Entferne alte Event-Listener um Duplikate zu vermeiden
+        if (this.linkInterceptionSetup) {
+            console.log('🔗 Removing old link interception...');
+            return;
+        }
+        
+        // Initialisiere Schleifenerkennung
+        if (!this.navigationHistory) {
+            this.navigationHistory = [];
+        }
+        
+        try {
+            // Finde alle Links im Container
+            const allLinks = container.querySelectorAll('a[href]');
+            console.log(`🔗 Found ${allLinks.length} links to intercept`);
+            
+            // Event-Delegation für bessere Performance
+            const handleLinkClick = (e) => {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                
+                const href = link.getAttribute('href');
+                const currentUrl = window.location.href;
+                
+                console.log('🔗 Link clicked:', href);
+                console.log('🔗 Current URL:', currentUrl);
+                
+                // Ignoriere interne Anker-Links
+                if (href.startsWith('#') || href.startsWith('javascript:') || href === '') {
+                    console.log('🔗 Ignoring internal/javascript link');
+                    return;
+                }
+                
+                // Verhindere Standard-Navigation
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Erstelle vollständige URL
+                let fullUrl;
+                try {
+                    if (href.startsWith('http://') || href.startsWith('https://')) {
+                        fullUrl = href;
+                    } else if (href.startsWith('//')) {
+                        fullUrl = 'https:' + href;
+                    } else if (href.startsWith('/')) {
+                        // Absolute Pfad zur aktuellen Domain
+                        const currentDomain = new URL(currentUrl).origin;
+                        fullUrl = currentDomain + href;
+                    } else {
+                        // Relativer Pfad
+                        const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+                        fullUrl = basePath + href;
+                    }
+                } catch (urlError) {
+                    console.log('🔗 URL parsing failed, using href as-is:', href);
+                    fullUrl = href.startsWith('http') ? href : 'https://' + href;
+                }
+                
+                console.log('🔗 Intercepted navigation to:', fullUrl);
+                
+                // 🚨 KRITISCH: Schleifenerkennung für lokale URLs
+                if (this.isNavigationLoop(fullUrl)) {
+                    console.warn('🔄 Navigation loop detected for:', fullUrl);
+                    console.warn('🛑 Stopping navigation to prevent infinite loop');
+                    this.updateStatus('⚠️ Navigation-Schleife erkannt - gestoppt');
+                    return false;
+                }
+                
+                // 🔧 Spezielle Behandlung für lokale URLs (127.0.0.1, localhost)
+                if (this.isLocalUrl(fullUrl)) {
+                    console.log('🏠 Local URL detected, handling specially:', fullUrl);
+                    // Für lokale URLs: Direkte Navigation ohne Proxy
+                    this.handleLocalUrlNavigation(fullUrl);
+                    return false;
+                }
+                
+                // Füge zur Navigation-Historie hinzu
+                this.addToNavigationHistory(fullUrl);
+                
+                // Prüfe Modifier-Keys für neuen Tab
+                if (e.ctrlKey || e.metaKey || e.button === 1) {
+                    console.log('🔗 Opening in new tab (Ctrl/Cmd click or middle click)');
+                    this.createNewTabWithUrl(fullUrl, 'Loading...');
+                } else {
+                    console.log('🔗 Navigating in current tab');
+                    this.navigateToUrl(fullUrl);
+                }
+                
+                return false;
+            };
+            
+            // Event-Delegation auf Container-Level
+            container.addEventListener('click', handleLinkClick, true);
+            
+            // Zusätzlich: Spezielle Behandlung für dynamisch geladene Inhalte
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                const newLinks = node.querySelectorAll ? node.querySelectorAll('a[href]') : [];
+                                if (newLinks.length > 0) {
+                                    console.log(`🔗 Found ${newLinks.length} new dynamic links`);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            
+            observer.observe(container, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Markiere als eingerichtet
+            this.linkInterceptionSetup = true;
+            this.linkObserver = observer;
+            
+            console.log('✅ Universal link interception setup complete');
+            console.log(`✅ Monitoring container: ${container.tagName}${container.id ? '#' + container.id : ''}`);
+            
+        } catch (error) {
+            console.error('❌ Error setting up link interception:', error);
+        }
+    }
+
+    // 🔄 Schleifenerkennung für Navigation
+    isNavigationLoop(url) {
+        if (!this.navigationHistory || this.navigationHistory.length === 0) {
+            return false;
+        }
+        
+        // Prüfe die letzten 5 Navigationen
+        const recentNavigations = this.navigationHistory.slice(-5);
+        const urlCount = recentNavigations.filter(navUrl => navUrl === url).length;
+        
+        // Wenn die gleiche URL mehr als 3 Mal in den letzten 5 Navigationen vorkommt
+        if (urlCount >= 3) {
+            console.warn('🔄 Loop detected: URL appeared', urlCount, 'times in recent history');
+            return true;
+        }
+        
+        // Zusätzliche Prüfung: Wenn die letzten 3 Navigationen alle die gleiche URL sind
+        const lastThree = this.navigationHistory.slice(-3);
+        if (lastThree.length >= 3 && lastThree.every(navUrl => navUrl === url)) {
+            console.warn('🔄 Loop detected: Same URL repeated 3 times consecutively');
+            return true;
+        }
+        
+        return false;
+    }
+    
+    addToNavigationHistory(url) {
+        if (!this.navigationHistory) {
+            this.navigationHistory = [];
+        }
+        
+        // Füge URL mit Zeitstempel hinzu
+        this.navigationHistory.push(url);
+        
+        // Behalte nur die letzten 10 Navigationen
+        if (this.navigationHistory.length > 10) {
+            this.navigationHistory = this.navigationHistory.slice(-10);
+        }
+        
+        console.log('📚 Navigation history updated:', this.navigationHistory.length, 'entries');
+    }
+    
+    clearNavigationHistory() {
+        this.navigationHistory = [];
+        console.log('🗑️ Navigation history cleared');
+    }
+    
+    // 🏠 Prüfe ob URL lokal ist
+    isLocalUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname.toLowerCase();
+            
+            // Lokale Hostnames
+            const localHosts = [
+                'localhost',
+                '127.0.0.1',
+                '0.0.0.0',
+                '::1'
+            ];
+            
+            // Prüfe auf lokale IPs im 192.168.x.x oder 10.x.x.x Bereich
+            const isPrivateIP = 
+                hostname.startsWith('192.168.') ||
+                hostname.startsWith('10.') ||
+                hostname.startsWith('172.16.') ||
+                hostname.startsWith('172.17.') ||
+                hostname.startsWith('172.18.') ||
+                hostname.startsWith('172.19.') ||
+                hostname.startsWith('172.2') ||
+                hostname.startsWith('172.30.') ||
+                hostname.startsWith('172.31.');
+            
+            return localHosts.includes(hostname) || isPrivateIP;
+        } catch (error) {
+            console.warn('🏠 Error checking if URL is local:', error);
+            return false;
+        }
+    }
+    
+    // 🏠 Behandle lokale URL Navigation
+    async handleLocalUrlNavigation(url) {
+        console.log('🏠 Handling local URL navigation:', url);
+        
+        try {
+            // Für lokale URLs: Versuche direkten Zugriff
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                },
+                mode: 'cors',
+                credentials: 'same-origin'
+            });
+            
+            if (response.ok) {
+                const content = await response.text();
+                console.log('🏠 Local URL loaded successfully:', url);
+                
+                // Aktualisiere URL und zeige Inhalt
+                this.updateUrlInput(url);
+                this.displayContent(content);
+                this.updateActiveTabInfo('Local Content', url);
+                this.updateStatus('✅ Lokale Seite geladen');
+                
+                // Lösche Navigation-Historie für lokale URLs
+                this.clearNavigationHistory();
+                
+                // 🔧 AUTOMATISCHE DUPLIKAT-ENTFERNUNG FÜR LOKALE URLS
+                setTimeout(() => {
+                    console.log('🔧 Auto-cleaning duplicates for local URL...');
+                    this.removeDuplicateNavigationElements();
+                }, 1000);
+                
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.warn('🏠 Direct local access failed, trying proxy:', error);
+            
+            // Fallback: Verwende normalen Proxy
+            this.navigateToUrl(url);
+        }
+    }
+
+    // 🚨 KRITISCH: Stelle sicher, dass Ora Browser GUI immer sichtbar bleibt
+    ensureOraBrowserGUIVisible() {
+        console.log('🚨 Ensuring Ora Browser GUI remains visible...');
+        
+        // Verhindere mehrfache Ausführung
+        if (this.guiVisibilityEnsured) {
+            console.log('🔗 GUI visibility already ensured, skipping...');
+            return;
+        }
+        
+        // 🔧 ENTFERNE DOPPELTE NAVIGATION-ELEMENTE ZUERST
+        this.removeDuplicateNavigationElements();
+        
+        // Liste der kritischen GUI-Elemente
+        const criticalElements = [
+            'browser-header',
+            'tab-container', 
+            'navigation-bar',
+            'bookmark-bar'
+        ];
+        
+        criticalElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                // Nur sichtbar machen, NICHT neu positionieren oder duplizieren
+                if (element.style.display === 'none') {
+                    element.style.display = 'block';
+                }
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+                
+                console.log(`✅ GUI element ensured visible: ${elementId}`);
+            } else {
+                console.log(`⚠️ GUI element not found: ${elementId}`);
+            }
+        });
+        
+        // Markiere als erledigt
+        this.guiVisibilityEnsured = true;
+        
+        console.log('✅ Ora Browser GUI visibility ensured (non-intrusive)');
+    }
+    
+    // 🔧 Entferne doppelte Navigation-Elemente
+    removeDuplicateNavigationElements() {
+        console.log('🔧 === REMOVING DUPLICATE NAVIGATION ELEMENTS ===');
+        
+        const navigationSelectors = [
+            '[id*="browser-header"]',
+            '[id*="navigation"]',
+            '[class*="navigation"]',
+            '[id*="tab-container"]',
+            '[class*="tab-container"]',
+            '[id*="bookmark-bar"]',
+            '[class*="bookmark"]',
+            '[class*="browser-"]',
+            '[class*="header"]',
+            '[class*="nav-"]',
+            '[class*="toolbar"]',
+            'nav',
+            'header',
+            '.browser-header',
+            '.tab-container',
+            '.navigation-bar',
+            '.bookmark-bar',
+            '#browser-header',
+            '#tab-container', 
+            '#navigation-bar',
+            '#bookmark-bar',
+            // Spezifische Selektoren für lokale Seiten
+            '[data-component*="nav"]',
+            '[data-component*="header"]',
+            '[data-component*="toolbar"]',
+            '.nav',
+            '.navbar',
+            '.header',
+            '.toolbar'
+        ];
+        
+        navigationSelectors.forEach(selector => {
+            try {
+                const elements = document.querySelectorAll(selector);
+                if (elements.length > 1) {
+                    console.log(`🔧 Found ${elements.length} duplicate elements for selector: ${selector}`);
+                    
+                    // Behalte nur das erste Element, entferne alle anderen
+                    for (let i = 1; i < elements.length; i++) {
+                        const elementToRemove = elements[i];
+                        console.log(`🗑️ Removing duplicate element:`, elementToRemove.tagName, elementToRemove.id || elementToRemove.className);
+                        elementToRemove.remove();
+                    }
+                }
+            } catch (e) {
+                console.warn('🔧 Error checking selector:', selector, e);
+            }
+        });
+        
+        // Zusätzliche Bereinigung für versteckte oder unsichtbare Duplikate
+        this.removeHiddenDuplicates();
+        
+        console.log('✅ Duplicate navigation elements cleanup completed');
+    }
+    
+    // 🔧 Entferne versteckte Duplikate
+    removeHiddenDuplicates() {
+        console.log('🔧 Removing hidden duplicates...');
+        
+        const allElements = document.querySelectorAll('*');
+        const seenElements = new Map();
+        
+        allElements.forEach(element => {
+            if (element.tagName) {
+                // Sichere Konvertierung von className zu String
+                const className = element.className ? element.className.toString() : '';
+                const elementId = element.id || '';
+                
+                // Prüfe auf Navigation-relevante Klassen und IDs
+                const hasNavClass = className.includes('nav') || className.includes('header') || 
+                                  className.includes('bookmark') || className.includes('toolbar') ||
+                                  className.includes('browser-');
+                const hasNavId = elementId.includes('nav') || elementId.includes('header') || 
+                               elementId.includes('bookmark') || elementId.includes('toolbar') ||
+                               elementId.includes('browser-');
+                
+                if (hasNavClass || hasNavId) {
+                    const key = `${element.tagName}-${className}-${elementId}`;
+                    
+                    if (seenElements.has(key)) {
+                        console.log(`🗑️ Removing hidden duplicate: ${element.tagName} ${className || elementId}`);
+                        element.remove();
+                    } else {
+                        seenElements.set(key, element);
+                    }
+                }
+            }
+        });
+        
+        console.log('✅ Hidden duplicates cleanup completed');
     }
 
     createUltimateIframeFallback(url) {
@@ -2521,40 +3327,149 @@ class OraBrowser {
                             if (form.dataset.oraFormHandlerAdded) return;
                             
                             form.addEventListener('submit', function(e) {
-                                console.log('📋 Google form submission intercepted');
+                                console.log('🚨 FORM SUBMISSION INTERCEPTED!', {
+                                    action: form.action,
+                                    method: form.method,
+                                    elements: form.elements.length,
+                                    formHTML: form.outerHTML.substring(0, 200)
+                                });
                                 
-                                const searchInput = form.querySelector('input[name="q"]');
+                                // Suche Suchfeld mit verschiedenen Strategien
+                                let searchInput = form.querySelector('input[name="q"]') || 
+                                                form.querySelector('input[type="search"]') ||
+                                                form.querySelector('input[name="query"]') ||
+                                                form.querySelector('textarea[name="q"]');
+                                
+                                if (!searchInput) {
+                                    // Fallback: Erstes Text-Input-Feld finden
+                                    const textInputs = form.querySelectorAll('input[type="text"], input:not([type])');
+                                    searchInput = textInputs[0];
+                                }
+                                
                                 if (searchInput && searchInput.value.trim()) {
                                     const query = searchInput.value.trim();
+                                    console.log('📋 Search query found:', query);
+                                    
                                     const action = form.action || '/search';
+                                    const method = (form.method || 'GET').toUpperCase();
                                     
                                     // Erstelle URL basierend auf Form-Action
                                     let targetUrl;
                                     if (action.startsWith('/')) {
-                                        targetUrl = window.location.origin + action + '?q=' + encodeURIComponent(query);
-                                    } else if (action.includes('search')) {
-                                        targetUrl = action + (action.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(query);
+                                        // Relative URL - kombiniere mit current origin
+                                        const baseUrl = window.location.origin.includes('localhost:3030') 
+                                            ? 'https://www.google.com' 
+                                            : window.location.origin;
+                                        targetUrl = baseUrl + action;
+                                        if (method === 'GET') {
+                                            targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(query);
+                                        }
+                                    } else if (action.includes('search') || action.includes('google')) {
+                                        // Google-Such-URL
+                                        targetUrl = action;
+                                        if (method === 'GET') {
+                                            targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(query);
+                                        }
                                     } else {
+                                        // Fallback: Standard Google-Suche
                                         targetUrl = \`https://www.google.com/search?q=\${encodeURIComponent(query)}\`;
                                     }
                                     
-                                    console.log('📋 Form submission URL:', targetUrl);
+                                    console.log('📋 Form submission details:', {
+                                        url: targetUrl,
+                                        method: method,
+                                        query: query
+                                    });
                                     
-                                    // Verwende Ora Browser Navigation
+                                    // Verhindere Standard-Formular-Submission
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    
+                                    // Verwende Ora Browser Navigation mit verschiedenen Fallbacks
+                                    const navigateTo = (browser) => {
+                                        if (method === 'POST') {
+                                            // POST-Request mit Form-Daten
+                                            const formData = new FormData(form);
+                                            const dataString = new URLSearchParams(formData).toString();
+                                            browser.navigateWithMethod(targetUrl, 'POST', dataString);
+                                        } else {
+                                            // GET-Request (Standard)
+                                            browser.navigateToUrl(targetUrl);
+                                        }
+                                    };
+                                    
                                     if (window.parent && window.parent.oraBrowser) {
-                                        console.log('📋 Using Ora Browser navigation for form');
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        window.parent.oraBrowser.navigateToUrl(targetUrl);
+                                        console.log('📋 Using parent.oraBrowser navigation for form');
+                                        navigateTo(window.parent.oraBrowser);
+                                        return false;
+                                    } else if (window.top && window.top.oraBrowser) {
+                                        console.log('📋 Using top.oraBrowser navigation for form');
+                                        navigateTo(window.top.oraBrowser);
+                                        return false;
+                                    } else if (window.oraBrowser) {
+                                        console.log('📋 Using window.oraBrowser navigation for form');
+                                        navigateTo(window.oraBrowser);
+                                        return false;
+                                    } else {
+                                        // PostMessage-Fallback für cross-origin iframes
+                                        console.log('📋 Using postMessage fallback for form navigation');
+                                        
+                                        const message = {
+                                            type: 'navigate',
+                                            url: targetUrl,
+                                            method: method,
+                                            source: 'google-form'
+                                        };
+                                        
+                                        if (method === 'POST') {
+                                            const formData = new FormData(form);
+                                            message.data = new URLSearchParams(formData).toString();
+                                        }
+                                        
+                                        window.parent.postMessage(message, '*');
+                                        
+                                        // FALLBACK: Direkte Navigation wenn PostMessage fehlschlägt
+                                        setTimeout(() => {
+                                            console.log('🚨 PostMessage fallback - attempting direct navigation');
+                                            if (method === 'GET') {
+                                                window.location.href = targetUrl;
+                                            } else {
+                                                // Für POST - erstelle verstecktes Form und submitte es
+                                                const hiddenForm = document.createElement('form');
+                                                hiddenForm.method = 'POST';
+                                                hiddenForm.action = targetUrl;
+                                                hiddenForm.style.display = 'none';
+                                                
+                                                if (message.data) {
+                                                    const params = new URLSearchParams(message.data);
+                                                    for (const [key, value] of params) {
+                                                        const input = document.createElement('input');
+                                                        input.type = 'hidden';
+                                                        input.name = key;
+                                                        input.value = value;
+                                                        hiddenForm.appendChild(input);
+                                                    }
+                                                }
+                                                
+                                                document.body.appendChild(hiddenForm);
+                                                hiddenForm.submit();
+                                            }
+                                        }, 500);
+                                        
                                         return false;
                                     }
+                                } else {
+                                    console.log('🚨 No search input found or empty query - Form elements:', Array.from(form.elements).map(el => el.name || el.type));
                                 }
                             }, true);
                             
                             form.dataset.oraFormHandlerAdded = 'true';
                         });
                         
-                        console.log(\`📋 Added handlers to \${forms.length} Google forms\`);
+                        console.log(\`🚨 Added handlers to \${forms.length} Google forms\`);
+                        forms.forEach((form, i) => {
+                            console.log(\`🚨 Form \${i}:\`, form.action, form.method, form.name || form.id);
+                        });
                     }
                     
                     // ERWEITERTE INITIALISIERUNG
@@ -4039,7 +4954,14 @@ class OraBrowser {
             'content-container',
             'url-input',
             'navigation-buttons',
-            'tabs-container'
+            'tabs-container',
+            'bookmark-btn',
+            'manage-bookmarks-btn',
+            'bookmark-modal',
+            'bookmark-title',
+            'bookmark-url',
+            'bookmark-save',
+            'bookmarks-container'
         ];
         
         elements.forEach(id => {
@@ -4049,8 +4971,63 @@ class OraBrowser {
                 console.log(`   - Display: ${element.style.display || 'default'}`);
                 console.log(`   - Visibility: ${element.style.visibility || 'default'}`);
                 console.log(`   - Dimensions: ${element.offsetWidth}x${element.offsetHeight}`);
+                
+                // Spezielle Tests für Bookmark-Elemente
+                if (id === 'bookmark-btn') {
+                    console.log(`   - Event listeners: ${element.onclick ? 'Has onclick' : 'No onclick'}`);
+                    console.log(`   - Click test: Attempting manual click...`);
+                    
+                    // Test manual click
+                    try {
+                        element.click();
+                        console.log(`   - Manual click: SUCCESS`);
+                    } catch (e) {
+                        console.log(`   - Manual click: FAILED -`, e.message);
+                    }
+                }
             }
         });
+        
+        // Test bookmark functionality
+        this.debugBookmarkFunctionality();
+    }
+    
+    debugBookmarkFunctionality() {
+        console.log('📚 === BOOKMARK FUNCTIONALITY DEBUG ===');
+        
+        // Test Tauri API
+        console.log('📚 Tauri API available:', this.checkTauriAPI());
+        
+        // Test current bookmarks
+        console.log('📚 Current bookmarks count:', this.bookmarks.length);
+        console.log('📚 Current bookmarks:', this.bookmarks);
+        
+        // Test bookmark modal elements
+        const bookmarkModal = document.getElementById('bookmark-modal');
+        const bookmarkTitle = document.getElementById('bookmark-title');
+        const bookmarkUrl = document.getElementById('bookmark-url');
+        const bookmarkSave = document.getElementById('bookmark-save');
+        
+        console.log('📚 Bookmark modal elements:');
+        console.log('  - Modal:', !!bookmarkModal);
+        console.log('  - Title input:', !!bookmarkTitle);
+        console.log('  - URL input:', !!bookmarkUrl);
+        console.log('  - Save button:', !!bookmarkSave);
+        
+        // Test add bookmark function
+        console.log('📚 Testing addBookmarkManual function...');
+        try {
+            // Don't actually add, just test if function exists
+            if (typeof this.addBookmarkManual === 'function') {
+                console.log('📚 addBookmarkManual function: EXISTS');
+            } else {
+                console.log('📚 addBookmarkManual function: MISSING');
+            }
+        } catch (e) {
+            console.log('📚 addBookmarkManual test error:', e.message);
+        }
+        
+        console.log('📚 === BOOKMARK FUNCTIONALITY DEBUG END ===');
     }
 
     // 🔍 SCHRITT 1: FRONTEND-DEBUGGING FUNKTIONEN
@@ -4173,6 +5150,106 @@ class OraBrowser {
         console.log('📱 === DISPLAY LOGIC TEST END ===');
     }
 
+    // 📚 TEST BOOKMARK CREATION
+    async testBookmarkCreation() {
+        console.log('📚 === TESTING BOOKMARK CREATION ===');
+        
+        try {
+            console.log('📚 Step 1: Testing bookmark creation...');
+            
+            // Test with a simple bookmark
+            const testTitle = 'Test Bookmark';
+            const testUrl = 'https://example.com';
+            
+            console.log('📚 Calling addBookmarkManual...');
+            await this.addBookmarkManual(testTitle, testUrl);
+            
+            console.log('📚 Step 2: Checking if bookmark was added...');
+            const foundBookmark = this.bookmarks.find(b => b.title === testTitle);
+            
+            if (foundBookmark) {
+                console.log('✅ Bookmark creation test: SUCCESS');
+                console.log('📚 Created bookmark:', foundBookmark);
+            } else {
+                console.log('❌ Bookmark creation test: FAILED - Bookmark not found in array');
+            }
+            
+            // Check backend
+            if (this.checkTauriAPI()) {
+                console.log('📚 Step 3: Checking backend bookmarks...');
+                try {
+                    const backendBookmarks = await window.__TAURI__.core.invoke('get_bookmarks');
+                    console.log('📚 Backend bookmarks:', backendBookmarks);
+                    
+                    const backendBookmark = backendBookmarks.find(b => b.title === testTitle);
+                    if (backendBookmark) {
+                        console.log('✅ Backend bookmark test: SUCCESS');
+                    } else {
+                        console.log('❌ Backend bookmark test: FAILED - Bookmark not found in backend');
+                    }
+                } catch (error) {
+                    console.log('❌ Backend bookmark test: ERROR -', error);
+                }
+            }
+            
+        } catch (error) {
+            console.log('❌ Bookmark creation test: ERROR -', error);
+        }
+        
+        console.log('📚 === BOOKMARK CREATION TEST END ===');
+    }
+
+    // 🔄 Test Navigation Loop Detection
+    testNavigationLoopDetection() {
+        console.log('🔄 === TESTING NAVIGATION LOOP DETECTION ===');
+        
+        // Test URL
+        const testUrl = 'http://127.0.0.1:1430/readme/featured/nvda-coding-accessibility-software-blind';
+        
+        console.log('🔄 Testing with URL:', testUrl);
+        
+        // Simuliere mehrere Navigationen zur gleichen URL
+        for (let i = 0; i < 5; i++) {
+            this.addToNavigationHistory(testUrl);
+            console.log(`🔄 Navigation ${i + 1}: Loop detected =`, this.isNavigationLoop(testUrl));
+        }
+        
+        // Teste lokale URL Erkennung
+        console.log('🏠 Is local URL:', this.isLocalUrl(testUrl));
+        
+        // Lösche Historie
+        this.clearNavigationHistory();
+        
+        console.log('✅ Navigation loop detection test completed');
+    }
+    
+    // 🔄 Repariere Navigation Loops
+    fixNavigationLoops() {
+        console.log('🔧 === FIXING NAVIGATION LOOPS ===');
+        
+        // Lösche Navigation-Historie
+        this.clearNavigationHistory();
+        
+        // Entferne doppelte Navigation-Elemente
+        this.removeDuplicateNavigationElements();
+        
+        // Entferne Link-Interception und setze neu auf
+        this.linkInterceptionSetup = false;
+        if (this.linkObserver) {
+            this.linkObserver.disconnect();
+            this.linkObserver = null;
+        }
+        
+        // Reset GUI visibility flag
+        this.guiVisibilityEnsured = false;
+        
+        // Setze Link-Interception neu auf
+        this.setupUniversalLinkInterception();
+        
+        console.log('✅ Navigation loops and duplicate navigation fixed');
+        this.updateStatus('🔧 Navigation-Schleifen und doppelte Navigation behoben');
+    }
+
     // 🔧 MASTER DEBUG FUNCTION - Führt alle Tests aus
     runAllDebugTests() {
         console.log('🚀 === RUNNING ALL DEBUG TESTS ===');
@@ -4185,12 +5262,22 @@ class OraBrowser {
             this.testDisplayLogic();
         }, 1000);
         
-        // 3. Navigation Test
+        // 3. Bookmark Creation Test
         setTimeout(() => {
-            this.testNavigation('https://google.com');
+            this.testBookmarkCreation();
+        }, 2000);
+        
+        // 4. Navigation Loop Test
+        setTimeout(() => {
+            this.testNavigationLoopDetection();
         }, 3000);
         
-        // 4. Weitere Tests nach 5 Sekunden
+        // 5. Navigation Test
+        setTimeout(() => {
+            this.testNavigation('https://google.com');
+        }, 4000);
+        
+        // 6. Weitere Tests nach 6 Sekunden
         setTimeout(() => {
             console.log('🔧 Final debug check...');
             this.debugContentDisplay();
@@ -4228,9 +5315,82 @@ window.addEventListener('unhandledrejection', (e) => {
 
 console.log('📜 Ora Browser script loaded - Ready for initialization');
 
-// Message-Handler für iframe-Kommunikation
-window.addEventListener('message', (event) => {
-    console.log('📨 Message received from iframe:', event.data);
+// 📚 GLOBALE TEST-FUNKTIONEN FÜR BROWSER-KONSOLE
+window.testBookmarks = async function() {
+    console.log('📚 === MANUAL BOOKMARK TEST ===');
+    
+    if (window.oraBrowser) {
+        console.log('📚 Testing bookmark creation...');
+        await window.oraBrowser.addBookmarkManual('Manual Test', 'https://manual-test.com');
+        
+        console.log('📚 Current bookmarks:', window.oraBrowser.bookmarks);
+        
+        console.log('📚 Testing bookmark modal...');
+        window.oraBrowser.showBookmarkModal();
+    } else {
+        console.log('❌ oraBrowser not available');
+    }
+};
+
+window.debugBookmarks = function() {
+    console.log('📚 === BOOKMARK DEBUG INFO ===');
+    
+    if (window.oraBrowser) {
+        window.oraBrowser.debugBookmarkFunctionality();
+        window.oraBrowser.debugTestElements();
+    } else {
+        console.log('❌ oraBrowser not available');
+    }
+};
+
+        // 🚨 GLOBALER CLICK-HANDLER FÜR ALLE GOOGLE-FORMULARE
+        document.addEventListener('click', (event) => {
+            console.log('🚋 Global click detected:', event.target.tagName, event.target.type, event.target.value);
+            
+            // Prüfe ob es ein Google-Such-Button ist
+            if (event.target.tagName === 'INPUT' && 
+                (event.target.type === 'submit' || event.target.value?.includes('Suche') || event.target.name === 'btnK')) {
+                
+                console.log('🚨 GOOGLE SEARCH BUTTON CLICKED!', event.target);
+                
+                // Finde das zugehörige Formular
+                const form = event.target.closest('form');
+                if (form) {
+                    console.log('🚨 Found form for search button:', form.action);
+                    
+                    // Finde das Suchfeld
+                    const searchInput = form.querySelector('input[name="q"]') || 
+                                       form.querySelector('input[type="search"]') ||
+                                       form.querySelector('textarea[name="q"]');
+                    
+                    if (searchInput && searchInput.value.trim()) {
+                        const query = searchInput.value.trim();
+                        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                        
+                        console.log('🚨 INTERCEPTING GOOGLE SEARCH:', query, '->', searchUrl);
+                        
+                        // Verhindere Standard-Aktion
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // Navigiere direkt
+                        if (window.oraBrowser) {
+                            console.log('🚨 Using oraBrowser.navigateToUrl');
+                            window.oraBrowser.navigateToUrl(searchUrl);
+                        } else {
+                            console.log('🚨 Direct navigation fallback');
+                            window.location.href = searchUrl;
+                        }
+                        
+                        return false;
+                    }
+                }
+            }
+        }, true); // true = capture phase
+        
+        // Message-Handler für iframe-Kommunikation
+        window.addEventListener('message', (event) => {
+            console.log('📨 Message received from iframe:', event.data);
     
     if (event.data && event.data.type) {
         console.log('📨 Processing message type:', event.data.type);
@@ -4367,6 +5527,52 @@ window.debugOra = {
     duckduckgo: () => window.oraBrowser?.navigateToUrl('https://duckduckgo.com'),
     github: () => window.oraBrowser?.navigateToUrl('https://github.com'),
     
+    // 🔄 Navigation Loop Debugging
+    testLoops: () => {
+        if (window.oraBrowser) {
+            window.oraBrowser.testNavigationLoopDetection();
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
+    fixLoops: () => {
+        if (window.oraBrowser) {
+            window.oraBrowser.fixNavigationLoops();
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
+    // 🔧 Behebe doppelte Navigation
+    fixDuplicateNav: () => {
+        if (window.oraBrowser) {
+            window.oraBrowser.removeDuplicateNavigationElements();
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
+    // 🏠 Behebe lokale URL-Duplikate
+    fixLocalDuplicates: () => {
+        if (window.oraBrowser) {
+            console.log('🏠 Fixing local URL duplicates...');
+            window.oraBrowser.removeDuplicateNavigationElements();
+            window.oraBrowser.removeHiddenDuplicates();
+            // Zusätzlich: Entferne alle versteckten Elemente
+            const hiddenElements = document.querySelectorAll('[style*="display: none"], [style*="visibility: hidden"]');
+            hiddenElements.forEach(el => {
+                if (el.className.includes('nav') || el.className.includes('header') || el.className.includes('bookmark')) {
+                    console.log('🗑️ Removing hidden navigation element:', el);
+                    el.remove();
+                }
+            });
+            console.log('✅ Local URL duplicates fixed');
+        } else {
+            console.error('❌ oraBrowser instance not found!');
+        }
+    },
+    
     // 📊 Status-Info
     info: () => {
         console.log('🔧 === ORA BROWSER DEBUG INFO ===');
@@ -4381,6 +5587,10 @@ window.debugOra = {
         console.log('   - debugOra.google() - Navigate to Google');
         console.log('   - debugOra.duckduckgo() - Navigate to DuckDuckGo');
         console.log('   - debugOra.github() - Navigate to GitHub');
+        console.log('   - debugOra.testLoops() - Test navigation loop detection');
+        console.log('   - debugOra.fixLoops() - Fix navigation loops');
+        console.log('   - debugOra.fixDuplicateNav() - Fix duplicate navigation');
+        console.log('   - debugOra.fixLocalDuplicates() - Fix local URL duplicates');
     }
 };
 

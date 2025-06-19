@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Anti-Bot Strategies</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <!-- Header -->
+        <div class="popup-header">
+            <div class="plugin-icon">🤖</div>
+            <div class="plugin-info">
+                <h1>Anti-Bot Strategies</h1>
+                <span class="version">v1.0.0</span>
+            </div>
+            <div class="status-indicator" id="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Aktiv</span>
+            </div>
+        </div>
+
+        <!-- Main Toggle -->
+        <div class="main-toggle-section">
+            <label class="main-toggle">
+                <input type="checkbox" id="plugin-enabled" checked>
+                <span class="toggle-slider">
+                    <span class="toggle-text off">🤖 Standard</span>
+                    <span class="toggle-text on">🛡️ Anti-Bot</span>
+                </span>
+            </label>
+        </div>
+
+        <!-- Strategy Selection -->
+        <div class="strategies-section" id="strategies-section">
+            <h3>🎯 Aktive Strategien</h3>
+            <div class="strategies-grid">
+                <label class="strategy-item">
+                    <input type="checkbox" value="google" checked>
+                    <div class="strategy-content">
+                        <span class="strategy-icon">🔍</span>
+                        <div class="strategy-info">
+                            <span class="strategy-name">Google</span>
+                            <span class="strategy-desc">Google Anti-Bot Protection</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="strategy-item">
+                    <input type="checkbox" value="cloudflare" checked>
+                    <div class="strategy-content">
+                        <span class="strategy-icon">🌩️</span>
+                        <div class="strategy-info">
+                            <span class="strategy-name">Cloudflare</span>
+                            <span class="strategy-desc">Cloudflare Bypass</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="strategy-item">
+                    <input type="checkbox" value="yandex" checked>
+                    <div class="strategy-content">
+                        <span class="strategy-icon">🇷🇺</span>
+                        <div class="strategy-info">
+                            <span class="strategy-name">Yandex</span>
+                            <span class="strategy-desc">Russische Sites</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="strategy-item">
+                    <input type="checkbox" value="banking" checked>
+                    <div class="strategy-content">
+                        <span class="strategy-icon">🏦</span>
+                        <div class="strategy-info">
+                            <span class="strategy-name">Banking</span>
+                            <span class="strategy-desc">Finanz- und Bankenseiten</span>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="strategy-item">
+                    <input type="checkbox" value="social" checked>
+                    <div class="strategy-content">
+                        <span class="strategy-icon">📱</span>
+                        <div class="strategy-info">
+                            <span class="strategy-name">Social</span>
+                            <span class="strategy-desc">Social Media Plattformen</span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Ethics Section -->
+        <div class="ethics-section" id="ethics-section">
+            <label class="ethics-toggle">
+                <input type="checkbox" id="ethical-mode" checked>
+                <div class="ethics-content">
+                    <span class="ethics-icon">⚖️</span>
+                    <div class="ethics-info">
+                        <span class="ethics-name">Ethik-Modus</span>
+                        <span class="ethics-desc">Verantwortungsvolle Nutzung</span>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-section" id="stats-section">
+            <h3>📊 Statistiken</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="total-requests">0</span>
+                    <span class="stat-label">Anfragen</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="successful-bypasses">0</span>
+                    <span class="stat-label">Erfolgreiche Bypasses</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="blocked-attempts">0</span>
+                    <span class="stat-label">Blockierte Versuche</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="ethical-violations">0</span>
+                    <span class="stat-label">Ethik-Verstöße verhindert</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-section">
+            <button class="action-btn" id="reset-stats">
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">Statistiken zurücksetzen</span>
+            </button>
+            <button class="action-btn" id="open-settings">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">Erweiterte Einstellungen</span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="popup-footer">
+            <div class="plugin-credits">
+                <span>Entwickelt für Ora Browser</span>
+                <a href="#" id="help-link">Hilfe & Dokumentation</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html> 

@@ -1,0 +1,66 @@
+{
+  "id": "antibot-strategies",
+  "name": "🤖 Anti-Bot Strategies Plugin",
+  "version": "1.0.0",
+  "description": "Erweiterte Anti-Bot-Strategien für verschiedene Website-Typen",
+  "author": "Ora Browser Team",
+  "homepage": "https://github.com/ora-browser/antibot-plugin",
+  "permissions": [
+    "webRequest",
+    "proxy",
+    "storage",
+    "tabs",
+    "activeTab",
+    "background"
+  ],
+  "main_script": "antibot-plugin.js",
+  "api_version": "1.0",
+  "enabled": true,
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    "strategies/*.js",
+    "ui/*.html",
+    "ui/*.css"
+  ],
+  "browser_action": {
+    "default_title": "🤖 Anti-Bot Strategies",
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "ui/options.html",
+  "manifest_version": 2,
+  "minimum_ora_version": "1.0.0",
+  "dependencies": {
+    "ora-core": ">=1.0.0",
+    "ora-proxy": ">=1.0.0"
+  },
+  "settings": {
+    "enabled": true,
+    "strategies": {
+      "google": true,
+      "cloudflare": true,
+      "yandex": true,
+      "banking": true,
+      "social": true
+    },
+    "ethical_mode": true,
+    "auto_detect": true,
+    "statistics_enabled": true
+  },
+  "update_url": "https://plugins.ora-browser.com/antibot/updates.xml"
+} 

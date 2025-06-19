@@ -6,55 +6,31 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-// Core modules
-pub mod webview_integration;
-pub mod browser_features_simple;
-pub mod performance_optimizer;
-pub mod advanced_browser_features;
-pub mod ui_ux_improvements;
-pub mod security_features;
-pub mod platform_extension;
+// Core modules - nur existierende Module
+pub mod browser_features;
+pub mod smart_proxy;
+pub mod proxy_server;
+pub mod internal_webview2_navigation;
+pub mod ethical_safeguards;
+pub mod browser_state;
+pub mod tauri_commands;
+pub mod url_utils;
+pub mod plugin_manager;
 
-// Re-exports for testing
-pub use webview_integration::*;
-pub use browser_features_simple::*;
-pub use performance_optimizer::*;
-pub use advanced_browser_features::*;
-pub use ui_ux_improvements::*;
-pub use security_features::*;
-pub use platform_extension::*;
-
-// Test utilities
-#[cfg(test)]
-pub mod test_utils {
-    use std::sync::Once;
-    use once_cell::sync::Lazy;
-    use tokio::runtime::Runtime;
-    
-    static INIT: Once = Once::new();
-    static RT: Lazy<Runtime> = Lazy::new(|| {
-        Runtime::new().expect("Failed to create test runtime")
-    });
-    
-    pub fn init_test_env() {
-        INIT.call_once(|| {
-            env_logger::init();
-        });
-    }
-    
-    pub fn test_runtime() -> &'static Runtime {
-        &RT
-    }
-}
+// Re-exports für die wichtigsten Funktionen
+pub use browser_features::BookmarkManager;
+pub use smart_proxy::SmartProxy;
+pub use proxy_server::ProxyServer;
+pub use internal_webview2_navigation::{InternalWebView2Navigator, WebViewConfig};
+pub use browser_state::{BrowserState, Tab, Bookmark, BrowserSettings};
+pub use plugin_manager::{PluginManager, PluginInfo, PluginManifest};
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::test_utils::*;
     
     #[test]
     fn test_library_initialization() {
-        init_test_env();
         // Basic smoke test
         assert_eq!(1 + 1, 2);
     }

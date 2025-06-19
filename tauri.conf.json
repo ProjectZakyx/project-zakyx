@@ -1,29 +1,38 @@
 {
-  "$schema": "https://schema.tauri.app/config/2.0.0",
-  "productName": "Ora Browser",
-  "version": "1.0.0",
-  "identifier": "com.ora.browser",
-  "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "frontendDist": "./dist"
-  },
-  "app": {
-    "security": {
-      "csp": null
+    "$schema": "https://schema.tauri.app/config/2.0.0",
+    "productName": "Ora Browser",
+    "version": "1.0.0",
+    "identifier": "com.ora.browser",
+    "build": {
+        "beforeBuildCommand": "",
+        "beforeDevCommand": "",
+        "frontendDist": "./dist"
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 800,
-        "resizable": true,
-        "title": "Ora Browser",
-        "width": 1200
-      }
-    ]
-  },
-  "bundle": {
-    "active": false
-  },
-  "plugins": {}
-} 
+    "app": {
+        "security": {
+            "csp": null,
+            "assetProtocol": {
+                "enable": true,
+                "scope": [
+                    "**"
+                ]
+            },
+            "dangerousDisableAssetCspModification": true
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "height": 800,
+                "resizable": true,
+                "title": "Ora Browser",
+                "width": 1200,
+                "label": "main",
+                "url": "index.html"
+            }
+        ]
+    },
+    "bundle": {
+        "active": false
+    },
+    "plugins": {}
+}

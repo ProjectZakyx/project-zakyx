@@ -53,6 +53,7 @@ fn main() {
                  add_bookmark,
                  get_bookmarks,
                  remove_bookmark,
+                 sync_bookmarks,
                  get_settings,
                  update_settings,
                  open_external_url,
