@@ -1,0 +1,52 @@
+# 🚀 ORA BROWSER - PRODUKTIONS-KONFIGURATION
+# Version: 1.0.0
+# Automatisch erstellt am: 2025-06-21
+
+version = "1.0.0"
+
+[proxy]
+# Haupt-Port für den Proxy-Server
+primary_port = 3030
+# Fallback-Port falls Haupt-Port belegt ist
+fallback_port = 3031
+# Timeout für HTTP-Requests (Sekunden)
+request_timeout_secs = 30
+# Timeout für Verbindungsaufbau (Sekunden)
+connect_timeout_secs = 10
+# Maximale Anzahl von Redirects
+max_redirects = 5
+# Maximale Anzahl von Retry-Versuchen
+max_retries = 3
+# Stack-Größe für Proxy-Thread (MB)
+stack_size_mb = 2
+
+[logging]
+# Log-Level: "error", "warn", "info", "debug", "trace"
+log_level = "info"
+# Datei-Logging aktivieren
+enable_file_logging = true
+# JSON-Format für Logs aktivieren
+enable_json_logging = true
+# Maximale Anzahl von Log-Dateien
+max_log_files = 7
+# Log-Rotation (Tage)
+log_rotation_days = 1
+
+[security]
+# CORS-Bypass aktivieren (für Web-Kompatibilität)
+enable_cors_bypass = true
+# CSP-Bypass aktivieren (für Sicherheits-Fixes)
+enable_csp_bypass = true
+# Cookie-Handling aktivieren
+enable_cookie_handling = true
+# Automatisches HTTPS-Upgrade
+enable_https_upgrade = true
+# Maximale Content-Größe (MB)
+max_content_size_mb = 50
+
+# 📝 PRODUKTIONS-HINWEISE:
+# 1. Diese Konfiguration ist für den Produktions-Einsatz optimiert
+# 2. Log-Level "info" bietet gute Balance zwischen Performance und Debugging
+# 3. Alle Sicherheitsfeatures sind aktiviert
+# 4. Timeouts sind für stabile Internetverbindungen optimiert
+# 5. Bei Problemen: Log-Level auf "debug" setzen für detaillierte Ausgaben 

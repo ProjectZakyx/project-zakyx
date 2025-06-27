@@ -30,6 +30,11 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 anyhow = "1.0.98"
 
+# 📝 STRUCTURED LOGGING
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
 # 🪟 WINDOWS APIS (für Windows-spezifische Features)
 windows = { version = "0.52", features = [
     "Win32_Foundation",
@@ -54,6 +59,9 @@ regex = "1.10"
 
 # 🗄️ STORAGE
 dirs = "5.0"
+
+# 📝 CONFIGURATION
+toml = "0.8"
 
 # 🧪 COMPRESSION (für Smart-Proxy)
 flate2 = "1.1.2"

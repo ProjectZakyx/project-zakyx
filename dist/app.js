@@ -416,24 +416,50 @@ class OraBrowser {
     }
 
     goBack() {
+        console.log('⬅️ Go Back called - History:', this.history.length, 'Index:', this.historyIndex);
+        
         if (this.history.length > 1 && this.historyIndex > 0) {
             this.historyIndex--;
             const url = this.history[this.historyIndex];
+            console.log('⬅️ Going back to:', url);
+            
+            // Aktualisiere UI sofort
+            this.updateUrlInput(url);
+            this.currentUrl = url;
+            
+            // Navigiere zur URL
             this.navigateToUrl(url, true, false); // false = don't add to history
-            this.updateStatus(`Zurück zu: ${url}`);
+            this.updateStatus(`⬅️ Zurück zu: ${this.extractDomain(url)}`);
+            
+            // Aktualisiere Navigation-Button-Status
+            this.updateNavigationButtonState();
         } else {
-            this.updateStatus('Keine vorherige Seite verfügbar');
+            console.log('⬅️ Cannot go back - no previous pages');
+            this.updateStatus('❌ Keine vorherige Seite verfügbar');
         }
     }
 
     goForward() {
+        console.log('➡️ Go Forward called - History:', this.history.length, 'Index:', this.historyIndex);
+        
         if (this.historyIndex < this.history.length - 1) {
             this.historyIndex++;
             const url = this.history[this.historyIndex];
+            console.log('➡️ Going forward to:', url);
+            
+            // Aktualisiere UI sofort
+            this.updateUrlInput(url);
+            this.currentUrl = url;
+            
+            // Navigiere zur URL
             this.navigateToUrl(url, true, false); // false = don't add to history
-            this.updateStatus(`Vorwärts zu: ${url}`);
+            this.updateStatus(`➡️ Vorwärts zu: ${this.extractDomain(url)}`);
+            
+            // Aktualisiere Navigation-Button-Status
+            this.updateNavigationButtonState();
         } else {
-            this.updateStatus('Keine nächste Seite verfügbar');
+            console.log('➡️ Cannot go forward - no next pages');
+            this.updateStatus('❌ Keine nächste Seite verfügbar');
         }
     }
 
@@ -476,6 +502,31 @@ class OraBrowser {
         }
         
         console.log(`📚 Added to history: ${url} (index: ${this.historyIndex})`);
+        
+        // Aktualisiere Navigation-Button-Status
+        this.updateNavigationButtonState();
+    }
+
+    // 🔄 AKTUALISIERE NAVIGATION-BUTTON-STATUS
+    updateNavigationButtonState() {
+        const backBtn = document.getElementById('back-btn');
+        const forwardBtn = document.getElementById('forward-btn');
+        
+        if (backBtn) {
+            const canGoBack = this.history.length > 1 && this.historyIndex > 0;
+            backBtn.disabled = !canGoBack;
+            backBtn.style.opacity = canGoBack ? '1' : '0.5';
+            backBtn.title = canGoBack ? 'Zurück zur vorherigen Seite' : 'Keine vorherige Seite verfügbar';
+        }
+        
+        if (forwardBtn) {
+            const canGoForward = this.historyIndex < this.history.length - 1;
+            forwardBtn.disabled = !canGoForward;
+            forwardBtn.style.opacity = canGoForward ? '1' : '0.5';
+            forwardBtn.title = canGoForward ? 'Vorwärts zur nächsten Seite' : 'Keine nächste Seite verfügbar';
+        }
+        
+        console.log(`🔄 Navigation buttons updated - Back: ${this.historyIndex > 0}, Forward: ${this.historyIndex < this.history.length - 1}`);
     }
 
     setupEventListeners() {
@@ -2178,6 +2229,21 @@ class OraBrowser {
                     this.removeDuplicateNavigationElements();
                 }, 1000);
                 
+                // 🔧 ZUSÄTZLICHE BEREINIGUNG NACH 2 SEKUNDEN
+                setTimeout(() => {
+                    console.log('🔧 Second cleanup pass for local URL...');
+                    this.removeDuplicateNavigationElements();
+                    this.removeLocalUrlSpecificDuplicates();
+                }, 2000);
+                
+                // 🔧 FINALE BEREINIGUNG NACH 3 SEKUNDEN
+                setTimeout(() => {
+                    console.log('🔧 Final cleanup pass for local URL...');
+                    this.removeDuplicateNavigationElements();
+                    this.removeLocalUrlSpecificDuplicates();
+                    this.removeHiddenDuplicates();
+                }, 3000);
+                
             } else {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -2266,31 +2332,110 @@ class OraBrowser {
             '.nav',
             '.navbar',
             '.header',
-            '.toolbar'
+            '.toolbar',
+            // 🆕 ERWEITERTE SELEKTOREN FÜR AGGRESSIVE BEREINIGUNG
+            '.modal',
+            '.modal-header',
+            '.modal-backdrop',
+            'button[class*="btn"]',
+            'input[class*="form"]',
+            '[class*="modal"]',
+            '[id*="modal"]',
+            '[class*="back-btn"]',
+            '[class*="forward-btn"]',
+            '[class*="reload-btn"]',
+            '[class*="home-btn"]',
+            '[class*="manage-bookmarks"]'
         ];
         
-        navigationSelectors.forEach(selector => {
-            try {
-                const elements = document.querySelectorAll(selector);
-                if (elements.length > 1) {
-                    console.log(`🔧 Found ${elements.length} duplicate elements for selector: ${selector}`);
-                    
-                    // Behalte nur das erste Element, entferne alle anderen
-                    for (let i = 1; i < elements.length; i++) {
-                        const elementToRemove = elements[i];
-                        console.log(`🗑️ Removing duplicate element:`, elementToRemove.tagName, elementToRemove.id || elementToRemove.className);
-                        elementToRemove.remove();
+        // 🔄 MEHRFACHE DURCHLÄUFE FÜR AGGRESSIVE BEREINIGUNG
+        for (let round = 0; round < 3; round++) {
+            console.log(`🔄 Duplicate removal round ${round + 1}/3`);
+            
+            navigationSelectors.forEach(selector => {
+                try {
+                    const elements = document.querySelectorAll(selector);
+                    if (elements.length > 1) {
+                        console.log(`🔧 Found ${elements.length} duplicate elements for selector: ${selector}`);
+                        
+                        // Bestimme das beste Element zum Behalten (meist das erste sichtbare)
+                        let keepElement = elements[0];
+                        for (let element of elements) {
+                            if (element.offsetParent !== null && !element.style.display?.includes('none')) {
+                                keepElement = element;
+                                break;
+                            }
+                        }
+                        
+                        // Entferne alle anderen Elemente
+                        for (let i = 0; i < elements.length; i++) {
+                            const elementToRemove = elements[i];
+                            if (elementToRemove !== keepElement) {
+                                console.log(`🗑️ Removing duplicate element:`, elementToRemove.tagName, elementToRemove.id || elementToRemove.className);
+                                elementToRemove.remove();
+                            }
+                        }
                     }
+                } catch (e) {
+                    console.warn('🔧 Error checking selector:', selector, e);
                 }
-            } catch (e) {
-                console.warn('🔧 Error checking selector:', selector, e);
-            }
-        });
+            });
+        }
         
         // Zusätzliche Bereinigung für versteckte oder unsichtbare Duplikate
         this.removeHiddenDuplicates();
         
+        // 🆕 SPEZIELLE BEREINIGUNG FÜR LOKALE URLS
+        this.removeLocalUrlSpecificDuplicates();
+        
         console.log('✅ Duplicate navigation elements cleanup completed');
+    }
+    
+    // 🆕 SPEZIELLE BEREINIGUNG FÜR LOKALE URLS
+    removeLocalUrlSpecificDuplicates() {
+        console.log('🏠 === REMOVING LOCAL URL SPECIFIC DUPLICATES ===');
+        
+        // Entferne alle versteckten Modal-Elemente die doppelt sind
+        const hiddenModals = document.querySelectorAll('.modal[style*="display: none"], .modal[style*="visibility: hidden"]');
+        hiddenModals.forEach(modal => {
+            console.log('🗑️ Removing hidden modal:', modal);
+            modal.remove();
+        });
+        
+        // Entferne doppelte Buttons nach Typ
+        const buttonTypes = ['back-btn', 'forward-btn', 'reload-btn', 'home-btn', 'manage-bookmarks-btn'];
+        buttonTypes.forEach(btnType => {
+            const buttons = document.querySelectorAll(`button.${btnType}, button[class*="${btnType}"]`);
+            if (buttons.length > 1) {
+                console.log(`🗑️ Found ${buttons.length} duplicate ${btnType} buttons, keeping only first`);
+                for (let i = 1; i < buttons.length; i++) {
+                    buttons[i].remove();
+                }
+            }
+        });
+        
+        // Entferne doppelte Bookmark-Container
+        const bookmarkContainers = document.querySelectorAll('.bookmarks-container, [class*="bookmarks-container"]');
+        if (bookmarkContainers.length > 1) {
+            console.log(`🗑️ Found ${bookmarkContainers.length} duplicate bookmark containers`);
+            for (let i = 1; i < bookmarkContainers.length; i++) {
+                bookmarkContainers[i].remove();
+            }
+        }
+        
+        // Entferne doppelte Form-Eingabefelder
+        const duplicateInputs = ['bookmark-title', 'bookmark-url'];
+        duplicateInputs.forEach(inputClass => {
+            const inputs = document.querySelectorAll(`input.${inputClass}, input[class*="${inputClass}"]`);
+            if (inputs.length > 1) {
+                console.log(`🗑️ Found ${inputs.length} duplicate ${inputClass} inputs`);
+                for (let i = 1; i < inputs.length; i++) {
+                    inputs[i].remove();
+                }
+            }
+        });
+        
+        console.log('✅ Local URL specific duplicates cleanup completed');
     }
     
     // 🔧 Entferne versteckte Duplikate
@@ -4366,6 +4511,9 @@ class OraBrowser {
         optimized = optimized.replace(/if\s*\(\s*top\s*!=\s*self\s*\)/g, 'if (false)');
         optimized = optimized.replace(/if\s*\(\s*window\s*!=\s*top\s*\)/g, 'if (false)');
         optimized = optimized.replace(/if\s*\(\s*parent\s*!=\s*window\s*\)/g, 'if (false)');
+        optimized = optimized.replace(/if\s*\(\s*self\s*!=\s*top\s*\)/g, 'if (false)');
+        optimized = optimized.replace(/top\.location\.href/g, 'window.location.href');
+        optimized = optimized.replace(/parent\.location\.href/g, 'window.location.href');
         
         // 🌐 FÜGE ORA BROWSER BRANDING HINZU
         const domain = this.extractDomain(url);
@@ -5557,17 +5705,51 @@ window.debugOra = {
     fixLocalDuplicates: () => {
         if (window.oraBrowser) {
             console.log('🏠 Fixing local URL duplicates...');
-            window.oraBrowser.removeDuplicateNavigationElements();
-            window.oraBrowser.removeHiddenDuplicates();
-            // Zusätzlich: Entferne alle versteckten Elemente
-            const hiddenElements = document.querySelectorAll('[style*="display: none"], [style*="visibility: hidden"]');
-            hiddenElements.forEach(el => {
-                if (el.className.includes('nav') || el.className.includes('header') || el.className.includes('bookmark')) {
-                    console.log('🗑️ Removing hidden navigation element:', el);
+            
+            // 🔄 MEHRFACHE AGGRESSIVE BEREINIGUNG
+            for (let i = 0; i < 3; i++) {
+                console.log(`🔄 Aggressive cleanup round ${i + 1}/3`);
+                window.oraBrowser.removeDuplicateNavigationElements();
+                window.oraBrowser.removeHiddenDuplicates();
+                window.oraBrowser.removeLocalUrlSpecificDuplicates();
+            }
+            
+            // 🗑️ ZUSÄTZLICHE MANUELLE BEREINIGUNG
+            const problematicElements = document.querySelectorAll(`
+                [style*="display: none"], 
+                [style*="visibility: hidden"],
+                .modal:not([style*="display: block"]),
+                .modal-backdrop,
+                [class*="duplicate"],
+                [data-duplicate="true"]
+            `);
+            
+            problematicElements.forEach(el => {
+                const className = el.className?.toString() || '';
+                const elementId = el.id || '';
+                
+                if (className.includes('nav') || className.includes('header') || 
+                    className.includes('bookmark') || className.includes('browser-') ||
+                    className.includes('toolbar') || className.includes('modal') ||
+                    elementId.includes('nav') || elementId.includes('header') ||
+                    elementId.includes('bookmark') || elementId.includes('browser-')) {
+                    console.log('🗑️ Removing problematic element:', el.tagName, className || elementId);
                     el.remove();
                 }
             });
-            console.log('✅ Local URL duplicates fixed');
+            
+            // 🧹 FINALE BEREINIGUNG - ENTFERNE ALLE LEEREN CONTAINER
+            const emptyContainers = document.querySelectorAll('div:empty, span:empty');
+            emptyContainers.forEach(container => {
+                const className = container.className?.toString() || '';
+                if (className.includes('nav') || className.includes('header') || 
+                    className.includes('bookmark') || className.includes('browser-')) {
+                    console.log('🗑️ Removing empty container:', container.tagName, className);
+                    container.remove();
+                }
+            });
+            
+            console.log('✅ Local URL duplicates fixed with aggressive cleanup');
         } else {
             console.error('❌ oraBrowser instance not found!');
         }

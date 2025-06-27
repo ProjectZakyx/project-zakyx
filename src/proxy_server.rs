@@ -53,8 +53,8 @@ impl ProxyServer {
         
         // 🌐 UNIVERSELLE RESSOURCEN-ROUTE für alle externen Anfragen
         let universal_proxy_route = warp::path("universal")
-            .and(warp::query::<std::collections::HashMap<String, String>>())
-            .and_then(|params: std::collections::HashMap<String, String>| async move {
+            .and(warp::query::<HashMap<String, String>>())
+            .and_then(|params: HashMap<String, String>| async move {
                 if let Some(url) = params.get("url") {
                     Self::handle_universal_resource(url.clone()).await
                 } else {
@@ -66,8 +66,8 @@ impl ProxyServer {
         
         // Proxy-Route mit verbesserter CORS-Behandlung
         let proxy_route = warp::path("proxy")
-            .and(warp::query::<std::collections::HashMap<String, String>>())
-            .and_then(|params: std::collections::HashMap<String, String>| async move {
+            .and(warp::query::<HashMap<String, String>>())
+            .and_then(|params: HashMap<String, String>| async move {
                 if let Some(url) = params.get("url") {
                     Self::handle_proxy(url.clone()).await
                 } else {
@@ -96,8 +96,8 @@ impl ProxyServer {
 
         // 🚀 NEUE CATCH-ALL-ROUTE für relative URLs (aber nicht für lokale Assets)
         let catch_all_route = warp::path::tail()
-            .and(warp::query::<std::collections::HashMap<String, String>>())
-            .and_then(|path: warp::path::Tail, params: std::collections::HashMap<String, String>| async move {
+            .and(warp::query::<HashMap<String, String>>())
+            .and_then(|path: warp::path::Tail, params: HashMap<String, String>| async move {
                 let relative_path = path.as_str();
                 
                 // 🚫 IGNORIERE LOKALE ASSET-DATEIEN
@@ -162,12 +162,42 @@ impl ProxyServer {
     ) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
         println!("🔄 Universal resource request for: {}", url);
         
-        // Bestimme Content-Type basierend auf URL-Endung
-        let content_type = Self::determine_content_type(&url);
-        
         match Self::fetch_resource(&url).await {
             Ok(response) => {
-                println!("✅ Resource loaded: {} bytes, type: {}", response.content.len(), content_type);
+                println!("✅ Resource loaded: {} bytes", response.content.len());
+                
+                // 🎯 INTELLIGENTE CONTENT-TYPE BESTIMMUNG
+                let content_type = if response.content_type.contains("text/html") || 
+                                    response.content.trim_start().starts_with("<!DOCTYPE") ||
+                                    response.content.trim_start().starts_with("<html") ||
+                                    (!url.contains('.') && response.content.contains("<html")) {
+                    // HTML-Seite: Injiziere Sicherheitsfixes und verwende HTML Content-Type
+                    println!("🌐 Detected HTML content, injecting security fixes");
+                    let enhanced_content = Self::inject_cors_and_security_fixes(&response.content, &url);
+                    
+                    let response = warp::http::Response::builder()
+                        .status(response.status_code)
+                        .header("Content-Type", "text/html; charset=utf-8")
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH")
+                        .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma")
+                        .header("Access-Control-Allow-Credentials", "true")
+                        .header("Cache-Control", "public, max-age=3600")
+                        .header("Cross-Origin-Resource-Policy", "cross-origin")
+                        // 🛡️ CSP-BYPASS FÜR HTML
+                        .header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline';")
+                        .body(enhanced_content)
+                        .unwrap();
+                    
+                    return Ok(Box::new(response));
+                } else {
+                    // Verwende ursprünglichen Content-Type oder bestimme basierend auf URL
+                    if response.content_type != "text/plain" {
+                        &response.content_type
+                    } else {
+                        Self::determine_content_type(&url)
+                    }
+                };
                 
                 let response = warp::http::Response::builder()
                     .status(response.status_code)
@@ -235,18 +265,27 @@ impl ProxyServer {
             "application/json"
         } else if url.contains(".xml") {
             "application/xml"
+        } else if url.contains(".html") || url.contains(".htm") {
+            "text/html; charset=utf-8"
         } else if url.contains(".png") {
             "image/png"
         } else if url.contains(".jpg") || url.contains(".jpeg") {
             "image/jpeg"
         } else if url.contains(".gif") {
             "image/gif"
+        } else if url.contains(".webp") {
+            "image/webp"
         } else if url.contains(".svg") {
             "image/svg+xml"
         } else if url.contains(".woff") || url.contains(".woff2") {
             "font/woff2"
         } else if url.contains(".ttf") {
             "font/ttf"
+        } else if url.contains(".ico") {
+            "image/x-icon"
+        } else if !url.contains('.') && (url.contains("yandex") || url.contains("google") || url.contains("bing") || url.contains("search")) {
+            // Suchmaschinen-URLs ohne Dateierweiterung sind meist HTML
+            "text/html; charset=utf-8"
         } else {
             "text/plain"
         }
@@ -359,108 +398,8 @@ impl ProxyServer {
         })
     }
 
-    async fn handle_proxy_request_with_cors(
-        params: HashMap<String, String>,
-        method: warp::http::Method,
-        headers: warp::http::HeaderMap,
-    ) -> Result<warp::http::Response<String>, warp::http::StatusCode> {
-        let origin = headers.get("origin")
-            .and_then(|h| h.to_str().ok())
-            .unwrap_or("null");
-        
-        let allow_origin = if origin == "null" || origin.is_empty() {
-            "http://localhost:3030"
-        } else {
-            origin
-        };
-        
-        if method == warp::http::Method::OPTIONS {
-            let response = warp::http::Response::builder()
-                .status(200)
-                .header("Access-Control-Allow-Origin", allow_origin)
-                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-                .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cookie, Cache-Control, Pragma, User-Agent, Accept-Language, Accept-Encoding, DNT, Connection, Upgrade-Insecure-Requests, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User")
-                .header("Access-Control-Allow-Credentials", "true")
-                .header("Access-Control-Max-Age", "86400")
-                .header("Content-Length", "0")
-                .body("".to_string()).unwrap();
-            
-            return Ok(response);
-        }
-
-        let url = params.get("url").unwrap_or(&"https://google.com".to_string()).clone();
-        let request_method = params.get("method").unwrap_or(&"GET".to_string()).clone();
-        let form_data = params.get("data").unwrap_or(&"".to_string()).clone();
-        
-        println!("🔄 Proxying {} request to: {}", request_method, url);
-        if !form_data.is_empty() {
-            println!("📝 With form data: {}", form_data);
-        }
-
-        match Self::fetch_with_method(&url, &request_method, &form_data).await {
-            Ok(proxy_response) => {
-                let enhanced_content = Self::inject_cors_and_security_fixes(&proxy_response.content, &url);
-                
-                let response = warp::http::Response::builder()
-                    .status(200)
-                    .header("Content-Type", "text/html; charset=utf-8")
-                    // 🌐 ERWEITERTE CORS-HEADER
-                    .header("Access-Control-Allow-Origin", allow_origin)
-                    .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
-                    .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cookie, Cache-Control, Pragma, User-Agent, Accept-Language, Accept-Encoding, DNT, Connection, Upgrade-Insecure-Requests, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User, X-Forwarded-For, X-Real-IP, Referer")
-                    .header("Access-Control-Allow-Credentials", "true")
-                    .header("Access-Control-Expose-Headers", "*")
-                    .header("Access-Control-Max-Age", "86400")
-                    .header("Vary", "Origin")
-                    // 🛡️ EXPLIZITE CSP-BYPASS-HEADER
-                    .header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src * data: blob:; media-src * data: blob:; object-src *; child-src * data: blob:; frame-src * data: blob:; worker-src * data: blob:; frame-ancestors *; form-action *; base-uri *;")
-                    .header("X-Frame-Options", "ALLOWALL")
-                    .header("X-Content-Type-Options", "nosniff")
-                    .header("Referrer-Policy", "no-referrer-when-downgrade")
-                    .header("Permissions-Policy", "accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*")
-                    // 🚀 ZUSÄTZLICHE SICHERHEITS-BYPASS-HEADER
-                    .header("Cross-Origin-Embedder-Policy", "unsafe-none")
-                    .header("Cross-Origin-Opener-Policy", "unsafe-none")
-                    .header("Cross-Origin-Resource-Policy", "cross-origin")
-                    .header("X-Permitted-Cross-Domain-Policies", "all")
-                    .header("X-XSS-Protection", "0")
-                    .body(enhanced_content).unwrap();
-                
-                Ok(response)
-            },
-            Err(e) => {
-                println!("❌ Proxy request failed: {}", e);
-                let error_page = Self::create_error_page(&url, &e.to_string());
-                
-                let response = warp::http::Response::builder()
-                    .status(500)
-                    .header("Content-Type", "text/html; charset=utf-8")
-                    // 🌐 ERWEITERTE CORS-HEADER
-                    .header("Access-Control-Allow-Origin", allow_origin)
-                    .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
-                    .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cookie, Cache-Control, Pragma, User-Agent, Accept-Language, Accept-Encoding, DNT, Connection, Upgrade-Insecure-Requests, Sec-Fetch-Dest, Sec-Fetch-Mode, Sec-Fetch-Site, Sec-Fetch-User, X-Forwarded-For, X-Real-IP, Referer")
-                    .header("Access-Control-Allow-Credentials", "true")
-                    .header("Access-Control-Expose-Headers", "*")
-                    .header("Access-Control-Max-Age", "86400")
-                    .header("Vary", "Origin")
-                    // 🛡️ EXPLIZITE CSP-BYPASS-HEADER
-                    .header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src * data: blob:; media-src * data: blob:; object-src *; child-src * data: blob:; frame-src * data: blob:; worker-src * data: blob:; frame-ancestors *; form-action *; base-uri *;")
-                    .header("X-Frame-Options", "ALLOWALL")
-                    .header("X-Content-Type-Options", "nosniff")
-                    .header("Referrer-Policy", "no-referrer-when-downgrade")
-                    .header("Permissions-Policy", "accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*")
-                    // 🚀 ZUSÄTZLICHE SICHERHEITS-BYPASS-HEADER
-                    .header("Cross-Origin-Embedder-Policy", "unsafe-none")
-                    .header("Cross-Origin-Opener-Policy", "unsafe-none")
-                    .header("Cross-Origin-Resource-Policy", "cross-origin")
-                    .header("X-Permitted-Cross-Domain-Policies", "all")
-                    .header("X-XSS-Protection", "0")
-                    .body(error_page).unwrap();
-                
-                Ok(response)
-            }
-        }
-    }
+    // 🗑️ ENTFERNT: Unbenutzte handle_proxy_request_with_cors Funktion
+    // Diese Funktion wurde entfernt, da sie nicht verwendet wurde und eine Compiler-Warnung verursachte
 
     async fn handle_assets(
         path: warp::path::Tail,
@@ -691,69 +630,204 @@ impl ProxyServer {
         // 5. Füge ultimatives Resource-Proxy-Script hinzu
         let resource_proxy_script = r#"
 <script>
-// 🔍 GOOGLE RESOURCE PROXY OVERRIDE
+// 🌐 ULTIMATIVE UNIVERSELLE RESOURCE PROXY OVERRIDE
 (function() {
     'use strict';
     
-    console.log('🔍 Google Resource Proxy activated');
+    console.log('🌐 Universal Resource Proxy activated');
     
-             // Überschreibe alle Resource-Loading-Funktionen
-         const originalCreateElement = document.createElement;
-         document.createElement = function(tagName) {
-             const element = originalCreateElement.call(this, tagName);
-             
-             if (tagName.toLowerCase() === 'link' || tagName.toLowerCase() === 'script' || tagName.toLowerCase() === 'img') {
-                 const originalSetAttribute = element.setAttribute;
-                 element.setAttribute = function(name, value) {
-                     if ((name === 'href' || name === 'src') && typeof value === 'string') {
-                         // Prüfe auf externe Ressourcen
-                         if (value.startsWith('http://') || value.startsWith('https://')) {
-                             try {
-                                 const urlObj = new URL(value);
-                                 const isExternal = !urlObj.hostname.includes('localhost') && 
-                                                   !urlObj.hostname.includes('127.0.0.1') &&
-                                                   !urlObj.hostname.includes('local');
-                                 
-                                 if (isExternal) {
-                                     // Universelle Weiterleitung für ALLE externen Ressourcen
-                                     const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(value);
-                                     console.log('🌐 Proxying external resource:', value, '->', proxyUrl);
-                                     return originalSetAttribute.call(this, name, proxyUrl);
-                                 }
-                             } catch (e) {
-                                 console.log('🔄 URL parsing failed for resource:', value, e);
-                             }
-                         }
-                     }
-                     return originalSetAttribute.call(this, name, value);
-                 };
-             }
-             
-             return element;
-         };
-    
-    // Überschreibe auch direkte Assignments
-    function proxyResourceUrls() {
-        const elements = document.querySelectorAll('link[href*="gstatic"], script[src*="gstatic"], img[src*="gstatic"], link[href*="googleapis"], script[src*="googleapis"]');
-        elements.forEach(el => {
-            if (el.href && el.href.includes('gstatic.com')) {
-                el.href = 'http://localhost:3030/proxy?url=' + encodeURIComponent(el.href);
+    // 🔧 ÜBERSCHREIBE ALLE RESOURCE-LOADING-FUNKTIONEN
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName) {
+        const element = originalCreateElement.call(this, tagName);
+        
+        if (tagName.toLowerCase() === 'link' || tagName.toLowerCase() === 'script' || tagName.toLowerCase() === 'img') {
+            const originalSetAttribute = element.setAttribute;
+            element.setAttribute = function(name, value) {
+                if ((name === 'href' || name === 'src') && typeof value === 'string') {
+                    // Prüfe auf externe Ressourcen
+                    if (value.startsWith('http://') || value.startsWith('https://')) {
+                        try {
+                            const urlObj = new URL(value);
+                            const isExternal = !urlObj.hostname.includes('localhost') && 
+                                              !urlObj.hostname.includes('127.0.0.1') &&
+                                              !urlObj.hostname.includes('local');
+                            
+                            if (isExternal) {
+                                // Universelle Weiterleitung für ALLE externen Ressourcen
+                                const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(value);
+                                console.log('🌐 Proxying external resource:', value, '->', proxyUrl);
+                                return originalSetAttribute.call(this, name, proxyUrl);
+                            }
+                        } catch (e) {
+                            console.log('🔄 URL parsing failed for resource:', value, e);
+                        }
+                    }
+                }
+                return originalSetAttribute.call(this, name, value);
+            };
+        }
+        
+        return element;
+    };
+
+    // 🖼️ SPEZIELLE BILD-HANDLING - ERWEITERT FÜR CUSTOM ELEMENTS
+    function proxyImages() {
+        // Normale IMG Tags + Custom Elements wie a-img
+        const images = document.querySelectorAll('img[src^="http"], img[data-src^="http"], a-img[src^="http"], a-img[data-src^="http"]');
+        let proxiedCount = 0;
+        
+        images.forEach(img => {
+            // Normale src-Attribute
+            if (img.src && (img.src.startsWith('http://') || img.src.startsWith('https://')) && !img.src.includes('localhost')) {
+                const originalSrc = img.src;
+                img.src = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalSrc);
+                console.log('🖼️ Proxied image src:', originalSrc);
+                proxiedCount++;
+                
+                // Graceful error handling für Bilder
+                if (!img.hasAttribute('data-fallback-handled')) {
+                    img.setAttribute('data-fallback-handled', 'true');
+                    img.onerror = function() {
+                        console.log('🖼️ Image failed to load, keeping proxy (graceful degradation):', originalSrc);
+                        // Setze ein transparentes 1x1 Pixel als Fallback
+                        this.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+                        this.style.opacity = '0.3';
+                        this.style.filter = 'grayscale(100%)';
+                    };
+                }
             }
-            if (el.src && (el.src.includes('gstatic.com') || el.src.includes('googleapis.com'))) {
-                el.src = 'http://localhost:3030/proxy?url=' + encodeURIComponent(el.src);
+            
+            // Lazy-loading data-src Attribute
+            if (img.dataset.src && (img.dataset.src.startsWith('http://') || img.dataset.src.startsWith('https://')) && !img.dataset.src.includes('localhost')) {
+                const originalDataSrc = img.dataset.src;
+                img.dataset.src = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalDataSrc);
+                console.log('🖼️ Proxied image data-src:', originalDataSrc);
+                proxiedCount++;
+            }
+            
+            // srcset Attribute
+            if (img.srcset && img.srcset.includes('http')) {
+                const originalSrcset = img.srcset;
+                const proxiedSrcset = originalSrcset.replace(/(https?:\/\/[^\s,]+)/g, (match) => {
+                    if (!match.includes('localhost')) {
+                        return 'http://localhost:3030/universal?url=' + encodeURIComponent(match);
+                    }
+                    return match;
+                });
+                img.srcset = proxiedSrcset;
+                console.log('🖼️ Proxied image srcset:', originalSrcset);
+                proxiedCount++;
+            }
+        });
+        
+        if (proxiedCount > 0) {
+            console.log(`🖼️ Proxied ${proxiedCount} images`);
+        }
+    }
+
+    // 🔗 ERWEITERTE RESOURCE-PROXY-FUNKTION
+    function proxyAllResources() {
+        // CSS und JS Ressourcen
+        const elements = document.querySelectorAll('link[href^="http"], script[src^="http"]');
+        elements.forEach(el => {
+            if (el.href && el.href.startsWith('http') && !el.href.includes('localhost')) {
+                const originalHref = el.href;
+                el.href = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalHref);
+                console.log('🔗 Proxied link:', originalHref);
+            }
+            if (el.src && el.src.startsWith('http') && !el.src.includes('localhost')) {
+                const originalSrc = el.src;
+                el.src = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalSrc);
+                console.log('🔗 Proxied script:', originalSrc);
+            }
+        });
+        
+        // Bilder separat behandeln
+        proxyImages();
+        
+        // 🎯 SPEZIELLE BEHANDLUNG FÜR CUSTOM ELEMENTS
+        const customElements = document.querySelectorAll('a-img, picture, figure img, [data-src^="http"]');
+        customElements.forEach(el => {
+            // Custom Element src Attribute
+            if (el.src && el.src.startsWith('http') && !el.src.includes('localhost')) {
+                const originalSrc = el.src;
+                el.src = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalSrc);
+                console.log('🎯 Proxied custom element src:', originalSrc);
+            }
+            
+            // Custom Element data-src Attribute
+            if (el.dataset && el.dataset.src && el.dataset.src.startsWith('http') && !el.dataset.src.includes('localhost')) {
+                const originalDataSrc = el.dataset.src;
+                el.dataset.src = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalDataSrc);
+                console.log('🎯 Proxied custom element data-src:', originalDataSrc);
+            }
+            
+            // Alle anderen http-Attribute in Custom Elements
+            Array.from(el.attributes).forEach(attr => {
+                if (attr.value && attr.value.startsWith('http') && !attr.value.includes('localhost')) {
+                    const originalValue = attr.value;
+                    el.setAttribute(attr.name, 'http://localhost:3030/universal?url=' + encodeURIComponent(originalValue));
+                    console.log(`🎯 Proxied custom element ${attr.name}:`, originalValue);
+                }
+            });
+        });
+        
+        // Background-Images in CSS
+        const elementsWithBg = document.querySelectorAll('*');
+        elementsWithBg.forEach(el => {
+            const style = window.getComputedStyle(el);
+            const bgImage = style.backgroundImage;
+            if (bgImage && bgImage.includes('url(') && bgImage.includes('http') && !bgImage.includes('localhost')) {
+                const urlMatch = bgImage.match(/url\(['"]?(https?:\/\/[^'")\s]+)['"]?\)/);
+                if (urlMatch) {
+                    const originalUrl = urlMatch[1];
+                    const proxyUrl = 'http://localhost:3030/universal?url=' + encodeURIComponent(originalUrl);
+                    el.style.backgroundImage = `url('${proxyUrl}')`;
+                    console.log('🎨 Proxied background image:', originalUrl);
+                }
             }
         });
     }
     
-    // Führe sofort aus und dann regelmäßig
-    proxyResourceUrls();
-    setTimeout(proxyResourceUrls, 1000);
-    setTimeout(proxyResourceUrls, 3000);
+    // 🔄 SOFORT UND REGELMÄSSIG AUSFÜHREN
+    proxyAllResources();
+    setTimeout(proxyAllResources, 500);
+    setTimeout(proxyAllResources, 1500);
+    setTimeout(proxyAllResources, 3000);
+    setTimeout(proxyAllResources, 5000);
     
-    // MutationObserver für dynamisch hinzugefügte Ressourcen
-    const observer = new MutationObserver(proxyResourceUrls);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    // 👁️ MUTATION OBSERVER FÜR DYNAMISCHE INHALTE
+    const observer = new MutationObserver(function(mutations) {
+        let shouldProxy = false;
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.tagName === 'IMG' || node.tagName === 'A-IMG' || node.tagName === 'SCRIPT' || node.tagName === 'LINK') {
+                            shouldProxy = true;
+                        }
+                        // Prüfe auch auf Custom Elements mit src/href Attributen
+                        if (node.hasAttribute && (node.hasAttribute('src') || node.hasAttribute('href') || node.hasAttribute('data-src'))) {
+                            shouldProxy = true;
+                        }
+                    }
+                });
+            }
+        });
+        if (shouldProxy) {
+            setTimeout(proxyAllResources, 100);
+        }
+    });
     
+    observer.observe(document.documentElement, { 
+        childList: true, 
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['src', 'href', 'data-src', 'srcset']
+    });
+    
+    console.log('✅ Universal Resource Proxy fully activated');
 })();
 </script>
 "#;
@@ -1025,7 +1099,7 @@ impl ProxyServer {
         
         // 🛡️ ENTFERNE CSP-RELEVANTE HTTP-HEADER
         let headers = response.headers();
-        let mut cleaned_headers = std::collections::HashMap::new();
+        let mut cleaned_headers = HashMap::new();
         
         // Sammle alle Header außer CSP-relevanten
         for (name, value) in headers.iter() {
@@ -2007,15 +2081,36 @@ impl ProxyServer {
              }
              
              return originalFetch.call(this, url, options).catch(error => {
-                 console.log('🔄 Fetch failed, trying ultimate fallback:', error);
-                 // Ultimativer Fallback - versuche alle Modi
+                 console.log('🔄 Fetch failed, trying graceful fallback:', error);
+                 
+                 // Für externe URLs: Versuche Universal Resource Handler
+                 if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+                     const fallbackUrl = `http://localhost:3030/universal?url=${encodeURIComponent(url)}`;
+                     console.log('🔄 Ultimate fallback URL:', fallbackUrl);
+                     return originalFetch.call(this, fallbackUrl, options)
+                         .catch(fallbackError => {
+                             console.log('🔄 Ultimate fallback also failed, using empty response:', fallbackError);
+                             // Return empty but valid response instead of rejecting
+                             return new Response('', { 
+                                 status: 200, 
+                                 statusText: 'OK',
+                                 headers: { 'Content-Type': 'text/plain' }
+                             });
+                         });
+                 }
+                 
+                 // Für lokale URLs: Versuche verschiedene Modi
                  const fallbackModes = ['cors', 'no-cors', 'same-origin'];
                  return fallbackModes.reduce((promise, mode) => {
                      return promise.catch(() => {
                          const fallbackOptions = { ...options, mode };
                          return originalFetch.call(this, url, fallbackOptions);
                      });
-                 }, Promise.reject(error));
+                 }, Promise.resolve(new Response('', { 
+                     status: 200, 
+                     statusText: 'OK',
+                     headers: { 'Content-Type': 'text/plain' }
+                 })));
              });
          };
     
