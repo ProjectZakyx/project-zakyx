@@ -13,3 +13,29 @@ Cargo.lock
 *.pdb
 *.rmeta
 *.rlib
+
+# Generated files
+/dist/app.js
+/dist/app.min.js
+/dist/bundle.js
+/dist/bundle.min.js
+
+# Temporary files
+temp_browser_content.html
+ora_bookmark_sidebar.html
+ora_webview2_premium_beautiful.html
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js (if using npm for build)
+node_modules/
+package-lock.json
+
+# Backup files
+*.backup
+*.bak
+*.orig

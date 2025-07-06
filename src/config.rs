@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tracing::{info, warn};
+use crate::error::OraBrowserError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProxyConfig {
@@ -124,16 +125,20 @@ impl OraConfig {
     }
     
     /// Speichert die aktuelle Konfiguration in die Datei
-    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save(&self) -> Result<(), OraBrowserError> {
         let config_path = Self::config_file_path();
         
         // Erstelle Verzeichnis falls es nicht existiert
         if let Some(parent) = config_path.parent() {
-            std::fs::create_dir_all(parent)?;
+            std::fs::create_dir_all(parent)
+                .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to create config directory: {}", e), Some(&config_path.to_string_lossy())))?;
         }
         
-        let content = toml::to_string_pretty(self)?;
-        std::fs::write(&config_path, content)?;
+        let content = toml::to_string_pretty(self)
+            .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to serialize config: {}", e), Some(&config_path.to_string_lossy())))?;
+        
+        std::fs::write(&config_path, content)
+            .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to write config file: {}", e), Some(&config_path.to_string_lossy())))?;
         
         info!("💾 Configuration saved to: {:?}", config_path);
         Ok(())

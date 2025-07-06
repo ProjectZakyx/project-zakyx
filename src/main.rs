@@ -10,15 +10,16 @@ use tracing::{info, error, debug};
 // 📦 INTERNAL MODULES
 mod internal_webview2_navigation;
 mod proxy_server;
-mod smart_proxy;
-mod browser_features;
+mod proxy;
+mod browser;
 mod ethical_safeguards;
 mod browser_state;
 mod tauri_commands;
 mod url_utils;
-mod plugin_manager;
+mod plugin;
 mod config;
 mod metrics;
+mod error;
 
 // 📥 IMPORTS
 use browser_state::BrowserState;
@@ -26,6 +27,7 @@ use proxy_server::ProxyServer;
 use tauri_commands::*;
 use config::OraConfig;
 use metrics::{init_metrics, get_metrics};
+use error::OraBrowserError;
 
 // 🚀 MAIN FUNCTION - TAURI v2
 fn main() {
@@ -117,7 +119,7 @@ fn main() {
     }
 }
 
-fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), String> {
+fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), OraBrowserError> {
     debug!("🔧 Setting up browser state...");
     
     // 📊 METRICS: Startup-Timer starten
@@ -126,7 +128,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), S
     // 1. Proxy Server starten (KRITISCH)
     start_proxy_server(config).map_err(|e| {
         error!("❌ Critical: Proxy server failed to start: {}", e);
-        format!("Proxy server startup failed: {}", e)
+        OraBrowserError::proxy_error(&format!("Proxy server startup failed: {}", e), None)
     })?;
     
     // 2. Browser State initialisieren (KRITISCH)
@@ -134,7 +136,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), S
         Ok(state) => state,
         Err(_) => {
             error!("❌ Critical: Browser state initialization panicked");
-            return Err("Browser state initialization failed".to_string());
+            return Err(OraBrowserError::ui_error("browser_state", "Browser state initialization failed due to panic", false));
         }
     };
     app.manage(state);
@@ -142,7 +144,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), S
     // 3. Window konfigurieren (KRITISCH)
     setup_main_window(app).map_err(|e| {
         error!("❌ Critical: Main window setup failed: {}", e);
-        format!("Main window setup failed: {}", e)
+        OraBrowserError::ui_error("main_window", &format!("Main window setup failed: {}", e), true)
     })?;
     
     // 4. Event Handler registrieren (NICHT-KRITISCH)
@@ -157,7 +159,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), S
     Ok(())
 }
 
-fn start_proxy_server(config: &OraConfig) -> Result<(), String> {
+fn start_proxy_server(config: &OraConfig) -> Result<(), OraBrowserError> {
     info!("🌐 Starting proxy server on port {}...", config.proxy.primary_port);
     
     // 📊 METRICS: Proxy startup messen
@@ -273,12 +275,12 @@ fn start_proxy_server(config: &OraConfig) -> Result<(), String> {
     }
 }
 
-fn setup_main_window(app: &tauri::App) -> Result<(), String> {
+fn setup_main_window(app: &tauri::App) -> Result<(), OraBrowserError> {
     let window = app.get_webview_window("main")
-        .ok_or("Failed to get main window")?;
+        .ok_or_else(|| OraBrowserError::ui_error("main_window", "Failed to get main window handle", false))?;
     
     window.set_title("Ora Browser")
-        .map_err(|e| format!("Failed to set window title: {}", e))?;
+        .map_err(|e| OraBrowserError::ui_error("main_window", &format!("Failed to set window title: {}", e), true))?;
     
     Ok(())
 }

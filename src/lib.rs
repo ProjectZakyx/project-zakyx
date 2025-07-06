@@ -7,25 +7,28 @@
 #![allow(unused_imports)]
 
 // Core modules - nur existierende Module
-pub mod browser_features;
-pub mod smart_proxy;
+pub mod browser;
+pub mod ui;
 pub mod proxy_server;
+pub mod proxy;
+pub mod error;
 pub mod internal_webview2_navigation;
 pub mod ethical_safeguards;
 pub mod browser_state;
 pub mod tauri_commands;
 pub mod url_utils;
-pub mod plugin_manager;
+pub mod plugin;
 pub mod config;
 pub mod metrics;
 
 // Re-exports für die wichtigsten Funktionen
-pub use browser_features::BookmarkManager;
-pub use smart_proxy::SmartProxy;
+pub use browser::BookmarkManager;
+pub use proxy::SmartProxy;
 pub use proxy_server::ProxyServer;
+pub use error::{OraBrowserError, OraBrowserResult};
 pub use internal_webview2_navigation::{InternalWebView2Navigator, WebViewConfig};
 pub use browser_state::{BrowserState, Tab, Bookmark, BrowserSettings};
-pub use plugin_manager::{PluginManager, PluginInfo, PluginManifest};
+pub use plugin::{PluginManager, PluginInfo, PluginManifest};
 pub use config::OraConfig;
 pub use metrics::MetricsCollector;
 

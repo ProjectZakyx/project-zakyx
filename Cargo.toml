@@ -30,13 +30,16 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 anyhow = "1.0.98"
 
+# 🔄 ASYNC TRAITS
+async-trait = "0.1"
+
 # 📝 STRUCTURED LOGGING
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 tracing-appender = "0.2"
 
 # 🪟 WINDOWS APIS (für Windows-spezifische Features)
-windows = { version = "0.52", features = [
+windows = { version = "0.61", features = [
     "Win32_Foundation",
     "Win32_UI_WindowsAndMessaging", 
     "Win32_Graphics_Gdi",
@@ -45,10 +48,10 @@ windows = { version = "0.52", features = [
 ] }
 
 # ⚡ ASYNC RUNTIME
-tokio = { version = "1.45.1", features = ["full"] }
+tokio = { version = "1.42", features = ["full"] }
 
 # 🌍 HTTP & NETWORKING
-reqwest = { version = "0.11", features = ["json", "stream", "brotli", "rustls-tls", "gzip", "deflate"], default-features = false }
+reqwest = { version = "0.12", features = ["json", "stream", "brotli", "rustls-tls", "gzip", "deflate", "http2", "charset"], default-features = false }
 url = "2.4"
 warp = "0.3"
 urlencoding = "2.1"
@@ -56,6 +59,7 @@ urlencoding = "2.1"
 # 🎲 UTILITIES
 uuid = { version = "1.0", features = ["v4"] }
 regex = "1.10"
+rand = "0.8"
 
 # 🗄️ STORAGE
 dirs = "5.0"

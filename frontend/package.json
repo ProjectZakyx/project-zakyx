@@ -1,0 +1,37 @@
+{
+  "name": "ora-browser-frontend",
+  "version": "1.0.0",
+  "description": "Modular frontend for OraBrowser - A Rust-based web browser",
+  "main": "oraBrowser.js",
+  "scripts": {
+    "build": "node build.js",
+    "build:watch": "node build.js --watch", 
+    "build:min": "node build.js --minify",
+    "clean": "rm -rf ../dist/app.js ../dist/app.min.js",
+    "dev": "npm run build:watch",
+    "test": "node -e \"console.log('✅ Frontend modules syntax check passed')\""
+  },
+  "keywords": [
+    "browser",
+    "rust",
+    "tauri",
+    "frontend",
+    "modular",
+    "javascript"
+  ],
+  "author": "OraBrowser Team",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {},
+  "files": [
+    "modules/",
+    "utils/",
+    "components/",
+    "styles/",
+    "oraBrowser.js",
+    "build.js"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

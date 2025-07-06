@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::{RwLock, Mutex};
 use crate::internal_webview2_navigation::InternalWebView2Navigator;
-use crate::browser_features::BookmarkManager;
+use crate::browser::BookmarkManager;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tab {
@@ -51,13 +51,13 @@ pub struct BrowserState {
     #[allow(dead_code)]
     #[allow(dead_code)]
     pub proxy_server: Arc<Mutex<Option<crate::proxy_server::ProxyServer>>>,
-    pub plugin_manager: Arc<RwLock<crate::plugin_manager::PluginManager>>,
+    pub plugin_manager: Arc<RwLock<crate::plugin::PluginManager>>,
 }
 
 impl BrowserState {
     pub fn new() -> Self {
         let bookmark_manager = BookmarkManager::new().expect("Failed to initialize bookmark manager");
-        let mut plugin_manager = crate::plugin_manager::PluginManager::new();
+        let mut plugin_manager = crate::plugin::PluginManager::new();
         
         // Initialisiere Plugin Manager
         if let Err(e) = plugin_manager.initialize() {
