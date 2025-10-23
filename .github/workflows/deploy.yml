@@ -18,23 +18,23 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: projekt-ora-linux
-            binary_name: projekt-ora
+            artifact_name: projekt-zakyx-linux
+            binary_name: projekt-zakyx
             platform: linux
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: projekt-ora-windows
-            binary_name: projekt-ora.exe
+            artifact_name: projekt-zakyx-windows
+            binary_name: projekt-zakyx.exe
             platform: windows
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: projekt-ora-macos-intel
-            binary_name: projekt-ora
+            artifact_name: projekt-zakyx-macos-intel
+            binary_name: projekt-zakyx
             platform: macos
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: projekt-ora-macos-arm64
-            binary_name: projekt-ora
+            artifact_name: projekt-zakyx-macos-arm64
+            binary_name: projekt-zakyx
             platform: macos
 
     runs-on: ${{ matrix.os }}
@@ -148,7 +148,7 @@ jobs:
       - name: Create checksums
         run: |
           cd artifacts
-          find . -name "projekt-ora-*" -type f -exec sha256sum {} \; > ../checksums.txt
+          find . -name "projekt-zakyx-*" -type f -exec sha256sum {} \; > ../checksums.txt
           cd ..
 
       - name: Create Release
@@ -165,49 +165,49 @@ jobs:
           body: |
             ## Cross-Platform Release
 
-            This release includes binaries for:
-            - **Linux** (x86_64): `projekt-ora-linux`
-            - **Windows** (x86_64): `projekt-ora-windows.exe`
-            - **macOS Intel** (x86_64): `projekt-ora-macos-intel`
-            - **macOS Apple Silicon** (ARM64): `projekt-ora-macos-arm64`
+              This release includes binaries for:
+              - **Linux** (x86_64): `projekt-zakyx-linux`
+              - **Windows** (x86_64): `projekt-zakyx-windows.exe`
+              - **macOS Intel** (x86_64): `projekt-zakyx-macos-intel`
+              - **macOS Apple Silicon** (ARM64): `projekt-zakyx-macos-arm64`
 
-            ### Installation Instructions
+              ### Installation Instructions
 
-            #### Linux (Ubuntu/Debian)
-            ```bash
-            # Download and install dependencies
-            sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0 libjavascriptcoregtk-4.1-0 libsoup-3.0-0
-            
-            # Download and run
-            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-linux
-            chmod +x projekt-ora-linux
-            ./projekt-ora-linux
-            ```
+              #### Linux (Ubuntu/Debian)
+              ```bash
+              # Download and install dependencies
+              sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0 libjavascriptcoregtk-4.1-0 libsoup-3.0-0
+              
+              # Download and run
+              wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-zakyx-linux
+              chmod +x projekt-zakyx-linux
+              ./projekt-zakyx-linux
+              ```
 
-            #### Windows
-            ```powershell
-            # Download and run (WebView2 is included with Windows 11 or Edge)
-            # Download projekt-ora-windows.exe and double-click to run
-            ```
+              #### Windows
+              ```powershell
+              # Download and run (WebView2 is included with Windows 11 or Edge)
+              # Download projekt-zakyx-windows.exe and double-click to run
+              ```
 
-            #### macOS
-            ```bash
-            # Intel Macs
-            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-macos-intel
-            chmod +x projekt-ora-macos-intel
-            ./projekt-ora-macos-intel
+              #### macOS
+              ```bash
+              # Intel Macs
+              wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-zakyx-macos-intel
+              chmod +x projekt-zakyx-macos-intel
+              ./projekt-zakyx-macos-intel
 
-            # Apple Silicon Macs
-            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-ora-macos-arm64
-            chmod +x projekt-ora-macos-arm64
-            ./projekt-ora-macos-arm64
-            ```
+              # Apple Silicon Macs
+              wget https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag }}/projekt-zakyx-macos-arm64
+              chmod +x projekt-zakyx-macos-arm64
+              ./projekt-zakyx-macos-arm64
+              ```
 
-            ### Checksums
-            See `checksums.txt` for file integrity verification.
+              ### Checksums
+              See `checksums.txt` for file integrity verification.
           files: |
-            artifacts/projekt-ora-linux/projekt-ora-linux
-            artifacts/projekt-ora-windows/projekt-ora-windows.exe
-            artifacts/projekt-ora-macos-intel/projekt-ora-macos-intel
-            artifacts/projekt-ora-macos-arm64/projekt-ora-macos-arm64
+            artifacts/projekt-zakyx-linux/projekt-zakyx-linux
+            artifacts/projekt-zakyx-windows/projekt-zakyx-windows.exe
+            artifacts/projekt-zakyx-macos-intel/projekt-zakyx-macos-intel
+            artifacts/projekt-zakyx-macos-arm64/projekt-zakyx-macos-arm64
             checksums.txt

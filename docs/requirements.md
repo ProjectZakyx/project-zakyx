@@ -1,7 +1,7 @@
-# Projekt-Ora Requirements
+# Projekt-ZAKYX Requirements
 
 ## Overview
-Projekt-Ora aims to be a lightweight, customizable web browser built with Rust, focusing on performance, security, and extensibility. The browser should provide a modern user experience while maintaining a small resource footprint.
+Projekt-ZAKYX aims to be a lightweight, customizable web browser built with Rust, focusing on performance, security, and extensibility. The browser should provide a modern user experience while maintaining a small resource footprint.
 
 ## Core Requirements
 

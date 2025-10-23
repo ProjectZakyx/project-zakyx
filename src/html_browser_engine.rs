@@ -234,7 +234,7 @@ impl HtmlBrowserEngine {
         let mut result = String::new();
         
         result.push_str("🌟 ═══════════════════════════════════════════════════════════\n");
-        result.push_str("✨                ORA BROWSER - PREMIUM HTML GUI                ✨\n");
+        result.push_str("✨                ZAKYX BROWSER - PREMIUM HTML GUI                ✨\n");
         result.push_str("🌟 ═══════════════════════════════════════════════════════════\n\n");
         
         // Extrahiere Titel

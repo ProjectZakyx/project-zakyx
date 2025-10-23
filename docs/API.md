@@ -1,8 +1,8 @@
-# 📚 Ora Browser API Dokumentation
+# 📚 ZAKYX Browser API Dokumentation
 
 ## 🎯 Übersicht
 
-Die Ora Browser API bietet umfassende Funktionalitäten für Tab-Management, Bookmarks, Plugin-System und mehr. Alle API-Calls sind asynchron und verwenden das Tauri Command-System.
+Die ZAKYX Browser API bietet umfassende Funktionalitäten für Tab-Management, Bookmarks, Plugin-System und mehr. Alle API-Calls sind asynchron und verwenden das Tauri Command-System.
 
 ## 📑 Tab Management
 
@@ -386,7 +386,7 @@ window.registerPlugin(new MeinPlugin());
 {
   "name": "Mein Plugin",
   "version": "1.0.0",
-  "description": "Ein Beispiel-Plugin für Ora Browser",
+  "description": "Ein Beispiel-Plugin für ZAKYX Browser",
   "author": "Dein Name",
   "main_script": "main.js",
   "permissions": ["network", "storage"],
@@ -634,12 +634,12 @@ class MeinPlugin {
     // Event-Listener registrieren
     registerEventListeners() {
         // Navigation-Events
-        window.addEventListener('ora-navigation', (event) => {
+        window.addEventListener('zakyx-navigation', (event) => {
             this.onNavigation(event.detail);
         });
 
         // Page-Load-Events
-        window.addEventListener('ora-page-loaded', (event) => {
+        window.addEventListener('zakyx-page-loaded', (event) => {
             this.onPageLoaded(event.detail);
         });
     }
@@ -731,17 +731,17 @@ if plugin_manager.has_permission(&plugin_id, "network") {
 ### Browser-Events
 ```javascript
 // Navigation-Event
-window.dispatchEvent(new CustomEvent('ora-navigation', {
+window.dispatchEvent(new CustomEvent('zakyx-navigation', {
     detail: { url: 'https://example.com', timestamp: Date.now() }
 }));
 
 // Page-Load-Event
-window.dispatchEvent(new CustomEvent('ora-page-loaded', {
+window.dispatchEvent(new CustomEvent('zakyx-page-loaded', {
     detail: { url: 'https://example.com', title: 'Beispiel', timestamp: Date.now() }
 }));
 
 // Plugin-Event
-window.dispatchEvent(new CustomEvent('ora-plugin-message', {
+window.dispatchEvent(new CustomEvent('zakyx-plugin-message', {
     detail: { plugin_id: 'mein-plugin', message: 'Hallo Welt!' }
 }));
 ```
@@ -749,11 +749,11 @@ window.dispatchEvent(new CustomEvent('ora-plugin-message', {
 ### Event-Listener
 ```javascript
 // In Plugin-Code
-window.addEventListener('ora-navigation', (event) => {
+window.addEventListener('zakyx-navigation', (event) => {
     console.log('Navigation:', event.detail);
 });
 
-window.addEventListener('ora-page-loaded', (event) => {
+window.addEventListener('zakyx-page-loaded', (event) => {
     console.log('Seite geladen:', event.detail);
 });
 ```
@@ -797,7 +797,7 @@ class PluginErrorHandler {
         console.error(`Plugin-Fehler ${context}:`, error);
         
         // Benutzer benachrichtigen
-        window.dispatchEvent(new CustomEvent('ora-plugin-error', {
+        window.dispatchEvent(new CustomEvent('zakyx-plugin-error', {
             detail: {
                 error: error.message,
                 context: context,
@@ -1100,4 +1100,4 @@ class PluginMigration {
 }
 ```
 
-Diese API-Dokumentation bietet eine vollständige Referenz für die Entwicklung von Plugins für den Ora Browser. Weitere Beispiele und Tutorials finden Sie in den entsprechenden Verzeichnissen des Projekts. 
+Diese API-Dokumentation bietet eine vollständige Referenz für die Entwicklung von Plugins für den ZAKYX Browser. Weitere Beispiele und Tutorials finden Sie in den entsprechenden Verzeichnissen des Projekts. 

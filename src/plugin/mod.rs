@@ -1,6 +1,8 @@
 // 🔌 PLUGIN MODULE
 // Hauptmodul für das Plugin-System
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
+
+#![allow(dead_code)] // Plugin system API - comprehensive API kept for extensibility
 
 use chrono::Datelike;
 
@@ -8,18 +10,16 @@ pub mod types;
 pub mod validator;
 pub mod discovery;
 pub mod loader;
+pub mod management;
 pub mod manager;
 
 // Re-exports für einfache Verwendung
 pub use types::{
-    PluginManifest, PluginBackground, PluginContentScript, PluginBrowserAction,
-    PluginInfo, PluginStats, PluginConfig,
-    ALLOWED_PERMISSIONS, SUPPORTED_API_VERSIONS
+    PluginManifest,
+    PluginInfo, PluginConfig,
+    ALLOWED_PERMISSIONS
 };
 
-pub use validator::{PluginValidator, ValidationResult};
-pub use discovery::PluginDiscovery;
-pub use loader::PluginLoader;
 pub use manager::PluginManager;
 
 // Convenience-Funktionen
@@ -70,7 +70,7 @@ pub fn create_basic_plugin_manifest(
         browser_action: None,
         options_page: None,
         manifest_version: None,
-        minimum_ora_version: None,
+        minimum_zakyx_version: None,
         dependencies: None,
         settings: None,
         update_url: None,
@@ -210,7 +210,7 @@ if (typeof module !== 'undefined' && module.exports) {{
 {}
 
 ## Installation
-1. Kopiere diesen Ordner in das Plugin-Verzeichnis des Ora Browsers
+        1. Kopiere diesen Ordner in das Plugin-Verzeichnis des ZAKYX Browsers
 2. Starte den Browser neu oder lade die Plugins neu
 3. Aktiviere das Plugin in den Einstellungen
 
@@ -252,7 +252,7 @@ mod tests {
     
     fn create_test_dir() -> std::path::PathBuf {
         let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-        let test_dir = std::env::temp_dir().join(format!("ora_test_mod_{}_{}", std::process::id(), nanos));
+        let test_dir = std::env::temp_dir().join(format!("zakyx_test_mod_{}_{}", std::process::id(), nanos));
         if test_dir.exists() {
             let _ = fs::remove_dir_all(&test_dir);
         }

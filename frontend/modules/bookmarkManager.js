@@ -1,5 +1,5 @@
 /**
- * OraBrowser Bookmark Manager
+ * ZAKYXBrowser Bookmark Manager
  * Verantwortlich für Lesezeichen-Verwaltung, Backend-Sync und Bookmark-UI
  */
 

@@ -1,3 +1,5 @@
+#![allow(dead_code)] // Utility functions - kept for API completeness
+
 use crate::browser_state::Tab;
 
 /// URL-Validation

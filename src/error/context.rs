@@ -1,11 +1,11 @@
 // 🔍 ERROR CONTEXT
 // Erweiterte Debugging-Informationen für Fehler
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Serialize, Deserialize};
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 /// Error-Context für detaillierte Fehlerdiagnose
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,7 +37,7 @@ pub struct SystemInfo {
 }
 
 impl ErrorContext {
-    /// Erstelle neuen Error-Context
+    /// Erstelle neuen Error-Context mit Modul und Funktion
     pub fn new(module: &str, function: &str) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -174,13 +174,13 @@ macro_rules! error_context {
 /// Erweiterte Error-Wrapper mit Context
 #[derive(Debug, Clone)]
 pub struct ContextualError {
-    pub error: OraBrowserError,
+    pub error: ZAKYXBrowserError,
     pub context: ErrorContext,
 }
 
 impl ContextualError {
     /// Erstelle neuen Contextual Error
-    pub fn new(error: OraBrowserError, context: ErrorContext) -> Self {
+    pub fn new(error: ZAKYXBrowserError, context: ErrorContext) -> Self {
         Self { error, context }
     }
     
@@ -276,7 +276,7 @@ mod tests {
     
     #[test]
     fn test_contextual_error() {
-        let error = OraBrowserError::Plugin {
+        let error = ZAKYXBrowserError::Plugin {
             plugin_id: "test-plugin".to_string(),
             message: "Test error".to_string(),
         };

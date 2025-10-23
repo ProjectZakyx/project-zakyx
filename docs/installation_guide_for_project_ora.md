@@ -1,4 +1,4 @@
-# Build-Anleitung für Projekt-Ora
+# Build-Anleitung für Projekt-ZAKYX
 
 ## Systemvoraussetzungen
 

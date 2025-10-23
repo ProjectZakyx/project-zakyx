@@ -1,5 +1,5 @@
 /**
- * 🤖 Anti-Bot Strategies Plugin für Ora Browser
+ * 🤖 Anti-Bot Strategies Plugin für ZAKYX Browser
  * Erweiterte Anti-Bot-Strategien als nachladbares Plugin
  */
 
@@ -92,15 +92,15 @@ class AntiBotPlugin {
      */
     async loadConfiguration() {
         try {
-            // Aus Ora Browser Storage laden
-            const savedConfig = await oraBrowser.storage.get('antibot-plugin-config');
+                    // Aus ZAKYX Browser Storage laden
+        const savedConfig = await zakyxBrowser.storage.get('antibot-plugin-config');
             if (savedConfig) {
                 this.config = { ...this.config, ...savedConfig };
                 this.config.strategies = new Set(savedConfig.strategies || []);
             }
             
             // Statistiken laden
-            const savedStats = await oraBrowser.storage.get('antibot-plugin-stats');
+            const savedStats = await zakyxBrowser.storage.get('antibot-plugin-stats');
             if (savedStats) {
                 this.stats = { ...this.stats, ...savedStats };
                 this.stats.strategiesUsed = new Map(savedStats.strategiesUsed || []);
@@ -128,8 +128,8 @@ class AntiBotPlugin {
                 strategiesUsed: Array.from(this.stats.strategiesUsed.entries())
             };
             
-            await oraBrowser.storage.set('antibot-plugin-config', configToSave);
-            await oraBrowser.storage.set('antibot-plugin-stats', statsToSave);
+                    await zakyxBrowser.storage.set('antibot-plugin-config', configToSave);
+        await zakyxBrowser.storage.set('antibot-plugin-stats', statsToSave);
             
             console.log('💾 Plugin configuration saved');
             
@@ -154,9 +154,9 @@ class AntiBotPlugin {
         // UI-Events
         this.eventHandlers.set('configChanged', this.onConfigChanged.bind(this));
         
-        // Event-Listener bei Ora Browser registrieren
+        // Event-Listener bei ZAKYX Browser registrieren
         for (const [event, handler] of this.eventHandlers) {
-            oraBrowser.events.on(event, handler);
+            zakyxBrowser.events.on(event, handler);
         }
         
         console.log('🎯 Event handlers registered:', Array.from(this.eventHandlers.keys()));
@@ -167,7 +167,7 @@ class AntiBotPlugin {
      */
     unregisterEventHandlers() {
         for (const [event, handler] of this.eventHandlers) {
-            oraBrowser.events.off(event, handler);
+            zakyxBrowser.events.off(event, handler);
         }
         this.eventHandlers.clear();
         console.log('🗑️ Event handlers unregistered');
@@ -180,15 +180,15 @@ class AntiBotPlugin {
         try {
             // Plugin-Panel zur Browser-UI hinzufügen
             const pluginPanel = await this.createPluginPanel();
-            oraBrowser.ui.addPanel('antibot-plugin', pluginPanel);
+            zakyxBrowser.ui.addPanel('antibot-plugin', pluginPanel);
             
             // Toolbar-Button hinzufügen
             const toolbarButton = await this.createToolbarButton();
-            oraBrowser.ui.addToolbarButton('antibot-toggle', toolbarButton);
+            zakyxBrowser.ui.addToolbarButton('antibot-toggle', toolbarButton);
             
             // Kontext-Menü-Einträge hinzufügen
             const contextMenuItems = await this.createContextMenuItems();
-            oraBrowser.ui.addContextMenuItems('antibot-plugin', contextMenuItems);
+            zakyxBrowser.ui.addContextMenuItems('antibot-plugin', contextMenuItems);
             
             console.log('🎨 UI integration completed');
             
@@ -289,10 +289,10 @@ class AntiBotPlugin {
     async registerBackendHandlers() {
         try {
             // Tauri Commands für Plugin registrieren
-            await oraBrowser.backend.registerCommand('antibot_plugin_get_config', this.getConfig.bind(this));
-            await oraBrowser.backend.registerCommand('antibot_plugin_update_config', this.updateConfig.bind(this));
-            await oraBrowser.backend.registerCommand('antibot_plugin_get_stats', this.getStats.bind(this));
-            await oraBrowser.backend.registerCommand('antibot_plugin_reset_stats', this.resetStats.bind(this));
+                    await zakyxBrowser.backend.registerCommand('antibot_plugin_get_config', this.getConfig.bind(this));
+        await zakyxBrowser.backend.registerCommand('antibot_plugin_update_config', this.updateConfig.bind(this));
+        await zakyxBrowser.backend.registerCommand('antibot_plugin_get_stats', this.getStats.bind(this));
+        await zakyxBrowser.backend.registerCommand('antibot_plugin_reset_stats', this.resetStats.bind(this));
             
             console.log('🔗 Backend handlers registered');
             
@@ -388,14 +388,14 @@ class AntiBotPlugin {
 // Plugin-Instanz erstellen und global verfügbar machen
 window.AntiBotPlugin = new AntiBotPlugin();
 
-// Auto-Aktivierung wenn Ora Browser bereit ist
-if (typeof oraBrowser !== 'undefined') {
-    oraBrowser.plugins.register('antibot-strategies', window.AntiBotPlugin);
-} else {
-    // Warten auf Ora Browser
-    document.addEventListener('oraBrowserReady', () => {
-        oraBrowser.plugins.register('antibot-strategies', window.AntiBotPlugin);
-    });
-}
+        // Auto-Aktivierung wenn ZAKYX Browser bereit ist
+        if (typeof zakyxBrowser !== 'undefined') {
+            zakyxBrowser.plugins.register('antibot-strategies', window.AntiBotPlugin);
+        } else {
+            // Warten auf ZAKYX Browser
+            document.addEventListener('zakyxBrowserReady', () => {
+                zakyxBrowser.plugins.register('antibot-strategies', window.AntiBotPlugin);
+            });
+        }
 
 console.log('🔌 Anti-Bot Plugin loaded and ready for activation'); 

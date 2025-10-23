@@ -2,7 +2,7 @@
 
 ## 🎯 Zweck dieses Dokuments
 
-Diese Richtlinien sollen Entwicklern und Nutzern helfen, die Anti-Bot-Strategien des Ora Browsers verantwortungsvoll und ethisch korrekt einzusetzen.
+Diese Richtlinien sollen Entwicklern und Nutzern helfen, die Anti-Bot-Strategien des ZAKYX Browsers verantwortungsvoll und ethisch korrekt einzusetzen.
 
 ## ✅ **ERLAUBTE ANWENDUNGSFÄLLE**
 
@@ -111,7 +111,7 @@ impl RateLimiter {
 ```rust
 // Beispiel für transparente User-Agents
 let user_agent = format!(
-    "OraBrowser/1.0 (+https://github.com/ora-browser; contact@example.com) Purpose: {}", 
+    "ZAKYXBrowser/1.0 (+https://github.com/zakyx-browser; contact@example.com) Purpose: {}", 
     purpose
 );
 ```
@@ -162,7 +162,7 @@ let user_agent = format!(
 
 ## 🎯 **FAZIT**
 
-Die Anti-Bot-Strategien des Ora Browsers sind mächtige Werkzeuge, die verantwortungsvoll eingesetzt werden müssen. Der Schlüssel liegt in:
+Die Anti-Bot-Strategien des ZAKYX Browsers sind mächtige Werkzeuge, die verantwortungsvoll eingesetzt werden müssen. Der Schlüssel liegt in:
 
 1. **Legitimem Zweck:** Haben Sie einen guten Grund?
 2. **Verhältnismäßigkeit:** Ist Ihr Vorgehen angemessen?

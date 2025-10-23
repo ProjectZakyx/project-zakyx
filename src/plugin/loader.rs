@@ -1,6 +1,6 @@
 // 🔄 PLUGIN LOADER
 // Plugin-Ladelogik und -Verwaltung
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -249,7 +249,7 @@ mod tests {
     
     fn create_test_plugin_dir() -> std::path::PathBuf {
         let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-        let test_dir = std::env::temp_dir().join(format!("ora_test_loader_{}_{}", std::process::id(), nanos));
+        let test_dir = std::env::temp_dir().join(format!("zakyx_test_loader_{}_{}", std::process::id(), nanos));
         if test_dir.exists() {
             let _ = fs::remove_dir_all(&test_dir);
         }
@@ -284,7 +284,7 @@ mod tests {
                 browser_action: None,
                 options_page: None,
                 manifest_version: None,
-                minimum_ora_version: None,
+                minimum_zakyx_version: None,
                 dependencies: None,
                 settings: None,
                 update_url: None,

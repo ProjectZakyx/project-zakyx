@@ -1,13 +1,13 @@
 // 🔍 PLUGIN DISCOVERY
 // Automatisches Erkennen und Laden von Plugin-Manifesten
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::fs;
 use crate::plugin::types::{PluginManifest, PluginInfo, PluginConfig};
 use crate::plugin::validator::PluginValidator;
-use crate::error::{OraBrowserError, OraBrowserResult};
+use crate::error::ZAKYXBrowserResult;
 
 /// Plugin-Discovery-Engine
 #[derive(Debug)]
@@ -25,7 +25,7 @@ impl PluginDiscovery {
     }
     
     /// Entdeckt alle verfügbaren Plugins im Plugin-Verzeichnis
-    pub fn discover_plugins(&self) -> OraBrowserResult<HashMap<String, PluginInfo>> {
+    pub fn discover_plugins(&self) -> ZAKYXBrowserResult<HashMap<String, PluginInfo>> {
         let mut plugins = HashMap::new();
         
         println!("🔍 Discovering plugins in: {:?}", self.config.plugins_directory);
@@ -33,7 +33,7 @@ impl PluginDiscovery {
         if !self.config.plugins_directory.exists() {
             println!("📁 Plugin directory doesn't exist, creating it...");
             std::fs::create_dir_all(&self.config.plugins_directory)
-                .map_err(|e| crate::error::OraBrowserError::FileNotFound {
+                .map_err(|e| crate::error::ZAKYXBrowserError::FileNotFound {
                     path: self.config.plugins_directory.to_string_lossy().to_string(),
                     operation: format!("create directory: {}", e),
                 })?;
@@ -41,7 +41,7 @@ impl PluginDiscovery {
         }
         
         let entries = fs::read_dir(&self.config.plugins_directory)
-            .map_err(|e| crate::error::OraBrowserError::Config {
+            .map_err(|e| crate::error::ZAKYXBrowserError::Config {
                 message: format!("Failed to read plugins directory: {}", e),
                 field: Some("plugins_directory".to_string()),
                 fix_suggestion: Some("Check directory permissions".to_string()),
@@ -100,6 +100,7 @@ impl PluginDiscovery {
             path: plugin_path.to_path_buf(),
             loaded: false,
             error: None,
+            load_error: None,
         };
         
         Ok(plugin_info)
@@ -211,7 +212,7 @@ mod tests {
     
     fn create_test_plugin_dir() -> PathBuf {
         let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-        let test_dir = std::env::temp_dir().join(format!("ora_test_discovery_{}_{}", std::process::id(), nanos));
+        let test_dir = std::env::temp_dir().join(format!("zakyx_test_discovery_{}_{}", std::process::id(), nanos));
         if test_dir.exists() {
             let _ = fs::remove_dir_all(&test_dir);
         }
@@ -237,7 +238,7 @@ mod tests {
             browser_action: None,
             options_page: None,
             manifest_version: None,
-            minimum_ora_version: None,
+            minimum_zakyx_version: None,
             dependencies: None,
             settings: None,
             update_url: None,

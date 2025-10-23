@@ -7,14 +7,14 @@ pub mod classification;
 pub mod processing;
 pub mod utils;
 
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 // Re-export der wichtigsten Typen für Rückwärtskompatibilität
 pub use core::response_processor::ProxyResponse;
 pub use core::strategy_engine::SmartProxy;
 
 // Convenience-Funktionen für den einfachen Zugriff
-pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, OraBrowserError> {
+pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
     SmartProxy::fetch_and_strip_headers(url).await
 }
 

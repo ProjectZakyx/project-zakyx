@@ -1,4 +1,4 @@
-# 🚀 Ora Browser Release Script
+# 🚀 ZAKYX Browser Release Script
 # Automatisierte Binary-Erstellung und Packaging
 
 param(
@@ -12,7 +12,7 @@ param(
     [switch]$CreateInstaller = $false
 )
 
-Write-Host "🌐 Ora Browser Release Script v1.0" -ForegroundColor Cyan
+Write-Host "🌐 ZAKYX Browser Release Script v1.0" -ForegroundColor Cyan
 Write-Host "=================================" -ForegroundColor Cyan
 
 # 📋 Pre-Release Checks
@@ -61,15 +61,15 @@ Write-Host "✅ Release binary built successfully!" -ForegroundColor Green
 # 📁 Create Release Directory Structure
 Write-Host "📁 Creating release directory..." -ForegroundColor Yellow
 New-Item -Path "release" -ItemType Directory -Force | Out-Null
-New-Item -Path "release\ora-browser-v$Version" -ItemType Directory -Force | Out-Null
+New-Item -Path "release\zakyx-browser-v$Version" -ItemType Directory -Force | Out-Null
 
-$releaseDir = "release\ora-browser-v$Version"
+$releaseDir = "release\zakyx-browser-v$Version"
 
 # 📋 Copy Release Files
 Write-Host "📋 Copying release files..." -ForegroundColor Yellow
 
 # Binary
-Copy-Item "target\release\projekt-ora.exe" "$releaseDir\ora-browser.exe"
+Copy-Item "target\release\projekt-zakyx.exe" "$releaseDir\zakyx-browser.exe"
 
 # Documentation
 Copy-Item "README.md" "$releaseDir\"
@@ -87,7 +87,7 @@ if (Test-Path "resources") {
 Write-Host "📝 Creating release info..." -ForegroundColor Yellow
 
 $releaseInfo = @"
-🌐 Ora Browser v$Version
+🌐 ZAKYX Browser v$Version
 =========================
 
 🎯 Release Information:
@@ -97,7 +97,7 @@ $releaseInfo = @"
 - Windows Version: $((Get-WmiObject Win32_OperatingSystem).Caption)
 
 📁 Files included:
-- ora-browser.exe    - Main application binary
+- zakyx-browser.exe    - Main application binary
 - README.md         - Full documentation
 - LICENSE           - MIT License text
 - gui.html          - HTML GUI interface
@@ -112,7 +112,7 @@ $releaseInfo = @"
 1. Extract all files to a folder
 2. Install WebView2 Runtime if needed:
    https://developer.microsoft.com/en-us/microsoft-edge/webview2/
-3. Run ora-browser.exe
+3. Run zakyx-browser.exe
 
 🚀 Features:
 ✅ WebView2 Integration for real web rendering
@@ -133,10 +133,10 @@ $releaseInfo = @"
 - Check Windows Defender SmartScreen settings
 
 📞 Support:
-- Issues: https://github.com/user/ora-browser/issues
+- Issues: https://github.com/user/zakyx-browser/issues
 - Documentation: See README.md
 
-© 2024 Ora Browser Project - MIT License
+© 2024 ZAKYX Browser Project - MIT License
 "@
 
 $releaseInfo | Out-File "$releaseDir\RELEASE_INFO.txt" -Encoding UTF8
@@ -144,11 +144,11 @@ $releaseInfo | Out-File "$releaseDir\RELEASE_INFO.txt" -Encoding UTF8
 # 🗜️ Create ZIP Archive
 Write-Host "🗜️ Creating ZIP archive..." -ForegroundColor Yellow
 
-$zipPath = "release\ora-browser-v$Version.zip"
+$zipPath = "release\zakyx-browser-v$Version.zip"
 Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath -Force
 
 # 📊 Calculate File Sizes
-$binarySize = [math]::Round((Get-Item "target\release\projekt-ora.exe").Length / 1MB, 2)
+$binarySize = [math]::Round((Get-Item "target\release\projekt-zakyx.exe").Length / 1MB, 2)
 $zipSize = [math]::Round((Get-Item $zipPath).Length / 1MB, 2)
 
 # 🎯 Release Summary

@@ -20,6 +20,8 @@ impl Default for UrlUtils {
 // 🛠️ Proxy Utilities
 // Hilfsfunktionen für das Proxy-System
 
+#[allow(dead_code)] // Proxy utilities - comprehensive API kept for future use
+
 use std::collections::HashMap;
 
 /// Proxy URL-Utilities  

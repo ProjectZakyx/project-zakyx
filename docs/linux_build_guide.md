@@ -1,4 +1,4 @@
-# Linux Build Guide für Projekt-Ora
+# Linux Build Guide für Projekt-ZAKYX
 
 ## Systemvoraussetzungen
 
@@ -162,8 +162,8 @@ sudo zypper install -y \
 
 ```bash
 # Repository klonen
-git clone https://github.com/your-username/projekt-ora.git
-cd projekt-ora
+git clone https://github.com/your-username/projekt-zakyx.git
+cd projekt-zakyx
 
 # Debug-Build erstellen
 cargo build
@@ -178,7 +178,7 @@ cargo test
 cargo run
 
 # Anwendung starten (Release)
-./target/release/projekt-ora
+./target/release/projekt-zakyx
 ```
 
 ## Fehlerbehebung
@@ -307,21 +307,21 @@ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appima
 chmod +x appimagetool-x86_64.AppImage
 
 # AppDir-Struktur erstellen
-mkdir -p projekt-ora.AppDir/usr/bin
-cp target/release/projekt-ora projekt-ora.AppDir/usr/bin/
+mkdir -p projekt-zakyx.AppDir/usr/bin
+cp target/release/projekt-zakyx projekt-zakyx.AppDir/usr/bin/
 
 # Desktop-Datei erstellen
-cat > projekt-ora.AppDir/projekt-ora.desktop << EOF
+cat > projekt-zakyx.AppDir/projekt-zakyx.desktop << EOF
 [Desktop Entry]
 Type=Application
-Name=Projekt Ora
-Exec=projekt-ora
-Icon=projekt-ora
+Name=Projekt ZAKYX
+Exec=projekt-zakyx
+Icon=projekt-zakyx
 Categories=Network;WebBrowser;
 EOF
 
 # AppImage erstellen
-./appimagetool-x86_64.AppImage projekt-ora.AppDir
+./appimagetool-x86_64.AppImage projekt-zakyx.AppDir
 ```
 
 ### Flatpak-Package erstellen
@@ -365,7 +365,7 @@ code --install-extension serayuzgur.crates
 cargo build
 
 # Mit GDB debuggen
-gdb target/debug/projekt-ora
+gdb target/debug/projekt-zakyx
 (gdb) run
 (gdb) bt  # Backtrace bei Crash
 ```

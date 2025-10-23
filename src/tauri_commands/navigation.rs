@@ -2,10 +2,12 @@
 // Alle Commands für Navigation und URL-Handling
 
 use tauri::Emitter;
+#[allow(dead_code)] // Navigation API - some functions kept for completeness
+
 use crate::browser_state::BrowserState;
 use crate::internal_webview2_navigation::WebViewConfig;
 use crate::url_utils::{normalize_problematic_url, should_use_proxy_for_url};
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 /// Navigiere zu einer URL
 #[tauri::command]
@@ -14,7 +16,7 @@ pub async fn navigate_to(
     tab_id: String,
     url: String,
     window: tauri::Window,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     let mut history = state.history.write().await;
     
@@ -37,7 +39,7 @@ pub async fn navigate_to(
         };
         
         if let Err(e) = window.emit("webview_navigate", &final_url) {
-            return Err(OraBrowserError::ui_error("navigation", &format!("Failed to emit navigation event: {}", e), true));
+            return Err(ZAKYXBrowserError::ui_error("navigation", &format!("Failed to emit navigation event: {}", e), true));
         }
         
         tokio::spawn(async move {
@@ -59,7 +61,7 @@ pub async fn internal_webview_navigate(
     tab_id: String,
     url: String,
     window: tauri::Window,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     let mut history = state.history.write().await;
     
@@ -75,7 +77,7 @@ pub async fn internal_webview_navigate(
         window.emit("internal_webview_navigate", &serde_json::json!({
             "tab_id": tab_id,
             "url": url
-        })).map_err(|e| OraBrowserError::ui_error("navigation", &format!("Failed to emit internal navigation event: {}", e), true))?;
+        })).map_err(|e| ZAKYXBrowserError::ui_error("navigation", &format!("Failed to emit internal navigation event: {}", e), true))?;
         
         tokio::spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
@@ -96,7 +98,7 @@ pub async fn navigate_internally(
     tab_id: String,
     url: String,
     window: tauri::Window,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     let mut history = state.history.write().await;
     
@@ -120,7 +122,7 @@ pub async fn navigate_internally(
             window.emit("navigation_success", &serde_json::json!({
                 "tab_id": tab_id,
                 "url": url
-            })).map_err(|e| OraBrowserError::ui_error("navigation", &format!("Failed to emit navigation success event: {}", e), true))?;
+            })).map_err(|e| ZAKYXBrowserError::ui_error("navigation", &format!("Failed to emit navigation success event: {}", e), true))?;
         } else {
             println!("❌ Internal navigation failed, falling back to external");
             drop(tabs);
@@ -137,7 +139,7 @@ pub async fn navigate_internally(
 pub async fn navigate_and_get_content(
     _state: tauri::State<'_, BrowserState>,
     url: String,
-) -> Result<String, OraBrowserError> {
+) -> Result<String, ZAKYXBrowserError> {
     println!("🔍 Loading content from: {}", url);
     
     match load_url_content(&url).await {
@@ -213,7 +215,7 @@ pub async fn navigate_and_get_content(
 pub async fn check_internal_navigation(
     state: tauri::State<'_, BrowserState>,
     url: String,
-) -> Result<bool, OraBrowserError> {
+) -> Result<bool, ZAKYXBrowserError> {
     let webview_navigator = state.webview_navigator.read().await;
     Ok(webview_navigator.should_navigate_internally(&url))
 }
@@ -223,21 +225,21 @@ pub async fn check_internal_navigation(
 pub async fn get_webview_config(
     state: tauri::State<'_, BrowserState>,
     url: String,
-) -> Result<WebViewConfig, OraBrowserError> {
+) -> Result<WebViewConfig, ZAKYXBrowserError> {
     let webview_navigator = state.webview_navigator.read().await;
     Ok(webview_navigator.get_config_for_url(&url))
 }
 
 /// Hole Proxy-URL
 #[tauri::command]
-pub async fn get_proxy_url(url: String) -> Result<String, OraBrowserError> {
+pub async fn get_proxy_url(url: String) -> Result<String, ZAKYXBrowserError> {
     let proxy_url = format!("http://localhost:3030/proxy?url={}", urlencoding::encode(&url));
     Ok(proxy_url)
 }
 
 /// Öffne externe URL
 #[tauri::command]
-pub async fn open_external_url(url: String) -> Result<(), OraBrowserError> {
+pub async fn open_external_url(url: String) -> Result<(), ZAKYXBrowserError> {
     println!("🌐 Opening external URL: {}", url);
     
     #[cfg(target_os = "windows")]
@@ -245,7 +247,7 @@ pub async fn open_external_url(url: String) -> Result<(), OraBrowserError> {
         std::process::Command::new("cmd")
             .args(["/C", "start", &url])
             .spawn()
-            .map_err(|e| OraBrowserError::ui_error("navigation", &format!("Failed to open URL on Windows: {}", e), false))?;
+            .map_err(|e| ZAKYXBrowserError::ui_error("navigation", &format!("Failed to open URL on Windows: {}", e), false))?;
     }
     
     #[cfg(target_os = "macos")]
@@ -253,7 +255,7 @@ pub async fn open_external_url(url: String) -> Result<(), OraBrowserError> {
         std::process::Command::new("open")
             .arg(&url)
             .spawn()
-            .map_err(|e| OraBrowserError::ui_error("navigation", &format!("Failed to open URL on macOS: {}", e), false))?;
+            .map_err(|e| ZAKYXBrowserError::ui_error("navigation", &format!("Failed to open URL on macOS: {}", e), false))?;
     }
     
     #[cfg(target_os = "linux")]
@@ -261,7 +263,7 @@ pub async fn open_external_url(url: String) -> Result<(), OraBrowserError> {
         std::process::Command::new("xdg-open")
             .arg(&url)
             .spawn()
-            .map_err(|e| OraBrowserError::ui_error("navigation", &format!("Failed to open URL on Linux: {}", e), false))?;
+            .map_err(|e| ZAKYXBrowserError::ui_error("navigation", &format!("Failed to open URL on Linux: {}", e), false))?;
     }
     
     println!("✅ External URL opened successfully");
@@ -269,20 +271,20 @@ pub async fn open_external_url(url: String) -> Result<(), OraBrowserError> {
 }
 
 /// Lade URL-Content
-async fn load_url_content(url: &str) -> Result<String, OraBrowserError> {
+async fn load_url_content(url: &str) -> Result<String, ZAKYXBrowserError> {
     println!("🔄 Loading URL content: {}", url);
     
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         .build()
-        .map_err(|e| OraBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
+        .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
     
     let response = client.get(url).send().await
-        .map_err(|e| OraBrowserError::network_error(&format!("Failed to fetch URL: {}", e), Some(url)))?;
+        .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to fetch URL: {}", e), Some(url)))?;
     
     let content = response.text().await
-        .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
+        .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
     
     println!("✅ Successfully loaded {} characters from {}", content.len(), url);
     Ok(content)

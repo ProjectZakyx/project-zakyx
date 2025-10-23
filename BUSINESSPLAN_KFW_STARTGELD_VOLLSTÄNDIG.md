@@ -1,10 +1,10 @@
-# 🌐 **Businessplan: ORA Browser GmbH**
+# 🌐 **Businessplan: ZAKYX Browser GmbH**
 ## Datenschutz-Browser für deutsche Unternehmen
 
 ---
 
 **Antragsteller:** Max Mustermann  
-**Unternehmen:** ORA Browser GmbH (in Gründung)  
+**Unternehmen:** ZAKYX Browser GmbH (in Gründung)  
 **Datum:** Januar 2025  
 **Finanzierungsbedarf:** 125.000 EUR (KfW ERP-StartGeld)  
 **Branche:** Software-Entwicklung / IT-Dienstleistungen  
@@ -14,7 +14,7 @@
 ## 📊 **Executive Summary**
 
 ### **Geschäftsidee**
-Die ORA Browser GmbH entwickelt und vertreibt einen **DSGVO-konformen Web-Browser** speziell für deutsche Klein- und Mittelunternehmen. Unser Browser bietet maximalen Datenschutz, lokale Datenverarbeitung und erfüllt alle deutschen Compliance-Anforderungen ohne Kompromisse bei der Funktionalität.
+Die ZAKYX Browser GmbH entwickelt und vertreibt einen **DSGVO-konformen Web-Browser** speziell für deutsche Klein- und Mittelunternehmen. Unser Browser bietet maximalen Datenschutz, lokale Datenverarbeitung und erfüllt alle deutschen Compliance-Anforderungen ohne Kompromisse bei der Funktionalität.
 
 ### **Marktpotential**
 - **Zielmarkt:** 3,5 Millionen deutsche KMU
@@ -50,7 +50,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 - **Abhängigkeit:** Kritische Geschäftsprozesse von US-Konzernen abhängig
 
 ### **Lösungsansatz**
-**ORA Browser** ist die erste deutsche Browser-Alternative mit:
+**ZAKYX Browser** ist die erste deutsche Browser-Alternative mit:
 
 #### **Kernfunktionen:**
 - **Privacy-by-Design:** Keine Datensammlung ohne explizite Zustimmung
@@ -103,7 +103,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 
 ### **Wettbewerbsanalyse**
 
-| **Anbieter** | **Marktanteil** | **Stärken** | **Schwächen** | **ORA-Vorteil** |
+| **Anbieter** | **Marktanteil** | **Stärken** | **Schwächen** | **ZAKYX-Vorteil** |
 |--------------|-----------------|-------------|---------------|-----------------|
 | **Google Chrome** | 65% | Performance, Integration | US-Konzern, Datensammlung | Deutsche Alternative |
 | **Mozilla Firefox** | 8% | Open Source, Privacy | Performance-Probleme | Enterprise-Features |
@@ -257,7 +257,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 ## ⚖️ **Rechtliche Aspekte**
 
 ### **Intellectual Property**
-- **Markenrechte:** "ORA" als deutsche Wortmarke angemeldet
+- **Markenrechte:** "ZAKYX" als deutsche Wortmarke angemeldet
 - **Software-Lizenzen:** Proprietary mit Open-Source-Komponenten
 - **Patents:** 2 Patentanmeldungen geplant
 
@@ -349,7 +349,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 - **Mittelstand-Stärkung:** Datenschutz-Lösung für 175+ KMU
 
 ### **Empfehlung:**
-**Die ORA Browser GmbH ist ein idealer Kandidat für den KfW ERP-StartGeld mit hoher Erfolgswahrscheinlichkeit (85%) und signifikantem volkswirtschaftlichem Nutzen.**
+**Die ZAKYX Browser GmbH ist ein idealer Kandidat für den KfW ERP-StartGeld mit hoher Erfolgswahrscheinlichkeit (85%) und signifikantem volkswirtschaftlichem Nutzen.**
 
 ### **Nächste Schritte:**
 1. **Hausbank-Gespräch** vereinbaren

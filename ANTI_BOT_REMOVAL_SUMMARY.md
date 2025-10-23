@@ -1,4 +1,4 @@
-# 🔄 Anti-Bot-Funktionen Entfernung - Ora Browser
+# 🔄 Anti-Bot-Funktionen Entfernung - ZAKYX Browser
 
 ## Übersicht
 

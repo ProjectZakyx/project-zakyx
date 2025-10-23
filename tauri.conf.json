@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.tauri.app/config/2.0.0",
-    "productName": "Ora Browser",
+    "productName": "ZAKYX Browser",
     "version": "1.0.0",
-    "identifier": "com.ora.browser",
+    "identifier": "com.zakyx.browser",
     "build": {
         "beforeBuildCommand": "",
         "beforeDevCommand": "",
@@ -24,7 +24,7 @@
                 "fullscreen": false,
                 "height": 800,
                 "resizable": true,
-                "title": "Ora Browser",
+                "title": "ZAKYX Browser",
                 "width": 1200,
                 "label": "main",
                 "url": "index.html"

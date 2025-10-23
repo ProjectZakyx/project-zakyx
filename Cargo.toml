@@ -1,13 +1,13 @@
 [package]
-name = "ora-browser"
+name = "zakyx-browser"
 version = "1.0.0"
 edition = "2021"
-authors = ["Ora Browser Team"]
-description = "A modern, cross-platform web browser built with Rust and Tauri"
-homepage = "https://github.com/user/ora-browser"
-repository = "https://github.com/user/ora-browser"
+authors = ["ZAKYX Browser Team"]
+description = "ZAKYX Browser - A modern, GDPR-compliant web browser built with Rust and Tauri for European digital sovereignty"
+homepage = "https://github.com/user/zakyx-browser"
+repository = "https://github.com/user/zakyx-browser"
 license = "MIT"
-keywords = ["browser", "tauri", "rust", "cross-platform", "web"]
+keywords = ["browser", "tauri", "rust", "gdpr", "privacy", "european", "zakyx"]
 categories = ["web-programming", "gui"]
 
 # 🎯 TAURI v2 KONFIGURATION
@@ -78,7 +78,7 @@ custom-protocol = ["tauri/custom-protocol"]
 
 # 🎯 TAURI APP CONFIGURATION
 [[bin]]
-name = "ora-browser"
+name = "zakyx-browser"
 path = "src/main.rs"
 
 [profile.release]

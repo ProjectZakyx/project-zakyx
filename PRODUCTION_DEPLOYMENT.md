@@ -1,4 +1,4 @@
-# 🚀 ORA BROWSER - PRODUKTIONS-DEPLOYMENT GUIDE
+# 🚀 ZAKYX Browser - PRODUKTIONS-DEPLOYMENT GUIDE
 
 ## 📋 **PRODUKTIONSSTART - EINFACHE ANLEITUNG**
 
@@ -16,7 +16,7 @@ start_production.bat
 cargo build --release
 
 # Produktions-Modus starten
-target\release\ora-browser.exe
+target\release\zakyx-browser.exe
 ```
 
 ---
@@ -27,15 +27,15 @@ target\release\ora-browser.exe
 
 | Datei | Zweck | Speicherort |
 |-------|-------|-------------|
-| `config.toml` | Haupt-Konfiguration | `%APPDATA%\ora-browser\` |
-| `ora-browser.log` | Log-Dateien | `%APPDATA%\ora-browser\logs\` |
-| `bookmarks.json` | Gespeicherte Bookmarks | `%APPDATA%\ora-browser\` |
+| `config.toml` | Haupt-Konfiguration | `%APPDATA%\zakyx-browser\` |
+| `zakyx-browser.log` | Log-Dateien | `%APPDATA%\zakyx-browser\logs\` |
+| `bookmarks.json` | Gespeicherte Bookmarks | `%APPDATA%\zakyx-browser\` |
 
 ### **⚙️ Standard-Konfiguration kopieren**
 
 ```bash
 # Kopiere Produktions-Konfiguration
-copy production_config.toml "%APPDATA%\ora-browser\config.toml"
+copy production_config.toml "%APPDATA%\zakyx-browser\config.toml"
 ```
 
 ---
@@ -54,7 +54,7 @@ copy production_config.toml "%APPDATA%\ora-browser\config.toml"
 
 ```bash
 # Windows Firewall: Eingehende Verbindungen für Port 3030 erlauben
-netsh advfirewall firewall add rule name="Ora Browser Proxy" dir=in action=allow protocol=TCP localport=3030
+netsh advfirewall firewall add rule name="ZAKYX Browser Proxy" dir=in action=allow protocol=TCP localport=3030
 ```
 
 ---
@@ -68,17 +68,17 @@ netsh advfirewall firewall add rule name="Ora Browser Proxy" dir=in action=allow
 curl http://localhost:3030/health
 
 # Erwartete Antwort:
-# {"service":"Ora Browser Proxy","status":"ok","timestamp":"..."}
+# {"service":"ZAKYX Browser Proxy","status":"ok","timestamp":"..."}
 ```
 
 ### **📝 Log-Monitoring**
 
 ```bash
 # Live-Logs verfolgen (PowerShell)
-Get-Content "$env:APPDATA\ora-browser\logs\ora-browser.log" -Wait -Tail 10
+Get-Content "$env:APPDATA\zakyx-browser\logs\zakyx-browser.log" -Wait -Tail 10
 
 # Nach Fehlern suchen
-Select-String "ERROR|❌" "$env:APPDATA\ora-browser\logs\ora-browser.log"
+Select-String "ERROR|❌" "$env:APPDATA\zakyx-browser\logs\zakyx-browser.log"
 ```
 
 ### **📈 Performance-Metriken**
@@ -88,7 +88,7 @@ Select-String "ERROR|❌" "$env:APPDATA\ora-browser\logs\ora-browser.log"
 Measure-Command { curl http://localhost:3030/health }
 
 # Memory-Usage prüfen (Task Manager)
-tasklist | findstr ora-browser
+tasklist | findstr zakyx-browser
 ```
 
 ---
@@ -112,11 +112,11 @@ primary_port = 3031
 
 ```bash
 # Debug-Modus aktivieren
-set RUST_LOG=ora_browser=debug
-target\release\ora-browser.exe
+set RUST_LOG=zakyx_browser=debug
+target\release\zakyx-browser.exe
 
 # Logs prüfen
-type "%APPDATA%\ora-browser\logs\ora-browser.log"
+type "%APPDATA%\zakyx-browser\logs\zakyx-browser.log"
 ```
 
 ### **Problem: Webseiten laden nicht**
@@ -157,7 +157,7 @@ curl http://localhost:3030/universal?url=https://google.com
 ```bash
 # 1. Repository klonen
 git clone <repository-url>
-cd project-ora-main
+cd project-zakyx-main
 
 # 2. Release-Build erstellen
 cargo build --release
@@ -170,13 +170,13 @@ start_production.bat
 
 ```bash
 # 1. Nur benötigte Dateien kopieren
-mkdir ora-browser-portable
-copy target\release\ora-browser.exe ora-browser-portable\
-copy production_config.toml ora-browser-portable\config.toml
-copy start_production.bat ora-browser-portable\
+mkdir zakyx-browser-portable
+copy target\release\zakyx-browser.exe zakyx-browser-portable\
+copy production_config.toml zakyx-browser-portable\config.toml
+copy start_production.bat zakyx-browser-portable\
 
 # 2. Portable starten
-cd ora-browser-portable
+cd zakyx-browser-portable
 start_production.bat
 ```
 
@@ -188,10 +188,10 @@ cargo install cargo-wix
 cargo wix --nocapture
 
 # 2. Silent Installation
-msiexec /i ora-browser.msi /quiet
+msiexec /i zakyx-browser.msi /quiet
 
 # 3. Zentrale Konfiguration
-copy \\server\config\ora-browser-config.toml "%APPDATA%\ora-browser\config.toml"
+copy \\server\config\zakyx-browser-config.toml "%APPDATA%\zakyx-browser\config.toml"
 ```
 
 ---
@@ -235,7 +235,7 @@ git pull origin main
 cargo build --release
 
 # Konfiguration sichern
-copy "%APPDATA%\ora-browser\config.toml" config-backup.toml
+copy "%APPDATA%\zakyx-browser\config.toml" config-backup.toml
 
 # Neuen Browser starten
 start_production.bat
@@ -245,7 +245,7 @@ start_production.bat
 
 ```bash
 # Log-Dateien bereinigen (älter als 7 Tage)
-forfiles /p "%APPDATA%\ora-browser\logs" /s /m *.log /d -7 /c "cmd /c del @path"
+forfiles /p "%APPDATA%\zakyx-browser\logs" /s /m *.log /d -7 /c "cmd /c del @path"
 
 # Konfiguration validieren
 # (Automatisch beim Start)
@@ -255,9 +255,9 @@ forfiles /p "%APPDATA%\ora-browser\logs" /s /m *.log /d -7 /c "cmd /c del @path"
 
 ```bash
 # Einfaches Status-Dashboard
-echo "=== ORA BROWSER STATUS ==="
+echo "=== ZAKYX Browser STATUS ==="
 curl -s http://localhost:3030/health | jq .
-echo "Memory: " & tasklist | findstr ora-browser
+echo "Memory: " & tasklist | findstr zakyx-browser
 echo "Uptime: " & systeminfo | findstr "Systemstartzeit"
 ```
 
@@ -287,7 +287,7 @@ echo "Uptime: " & systeminfo | findstr "Systemstartzeit"
 
 ---
 
-**🎉 Herzlichen Glückwunsch! Ihr Ora Browser ist jetzt produktionsbereit!**
+**🎉 Herzlichen Glückwunsch! Ihr ZAKYX Browser ist jetzt produktionsbereit!**
 
 **Support**: Siehe `docs/DEBUG_DOCUMENTATION.md` für detaillierte Debugging-Informationen.  
 **Version**: 1.0.0  

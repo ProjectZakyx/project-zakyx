@@ -1,5 +1,5 @@
 /**
- * OraBrowser Build Script
+ * ZAKYXBrowser Build Script
  * Kombiniert alle Module zu einer einzigen JavaScript-Datei
  */
 
@@ -16,10 +16,10 @@ const BUILD_CONFIG = {
         'modules/navigation.js',
         'modules/tabManager.js',
         'modules/bookmarkManager.js',
-        'oraBrowser.js'
+        'zakyxBrowser.js'
     ],
     banner: `/**
- * OraBrowser v1.0.0 - Modularer Web Browser
+ * ZAKYXBrowser v1.0.0 - Modularer Web Browser
  * Generiert am: ${new Date().toISOString()}
  * 
  * Module:
@@ -53,8 +53,8 @@ function readModuleFile(modulePath) {
     return moduleComment + content + moduleEnd;
 }
 
-function buildOraBrowser() {
-    console.log('🔨 Building OraBrowser...');
+function buildZAKYXBrowser() {
+    console.log('🔨 Building ZAKYXBrowser...');
     console.log('📁 Input directory:', BUILD_CONFIG.inputDir);
     console.log('📄 Output file:', BUILD_CONFIG.outputFile);
     
@@ -130,8 +130,8 @@ function watchMode() {
         
         if (fs.existsSync(fullPath)) {
             fs.watchFile(fullPath, (curr, prev) => {
-                console.log(`🔄 File changed: ${module}`);
-                buildOraBrowser();
+                            console.log(`🔄 File changed: ${module}`);
+            buildZAKYXBrowser();
             });
         }
     });
@@ -144,13 +144,13 @@ function main() {
     const args = process.argv.slice(2);
     
     if (args.includes('--watch')) {
-        buildOraBrowser();
+        buildZAKYXBrowser();
         watchMode();
     } else if (args.includes('--minify')) {
-        buildOraBrowser();
+        buildZAKYXBrowser();
         buildMinified();
     } else {
-        buildOraBrowser();
+        buildZAKYXBrowser();
     }
 }
 
@@ -160,7 +160,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-    buildOraBrowser,
+    buildZAKYXBrowser,
     buildMinified,
     watchMode
 }; 

@@ -1,8 +1,8 @@
-# 🌐 Ora Browser - Full Feature Browser
+# 🌐 ZAKYX Browser - Full Feature Browser
 
 Ein moderner, selbstständiger Webbrowser entwickelt in **Rust** mit **WebView2-Integration**, **Tab-Management**, **Bookmark-System** und **History-Tracking**.
 
-![Ora Browser](https://img.shields.io/badge/Version-1.0.0-blue)
+![ZAKYX Browser](https://img.shields.io/badge/Version-1.0.0-blue)
 ![Rust](https://img.shields.io/badge/Rust-1.70+-orange)
 ![Windows](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -55,14 +55,14 @@ Ein moderner, selbstständiger Webbrowser entwickelt in **Rust** mit **WebView2-
 
 ### 📥 Binary Download
 1. **Download** der neuesten Version von [Releases](../../releases)
-2. **Entpacken** von `ora-browser-v1.0.0.zip`
-3. **Ausführen** von `projekt-ora.exe`
+2. **Entpacken** von `zakyx-browser-v1.0.0.zip`
+3. **Ausführen** von `projekt-zakyx.exe`
 
 ### 🔧 Aus Quellcode kompilieren
 ```bash
 # Repository klonen
-git clone https://github.com/user/ora-browser
-cd ora-browser
+git clone https://github.com/user/zakyx-browser
+cd zakyx-browser
 
 # Abhängigkeiten installieren
 cargo build --release
@@ -74,7 +74,7 @@ cargo run --release
 ## 🚀 Verwendung
 
 ### **Grundlegende Navigation**
-1. **Browser starten** durch Doppelklick auf `projekt-ora.exe`
+1. **Browser starten** durch Doppelklick auf `projekt-zakyx.exe`
 2. **URL eingeben** in die Adressleiste (z.B. `google.de`)
 3. **Enter drücken** zum Navigieren
 
@@ -101,7 +101,7 @@ cargo run --release
 ## 📁 Projektstruktur
 
 ```
-ora-browser/
+zakyx-browser/
 ├── src/
 │   ├── main.rs                    # Hauptanwendung & Message Loop
 │   ├── webview_integration.rs     # WebView2 Engine Integration
@@ -198,8 +198,8 @@ Beiträge sind willkommen! Bitte:
 ### **Development Setup**
 ```bash
 # Repository klonen
-git clone https://github.com/user/ora-browser
-cd ora-browser
+git clone https://github.com/user/zakyx-browser
+cd zakyx-browser
 
 # Dependencies installieren
 cargo build
@@ -226,10 +226,10 @@ Dieses Projekt ist unter der **MIT License** lizenziert - siehe [LICENSE](LICENS
 
 - **Issues**: [GitHub Issues](../../issues)
 - **Discussions**: [GitHub Discussions](../../discussions)
-- **Email**: support@ora-browser.com (geplant)
+- **Email**: support@zakyx-browser.com (geplant)
 
 ---
 
 **Entwickelt mit ❤️ in Rust** 
 
-**© 2024 Ora Browser Project. Alle Rechte vorbehalten.**
+**© 2024 ZAKYX Browser Project. Alle Rechte vorbehalten.**

@@ -1,5 +1,5 @@
 /**
- * OraBrowser Navigation Manager
+ * ZAKYXBrowser Navigation Manager
  * Verantwortlich für URL-Navigation, Proxy-Handling und Content-Display
  */
 
@@ -171,11 +171,11 @@ class NavigationManager {
     createSecurityScript() {
         return `
 <script>
-// OraBrowser Security Enhancement
+        // ZAKYXBrowser Security Enhancement
 (function() {
     'use strict';
     
-    console.log('🛡️ OraBrowser Security Script loaded');
+            console.log('🛡️ ZAKYXBrowser Security Script loaded');
     
     // Aktiviere alle Eingabefelder
     function enableInteractions() {
@@ -222,8 +222,8 @@ class NavigationManager {
                 }
                 
                 // Sende an Parent Browser
-                if (window.parent && window.parent.oraBrowser) {
-                    window.parent.oraBrowser.navigateToUrl(fullUrl);
+                        if (window.parent && window.parent.zakyxBrowser) {
+            window.parent.zakyxBrowser.navigateToUrl(fullUrl);
                 } else {
                     window.parent.postMessage({
                         type: 'navigate',
@@ -248,7 +248,7 @@ class NavigationManager {
     // Wiederhole für dynamische Inhalte
     setInterval(enableInteractions, 1000);
     
-    console.log('✅ OraBrowser Security Script initialized');
+            console.log('✅ ZAKYXBrowser Security Script initialized');
 })();
 </script>
         `;
@@ -325,7 +325,7 @@ class NavigationManager {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OraBrowser - ${this.core.extractDomain(url)}</title>
+            <title>ZAKYXBrowser - ${this.core.extractDomain(url)}</title>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; }
         iframe { width: 100%; height: 100vh; border: none; }
@@ -333,7 +333,7 @@ class NavigationManager {
     </style>
 </head>
 <body>
-    <div class="header">🌐 ${url} via OraBrowser</div>
+            <div class="header">🌐 ${url} via ZAKYXBrowser</div>
     <iframe src="${url}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
 </body>
 </html>
@@ -350,7 +350,7 @@ class NavigationManager {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google - OraBrowser</title>
+            <title>Google - ZAKYXBrowser</title>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; }
         iframe { width: 100%; height: 100vh; border: none; }
@@ -358,7 +358,7 @@ class NavigationManager {
     </style>
 </head>
 <body>
-    <div class="google-header">🔍 Google Search - OraBrowser</div>
+            <div class="google-header">🔍 Google Search - ZAKYXBrowser</div>
     <iframe src="${url}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
 </body>
 </html>
@@ -373,7 +373,7 @@ class NavigationManager {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OraBrowser - Fehler</title>
+            <title>ZAKYXBrowser - Fehler</title>
     <style>
         body { font-family: Arial; padding: 40px; background: #f5f5f5; }
         .error-container { background: white; padding: 30px; border-radius: 10px; text-align: center; }
@@ -388,7 +388,7 @@ class NavigationManager {
         <p>Die Website konnte nicht geladen werden:</p>
         <div style="background: #f0f0f0; padding: 10px; margin: 20px 0; word-break: break-all;">${url}</div>
         <p>Fehler: ${error.message || error}</p>
-        <button class="retry-btn" onclick="parent.oraBrowser.navigateToUrl('${url}')">🔄 Erneut versuchen</button>
+        <button class="retry-btn" onclick="parent.zakyxBrowser.navigateToUrl('${url}')">🔄 Erneut versuchen</button>
         <button class="retry-btn" onclick="window.open('${url}', '_blank')">🌐 Extern öffnen</button>
     </div>
 </body>

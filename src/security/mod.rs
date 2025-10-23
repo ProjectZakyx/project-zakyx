@@ -1,4 +1,4 @@
-// 🛡️ Security Module - Comprehensive security system for Ora Browser
+// 🛡️ Security Module - Comprehensive security system for ZAKYX Browser
 //
 // This module provides a complete security framework including:
 // - Ad blocking and tracking protection
@@ -12,6 +12,7 @@ pub mod ad_blocker;
 pub mod privacy_manager;
 pub mod password_generator;
 pub mod https_enforcer;
+pub mod https;
 pub mod manager;
 
 // Re-export main types for easy access

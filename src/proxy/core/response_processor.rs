@@ -3,7 +3,7 @@
 // Extrahiert aus proxy_server.rs (Response-Verarbeitungslogik)
 
 // use crate::proxy::{ProxyResult, ProxyError}; // Entfernt - nicht mehr benötigt
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 use reqwest;
 use std::collections::HashMap;
 use url;
@@ -54,15 +54,15 @@ impl ResponseProcessor {
         &self,
         response: reqwest::Response,
         original_url: &str,
-    ) -> Result<ProcessedResponse, OraBrowserError> {
+    ) -> Result<ProcessedResponse, ZAKYXBrowserError> {
         let status_code = response.status().as_u16();
         let headers = self.extract_headers(&response);
         let content_type = self.determine_content_type(&response, original_url);
         let raw_content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(original_url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(original_url)))?;
 
         if raw_content.len() > self.config.max_content_size {
-            return Err(OraBrowserError::proxy_error(&format!(
+            return Err(ZAKYXBrowserError::proxy_error(&format!(
                 "Content size {} exceeds limit {}",
                 raw_content.len(),
                 self.config.max_content_size
@@ -123,7 +123,7 @@ impl ResponseProcessor {
 
         if enhanced.contains("<head>") {
             let meta_injection = r#"
-    <meta name="ora-proxy-enhanced" content="true">
+    <meta name="zakyx-proxy-enhanced" content="true">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
     <meta name="referrer" content="no-referrer">
 "#;
@@ -223,7 +223,7 @@ mod tests {
         let html = "<html><head></head><body></body></html>";
         let enhanced = processor.enhance_html_content(html, "https://example.com");
         
-        assert!(enhanced.contains("ora-proxy-enhanced"));
+        assert!(enhanced.contains("zakyx-proxy-enhanced"));
         assert!(enhanced.contains("Content-Security-Policy"));
     }
 
@@ -333,7 +333,7 @@ impl ResponseProcessor {
     pub async fn process_response_legacy(
         response: reqwest::Response,
         url: &str,
-    ) -> Result<ProxyResponse, OraBrowserError> {
+    ) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let status_code = response.status().as_u16();
         let content_type = response.headers()
             .get("content-type")
@@ -342,7 +342,7 @@ impl ResponseProcessor {
             .to_string();
         
         let content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
         
         let mut proxy_response = ProxyResponse::new(content, content_type, status_code);
         
@@ -358,7 +358,7 @@ impl ResponseProcessor {
     fn process_html_response(
         mut response: ProxyResponse,
         url: &str,
-    ) -> Result<ProxyResponse, OraBrowserError> {
+    ) -> Result<ProxyResponse, ZAKYXBrowserError> {
         // Basis-URL für relative Links hinzufügen
         if !response.content.contains("<base href=") {
             if let Ok(parsed_url) = url::Url::parse(url) {
@@ -375,9 +375,9 @@ impl ResponseProcessor {
     }
 
     /// Validiere Response-Größe
-    pub fn validate_size(&self, response: &ProxyResponse, max_size: usize) -> Result<(), OraBrowserError> {
+    pub fn validate_size(&self, response: &ProxyResponse, max_size: usize) -> Result<(), ZAKYXBrowserError> {
         if response.content_size() > max_size {
-            return Err(OraBrowserError::proxy_error(&format!(
+            return Err(ZAKYXBrowserError::proxy_error(&format!(
                 "Response size {} exceeds maximum allowed size {}",
                 response.content_size(),
                 max_size
@@ -391,15 +391,15 @@ impl ResponseProcessor {
         &self,
         response: reqwest::Response,
         original_url: &str,
-    ) -> Result<ProcessedResponse, OraBrowserError> {
+    ) -> Result<ProcessedResponse, ZAKYXBrowserError> {
         let status_code = response.status().as_u16();
         let headers = self.extract_headers(&response);
         let content_type = self.determine_content_type(&response, original_url);
         let raw_content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(original_url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(original_url)))?;
 
         if raw_content.len() > self.config.max_content_size {
-            return Err(OraBrowserError::proxy_error(&format!(
+            return Err(ZAKYXBrowserError::proxy_error(&format!(
                 "Content size {} exceeds limit {}",
                 raw_content.len(),
                 self.config.max_content_size

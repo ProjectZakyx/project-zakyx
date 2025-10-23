@@ -1,4 +1,4 @@
-# 🇪🇺 **Ora Browser - EIC Accelerator Projekt-Analyse**
+# 🇪🇺 **ZAKYX Browser - EIC Accelerator Projekt-Analyse**
 
 ## 📊 **Executive Summary für EU-Förderung**
 
@@ -9,7 +9,7 @@ Der europäische Web-Browser-Markt wird von US-amerikanischen Technologiekonzern
 - **Mangelnde DSGVO-native Implementierung** in bestehenden Browsern
 - **Fehlende Innovation** bei Datenschutz und Nutzer-Selbstbestimmung
 
-### **💡 Innovative Lösung: Ora Browser**
+### **💡 Innovative Lösung: ZAKYX Browser**
 Ein **datensouveräner, Rust-basierter Web-Browser** mit europäischen Werten:
 
 **Technische Innovation:**
@@ -90,7 +90,7 @@ Ein **datensouveräner, Rust-basierter Web-Browser** mit europäischen Werten:
    - Alternative zu US-Anbietern
 
 ### **Wettbewerbsanalyse**
-| Browser | Marktanteil | Schwächen | Ora-Vorteil |
+| Browser | Marktanteil | Schwächen | ZAKYX-Vorteil |
 |---------|-------------|-----------|-------------|
 | Chrome | 65% | US-Konzern, Datensammlung | EU-Datenschutz |
 | Safari | 15% | Apple-Ökosystem gebunden | Cross-Platform |
@@ -236,7 +236,7 @@ Ein **datensouveräner, Rust-basierter Web-Browser** mit europäischen Werten:
 
 ## 🎊 **Fazit**
 
-**Der Ora Browser ist ein idealer EIC Accelerator Kandidat!** 
+**Der ZAKYX Browser ist ein idealer EIC Accelerator Kandidat!** 
 
 Das Projekt kombiniert technische Innovation (Rust + Tauri), strategische EU-Relevanz (Datensouveränität) und kommerzielle Viabilität (Enterprise-Markt) in perfekter Weise.
 

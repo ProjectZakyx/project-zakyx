@@ -1,10 +1,10 @@
-# 🌐 **Businessplan: ORA Browser GmbH**
+# 🌐 **Businessplan: ZAKYX Browser GmbH**
 ## Datenschutz-Browser für deutsche Unternehmen
 
 ---
 
 **Antragsteller:** Max Mustermann  
-**Unternehmen:** ORA Browser GmbH (in Gründung)  
+**Unternehmen:** ZAKYX Browser GmbH (in Gründung)  
 **Datum:** Januar 2025  
 **Finanzierungsbedarf:** 125.000 EUR (KfW ERP-StartGeld)  
 **Branche:** Software-Entwicklung / IT-Dienstleistungen  
@@ -14,7 +14,7 @@
 ## 📊 **Executive Summary**
 
 ### **Geschäftsidee**
-Die ORA Browser GmbH entwickelt und vertreibt einen **DSGVO-konformen Web-Browser** speziell für deutsche Klein- und Mittelunternehmen. Unser Browser bietet maximalen Datenschutz, lokale Datenverarbeitung und erfüllt alle deutschen Compliance-Anforderungen ohne Kompromisse bei der Funktionalität.
+Die ZAKYX Browser GmbH entwickelt und vertreibt einen **DSGVO-konformen Web-Browser** speziell für deutsche Klein- und Mittelunternehmen. Unser Browser bietet maximalen Datenschutz, lokale Datenverarbeitung und erfüllt alle deutschen Compliance-Anforderungen ohne Kompromisse bei der Funktionalität.
 
 ### **Marktpotential**
 - **Zielmarkt:** 3,5 Millionen deutsche KMU
@@ -50,7 +50,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 - **Abhängigkeit:** Kritische Geschäftsprozesse von US-Konzernen abhängig
 
 ### **Lösungsansatz**
-**ORA Browser** ist die erste deutsche Browser-Alternative mit:
+**ZAKYX Browser** ist die erste deutsche Browser-Alternative mit:
 
 #### **Kernfunktionen:**
 - **Privacy-by-Design:** Keine Datensammlung ohne explizite Zustimmung
@@ -110,7 +110,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 | **Microsoft Edge** | 10% | Windows-Integration | US-Konzern, limitierte Privacy | Echte DSGVO-Compliance |
 | **Brave Browser** | 1% | Privacy-fokussiert | Consumer-orientiert | B2B-Enterprise-Fokus |
 
-#### **Wettbewerbsvorteil ORA Browser:**
+#### **Wettbewerbsvorteil ZAKYX Browser:**
 1. **Einziger deutscher Enterprise-Browser**
 2. **Native DSGVO-Compliance** (nicht nachgerüstet)
 3. **B2B-spezifische Features** (Gruppen-Management, Audit-Trails)
@@ -127,9 +127,9 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 ### **Marketing-Mix**
 
 #### **Produkt:**
-- ORA Browser Enterprise (Hauptprodukt)
-- ORA Browser Professional (KMU-Version)
-- ORA Browser Education (Bildungssektor)
+- ZAKYX Browser Enterprise (Hauptprodukt)
+- ZAKYX Browser Professional (KMU-Version)
+- ZAKYX Browser Education (Bildungssektor)
 - Support & Consulting Services
 
 #### **Preis:**
@@ -485,7 +485,7 @@ Deutsche Unternehmen stehen vor einem Dilemma:
 - **Technologie-Souveränität:** Beitrag zur digitalen Unabhängigkeit
 - **Mittelstand-Stärkung:** Datenschutz-Lösung für 175+ KMU
 
-**Die ORA Browser GmbH ist ein idealer Kandidat für den KfW ERP-StartGeld mit hoher Erfolgswahrscheinlichkeit und signifikantem volkswirtschaftlichem Nutzen.**
+**Die ZAKYX Browser GmbH ist ein idealer Kandidat für den KfW ERP-StartGeld mit hoher Erfolgswahrscheinlichkeit und signifikantem volkswirtschaftlichem Nutzen.**
 
 ---
 

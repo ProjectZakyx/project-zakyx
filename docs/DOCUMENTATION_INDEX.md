@@ -1,4 +1,4 @@
-# 📚 OraBrowser - Dokumentations-Index
+# 📚 ZAKYX Browser - Dokumentations-Index
 
 > **Letztes Update**: 6. Dezember 2024  
 > **Version**: 1.0.0+  
@@ -8,7 +8,7 @@
 
 ## 🎯 Übersicht
 
-Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine strukturierte Übersicht über alle verfügbaren Dokumentationen, sortiert nach Kategorien und Verwendungszweck.
+Willkommen zur **ZAKYX Browser-Dokumentation**! Diese Index-Seite bietet eine strukturierte Übersicht über alle verfügbaren Dokumentationen, sortiert nach Kategorien und Verwendungszweck.
 
 ### **📊 Dokumentations-Status**
 
@@ -51,7 +51,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 ### **🛡️ Error-Handling-System (Aktuell)**
 - **[ERROR_HANDLING_SYSTEM.md](ERROR_HANDLING_SYSTEM.md)** ⭐  
   **Status**: ✅ Neu  
-  **Umfang**: OraBrowserError-System, Recovery-Strategien, 67+ migrierte Funktionen  
+  **Umfang**: ZAKYX BrowserError-System, Recovery-Strategien, 67+ migrierte Funktionen  
   **Zielgruppe**: Rust-Entwickler, System-Architekten
 
 ### **🔍 Historische Architektur-Analysen**
@@ -69,7 +69,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 ## 👨‍💻 DEVELOPMENT DOCUMENTATION
 
 ### **🔧 Setup & Getting Started**
-- **[installation_guide_for_project_ora.md](installation_guide_for_project_ora.md)**  
+- **[installation_guide_for_project_zakyx.md](installation_guide_for_project_zakyx.md)**  
   **Status**: ✅ Aktuell  
   **Umfang**: Basis-Installation und Setup  
   **Zielgruppe**: Neue Entwickler
@@ -223,7 +223,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 ## 🔍 SPECIALIZED DOCUMENTATION
 
 ### **📝 Project Documentation**
-- **[project_ora_documentation.md](project_ora_documentation.md)**  
+- **[project_zakyx_documentation.md](project_zakyx_documentation.md)**  
   **Status**: 🟡 Veraltet  
   **Letzte Aktualisierung**: November 2024  
   **Notiz**: Ersetzt durch detailliertere Dokumentationen
@@ -239,7 +239,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 
 ### **🏃‍♂️ Quick Start (Neue Entwickler)**
 1. **[PROJECT_STATUS_REPORT_DECEMBER_2024.md](PROJECT_STATUS_REPORT_DECEMBER_2024.md)** - Aktueller Projekt-Status
-2. **[installation_guide_for_project_ora.md](installation_guide_for_project_ora.md)** - Setup
+2. **[installation_guide_for_project_zakyx.md](installation_guide_for_project_zakyx.md)** - Setup
 3. **[API.md](API.md)** - API-Referenz
 4. **[DEBUG_DOCUMENTATION.md](DEBUG_DOCUMENTATION.md)** - Debugging
 
@@ -274,7 +274,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 ### **🟡 Medium Priority (Q2 2025)**
 - [ ] Update **[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)** - Post-refactoring
 - [ ] Update **[technical_roadmap.md](technical_roadmap.md)** - Nach aktuellen Entwicklungen
-- [ ] Update **[project_ora_documentation.md](project_ora_documentation.md)** - Aktuelle Funktionen
+- [ ] Update **[project_zakyx_documentation.md](project_zakyx_documentation.md)** - Aktuelle Funktionen
 - [ ] Create **Performance-Guide** - Optimierung und Benchmarking
 
 ### **🟢 Low Priority (Q3+ 2025)**
@@ -331,7 +331,7 @@ Willkommen zur **OraBrowser-Dokumentation**! Diese Index-Seite bietet eine struk
 
 ## 🎯 CONCLUSION
 
-Die **OraBrowser-Dokumentation** ist in einem **ausgezeichneten Zustand** mit umfassender Abdeckung aller wichtigen Bereiche. Die kürzlich hinzugefügten Dokumentationen für **Frontend-Architektur** und **Error-Handling-System** bringen die Dokumentation auf den aktuellen Stand der Entwicklung.
+Die **ZAKYX Browser-Dokumentation** ist in einem **ausgezeichneten Zustand** mit umfassender Abdeckung aller wichtigen Bereiche. Die kürzlich hinzugefügten Dokumentationen für **Frontend-Architektur** und **Error-Handling-System** bringen die Dokumentation auf den aktuellen Stand der Entwicklung.
 
 **Nächste Schritte**: Focus auf **Security**, **Deployment** und **Development-Guides** für eine vollständige Dokumentations-Abdeckung.
 

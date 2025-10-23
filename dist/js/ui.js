@@ -364,7 +364,7 @@ export class BookmarkManager {
         this.bookmarks.push(bookmark);
         
         // Speichern
-        const success = StorageUtils.set('ora-browser-bookmarks', this.bookmarks);
+        const success = StorageUtils.set('zakyx-browser-bookmarks', this.bookmarks);
         if (success) {
             this.renderBookmarks();
             console.log('📌 Bookmark added:', title);
@@ -387,7 +387,7 @@ export class BookmarkManager {
         this.bookmarks.splice(index, 1);
         
         // Speichern
-        const success = StorageUtils.set('ora-browser-bookmarks', this.bookmarks);
+        const success = StorageUtils.set('zakyx-browser-bookmarks', this.bookmarks);
         if (success) {
             this.renderBookmarks();
             console.log('🗑️ Bookmark removed:', bookmark.title);
@@ -413,7 +413,7 @@ export class BookmarkManager {
             }
             
             // Fallback: localStorage laden
-            const savedBookmarks = StorageUtils.get('ora-browser-bookmarks');
+            const savedBookmarks = StorageUtils.get('zakyx-browser-bookmarks');
             if (savedBookmarks && Array.isArray(savedBookmarks)) {
                 this.bookmarks = savedBookmarks;
                 this.renderBookmarks();
@@ -439,7 +439,7 @@ export class BookmarkManager {
             { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org', folder: 'default' }
         ];
         
-        StorageUtils.set('ora-browser-bookmarks', this.bookmarks);
+        StorageUtils.set('zakyx-browser-bookmarks', this.bookmarks);
         this.renderBookmarks();
         console.log('📚 Default bookmarks loaded');
     }

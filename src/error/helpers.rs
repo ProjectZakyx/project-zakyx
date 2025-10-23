@@ -1,71 +1,71 @@
 // 🛠️ ERROR HELPERS
 // Utility-Funktionen für Error-Handling
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
-use crate::error::{OraBrowserError, OraBrowserResult};
+use crate::error::{ZAKYXBrowserError, ZAKYXBrowserResult};
 use crate::error::context::{ErrorContext, ContextualError, ContextualResult};
 
 /// Helper-Trait für einfache Error-Konversion
 pub trait ErrorHelpers<T> {
-    /// Konvertiere String-Error zu OraBrowserError
-    fn to_ora_error(self) -> OraBrowserResult<T>;
+    /// Konvertiere String-Error zu ZAKYXBrowserError
+    fn to_ora_error(self) -> ZAKYXBrowserResult<T>;
     
     /// Konvertiere mit Context
     fn with_context(self, context: ErrorContext) -> ContextualResult<T>;
     
     /// Konvertiere Plugin-Error
-    fn plugin_error(self, plugin_id: &str) -> OraBrowserResult<T>;
+    fn plugin_error(self, plugin_id: &str) -> ZAKYXBrowserResult<T>;
     
     /// Konvertiere Network-Error
-    fn network_error(self, url: Option<&str>) -> OraBrowserResult<T>;
+    fn network_error(self, url: Option<&str>) -> ZAKYXBrowserResult<T>;
     
     /// Konvertiere Config-Error
-    fn config_error(self, field: Option<&str>) -> OraBrowserResult<T>;
+    fn config_error(self, field: Option<&str>) -> ZAKYXBrowserResult<T>;
     
     /// Konvertiere UI-Error
-    fn ui_error(self, component: &str) -> OraBrowserResult<T>;
+    fn ui_error(self, component: &str) -> ZAKYXBrowserResult<T>;
 }
 
 impl<T> ErrorHelpers<T> for Result<T, String> {
-    fn to_ora_error(self) -> OraBrowserResult<T> {
-        self.map_err(|e| OraBrowserError::Unknown { message: e })
+    fn to_ora_error(self) -> ZAKYXBrowserResult<T> {
+        self.map_err(|e| ZAKYXBrowserError::Unknown { message: e })
     }
     
     fn with_context(self, context: ErrorContext) -> ContextualResult<T> {
         match self {
             Ok(val) => Ok(val),
             Err(msg) => {
-                let error = OraBrowserError::Unknown { message: msg };
+                let error = ZAKYXBrowserError::Unknown { message: msg };
                 Err(ContextualError::new(error, context))
             }
         }
     }
     
-    fn plugin_error(self, plugin_id: &str) -> OraBrowserResult<T> {
-        self.map_err(|msg| OraBrowserError::Plugin {
+    fn plugin_error(self, plugin_id: &str) -> ZAKYXBrowserResult<T> {
+        self.map_err(|msg| ZAKYXBrowserError::Plugin {
             plugin_id: plugin_id.to_string(),
             message: msg,
         })
     }
     
-    fn network_error(self, url: Option<&str>) -> OraBrowserResult<T> {
-        self.map_err(|msg| OraBrowserError::Network {
+    fn network_error(self, url: Option<&str>) -> ZAKYXBrowserResult<T> {
+        self.map_err(|msg| ZAKYXBrowserError::Network {
             message: msg,
             url: url.map(|s| s.to_string()),
             retry_possible: true,
         })
     }
     
-    fn config_error(self, field: Option<&str>) -> OraBrowserResult<T> {
-        self.map_err(|msg| OraBrowserError::Config {
+    fn config_error(self, field: Option<&str>) -> ZAKYXBrowserResult<T> {
+        self.map_err(|msg| ZAKYXBrowserError::Config {
             message: msg,
             field: field.map(|s| s.to_string()),
             fix_suggestion: None,
         })
     }
     
-    fn ui_error(self, component: &str) -> OraBrowserResult<T> {
-        self.map_err(|msg| OraBrowserError::Ui {
+    fn ui_error(self, component: &str) -> ZAKYXBrowserResult<T> {
+        self.map_err(|msg| ZAKYXBrowserError::Ui {
             message: msg,
             component: component.to_string(),
             recoverable: true,
@@ -77,7 +77,7 @@ impl<T> ErrorHelpers<T> for Result<T, String> {
 #[macro_export]
 macro_rules! plugin_error {
     ($plugin_id:expr, $msg:expr) => {
-        crate::error::OraBrowserError::Plugin {
+        crate::error::ZAKYXBrowserError::Plugin {
             plugin_id: $plugin_id.to_string(),
             message: $msg.to_string(),
         }
@@ -87,14 +87,14 @@ macro_rules! plugin_error {
 #[macro_export]
 macro_rules! network_error {
     ($msg:expr) => {
-        crate::error::OraBrowserError::Network {
+        crate::error::ZAKYXBrowserError::Network {
             message: $msg.to_string(),
             url: None,
             retry_possible: true,
         }
     };
     ($msg:expr, $url:expr) => {
-        crate::error::OraBrowserError::Network {
+        crate::error::ZAKYXBrowserError::Network {
             message: $msg.to_string(),
             url: Some($url.to_string()),
             retry_possible: true,
@@ -105,21 +105,21 @@ macro_rules! network_error {
 #[macro_export]
 macro_rules! config_error {
     ($msg:expr) => {
-        crate::error::OraBrowserError::Config {
+        crate::error::ZAKYXBrowserError::Config {
             message: $msg.to_string(),
             field: None,
             fix_suggestion: None,
         }
     };
     ($msg:expr, $field:expr) => {
-        crate::error::OraBrowserError::Config {
+        crate::error::ZAKYXBrowserError::Config {
             message: $msg.to_string(),
             field: Some($field.to_string()),
             fix_suggestion: None,
         }
     };
     ($msg:expr, $field:expr, $fix:expr) => {
-        crate::error::OraBrowserError::Config {
+        crate::error::ZAKYXBrowserError::Config {
             message: $msg.to_string(),
             field: Some($field.to_string()),
             fix_suggestion: Some($fix.to_string()),
@@ -140,7 +140,7 @@ mod tests {
         
         assert!(ora_result.is_err());
         match ora_result.unwrap_err() {
-            OraBrowserError::Unknown { message } => assert_eq!(message, "test error"),
+            ZAKYXBrowserError::Unknown { message } => assert_eq!(message, "test error"),
             _ => panic!("Wrong error type"),
         }
     }
@@ -152,7 +152,7 @@ mod tests {
         
         assert!(ora_result.is_err());
         match ora_result.unwrap_err() {
-            OraBrowserError::Plugin { plugin_id, message } => {
+            ZAKYXBrowserError::Plugin { plugin_id, message } => {
                 assert_eq!(plugin_id, "test-plugin");
                 assert_eq!(message, "plugin failed");
             },
@@ -164,7 +164,7 @@ mod tests {
     fn test_error_macros() {
         let error = plugin_error!("test-plugin", "test message");
         match error {
-            OraBrowserError::Plugin { plugin_id, message } => {
+            ZAKYXBrowserError::Plugin { plugin_id, message } => {
                 assert_eq!(plugin_id, "test-plugin");
                 assert_eq!(message, "test message");
             },
@@ -173,7 +173,7 @@ mod tests {
         
         let error = network_error!("connection failed");
         match error {
-            OraBrowserError::Network { message, url, retry_possible } => {
+            ZAKYXBrowserError::Network { message, url, retry_possible } => {
                 assert_eq!(message, "connection failed");
                 assert_eq!(url, None);
                 assert!(retry_possible);
@@ -183,7 +183,7 @@ mod tests {
         
         let error = network_error!("connection failed", "https://example.com");
         match error {
-            OraBrowserError::Network { message, url, retry_possible } => {
+            ZAKYXBrowserError::Network { message, url, retry_possible } => {
                 assert_eq!(message, "connection failed");
                 assert_eq!(url, Some("https://example.com".to_string()));
                 assert!(retry_possible);
@@ -202,7 +202,7 @@ mod tests {
                 attempt_count.set(count);
                 async move {
                     if count < 3 {
-                        Err(OraBrowserError::Network {
+                        Err(ZAKYXBrowserError::Network {
                             message: "temporary failure".to_string(),
                             url: None,
                             retry_possible: true,

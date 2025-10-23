@@ -3,7 +3,7 @@
 // Extrahiert aus proxy_server.rs (Zeilen ~80-300)
 
 // use crate::proxy::{ProxyResult, ProxyError}; // Entfernt - nicht mehr benötigt
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 use reqwest;
 use std::collections::HashMap;
 use warp::Filter;
@@ -88,7 +88,7 @@ impl UniversalResourceHandler {
     }
 
     /// Fetch-Ressource mit erweiterten Strategien
-    pub async fn fetch_resource(&self, url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    pub async fn fetch_resource(&self, url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         println!("🔄 Fetching resource with advanced strategies: {}", url);
         
         // 1. Versuch: Standard-Fetch
@@ -123,19 +123,19 @@ impl UniversalResourceHandler {
             }
             Err(e) => {
                 println!("❌ All fetch strategies failed for {}: {}", url, e);
-                Err(OraBrowserError::network_error(&format!("All fetch strategies failed: {}", e), Some(url)))
+                Err(ZAKYXBrowserError::network_error(&format!("All fetch strategies failed: {}", e), Some(url)))
             }
         }
     }
 
     /// Standard-Fetch-Versuch
-    async fn try_standard_fetch(&self, url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    async fn try_standard_fetch(&self, url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(self.config.timeout_seconds))
             .redirect(reqwest::redirect::Policy::limited(self.config.max_redirects))
             .gzip(self.config.enable_compression)
             .build()
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
 
         let mut request = client.get(url);
 
@@ -144,40 +144,40 @@ impl UniversalResourceHandler {
         }
 
         let response = request.send().await
-            .map_err(|e| OraBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
         self.parse_response(response).await
     }
 
     /// Fetch mit spezifischem User-Agent
-    async fn try_fetch_with_user_agent(&self, url: &str, user_agent: &str) -> Result<ProxyResponse, OraBrowserError> {
+    async fn try_fetch_with_user_agent(&self, url: &str, user_agent: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(self.config.timeout_seconds))
             .redirect(reqwest::redirect::Policy::limited(self.config.max_redirects))
             .user_agent(user_agent)
             .gzip(self.config.enable_compression)
             .build()
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to create HTTP client with user agent: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to create HTTP client with user agent: {}", e), Some(url)))?;
 
         let response = client.get(url).send().await
-            .map_err(|e| OraBrowserError::network_error(&format!("HTTP request with user agent failed: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("HTTP request with user agent failed: {}", e), Some(url)))?;
         self.parse_response(response).await
     }
 
     /// Minimaler Fetch ohne erweiterte Features
-    async fn try_minimal_resource_fetch(&self, url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    async fn try_minimal_resource_fetch(&self, url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .redirect(reqwest::redirect::Policy::none())
             .build()
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to create minimal HTTP client: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to create minimal HTTP client: {}", e), Some(url)))?;
 
         let response = client.get(url).send().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Minimal HTTP request failed: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Minimal HTTP request failed: {}", e), Some(url)))?;
         self.parse_response(response).await
     }
 
     /// Parse HTTP-Response zu ProxyResponse
-    async fn parse_response(&self, response: reqwest::Response) -> Result<ProxyResponse, OraBrowserError> {
+    async fn parse_response(&self, response: reqwest::Response) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let status_code = response.status().as_u16();
         let content_type = response.headers()
             .get("content-type")
@@ -186,7 +186,7 @@ impl UniversalResourceHandler {
             .to_string();
         
         let content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), None))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), None))?;
         
         Ok(ProxyResponse::new(content, content_type, status_code))
     }
@@ -234,7 +234,7 @@ impl UniversalResourceHandler {
         // Basis CORS-Fix: Injiziere Meta-Tags für bessere Kompatibilität
         if enhanced_html.contains("<head>") {
             let meta_injection = r#"
-    <meta name="ora-proxy-enhanced" content="true">
+    <meta name="zakyx-proxy-enhanced" content="true">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
     <meta name="referrer" content="no-referrer">
 "#;

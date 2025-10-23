@@ -1,4 +1,4 @@
-# 📋 OraBrowser - Changelog (Dezember 2024)
+# 📋 ZAKYXBrowser - Changelog (Dezember 2024)
 
 > **Berichtszeitraum**: November 2024 - 6. Dezember 2024  
 > **Version**: 1.0.0 → 1.0.0+  
@@ -9,7 +9,7 @@
 
 ## 🎯 EXECUTIVE SUMMARY
 
-Zwischen **November 2024** und **Dezember 2024** hat der OraBrowser eine **dramatische Transformation** durchlaufen. Diese Periode war geprägt von drei großen Entwicklungsphasen:
+Zwischen **November 2024** und **Dezember 2024** hat der ZAKYXBrowser eine **dramatische Transformation** durchlaufen. Diese Periode war geprägt von drei großen Entwicklungsphasen:
 
 1. **🛡️ Error-Handling-Migration**: Einheitliches Error-System für 67+ Funktionen
 2. **🎨 Frontend-Refactoring**: Monolithisches JavaScript → Modulares ES6-System  
@@ -38,7 +38,7 @@ Migration-Statistiken:
 // Neue Struktur hinzugefügt:
 src/error/
 ├── mod.rs           // ✅ NEU: Unified module integration
-├── types.rs         // ✅ NEU: OraBrowserError enum (8 variants)
+├── types.rs         // ✅ NEU: ZAKYXBrowserError enum (8 variants)
 ├── context.rs       // ✅ NEU: ErrorContext with debugging info
 ├── recovery.rs      // ✅ NEU: Recovery strategies & batch operations
 └── helpers.rs       // ✅ NEU: Conversion traits & macros
@@ -84,10 +84,10 @@ Nachher:
 // Neue Frontend-Architektur:
 dist/js/
 ├── utils.js (7.4KB)      // ✅ NEU: Helper functions, debugging
-├── core.js (6.1KB)       // ✅ NEU: OraBrowserCore class
+├── core.js (6.1KB)       // ✅ NEU: ZAKYXBrowserCore class
 ├── navigation.js (19.3KB) // ✅ NEU: NavigationManager, proxy
 ├── ui.js (16.3KB)        // ✅ NEU: TabManager, BookmarkManager
-└── main.js (13.6KB)      // ✅ NEU: OraBrowser main class
+└── main.js (13.6KB)      // ✅ NEU: ZAKYXBrowser main class
 ```
 
 #### **🎯 Modul-Features**
@@ -101,7 +101,7 @@ dist/js/
 
 #### **🔧 Kritische Fixes**
 - ✅ **JavaScript-Error behoben**: `Cannot read properties of undefined (reading 'length')`
-- ✅ **Link-Interception repariert**: `window.parent.oraBrowser.navigateToUrl is not a function`
+- ✅ **Link-Interception repariert**: `window.parent.zakyxBrowser.navigateToUrl is not a function`
 - ✅ **PostMessage-Kommunikation**: Sichere iframe-zu-parent-Navigation
 - ✅ **Bookmark-Modal**: Save-Button-Aktivierung basierend auf Input
 - ✅ **Keyboard-Shortcuts**: Alle Shortcuts funktionsfähig (Ctrl+T, Ctrl+L, Ctrl+W)
@@ -142,7 +142,7 @@ dist/js/
 - **Status**: ✅ **NEU**
 - **Umfang**: Vollständige Error-System-Dokumentation
 - **Inhalte**:
-  - OraBrowserError-Enum mit 8 Varianten
+  - ZAKYXBrowserError-Enum mit 8 Varianten
   - ErrorContext für Debugging-Information
   - Recovery-Strategien (Retry, Fallback, Batch)
   - Migration-Dokumentation für 67+ Funktionen
@@ -235,7 +235,7 @@ window.addEventListener('message', (event) => {
     }
     
     // Type-Validation
-    if (event.data?.type === 'oraBrowser_navigate') {
+    if (event.data?.type === 'zakyxBrowser_navigate') {
         this.navigationManager.navigateToUrl(event.data.url);
     }
 });
@@ -244,11 +244,11 @@ window.addEventListener('message', (event) => {
 #### **Error-Information-Protection**
 ```rust
 // Neue Error-Handling ohne Information-Leaks:
-impl OraBrowserError {
+impl ZAKYXBrowserError {
     pub fn user_safe_message(&self) -> String {
         match self {
-            OraBrowserError::Network { .. } => "Netzwerkfehler aufgetreten".to_string(),
-            OraBrowserError::Plugin { .. } => "Plugin-Fehler aufgetreten".to_string(),
+            ZAKYXBrowserError::Network { .. } => "Netzwerkfehler aufgetreten".to_string(),
+ZAKYXBrowserError::Plugin { .. } => "Plugin-Fehler aufgetreten".to_string(),
             // ... sanitized messages
         }
     }
@@ -310,7 +310,7 @@ Quality-Verbesserungen:
 #### **Debugging-Verbesserungen**
 ```javascript
 // Neue Debug-Tools verfügbar:
-window.testOraBrowser.getStats()     // Browser-Statistiken
+window.testZAKYXBrowser.getStats()     // Browser-Statistiken
 DebugTools.checkElements()           // DOM-Element-Status
 DebugTools.memoryUsage()            // Memory-Monitoring
 ErrorHandler.setupGlobalErrorHandling() // Global Error-Tracking
@@ -481,7 +481,7 @@ Health-Metrics:
 
 ## 🎯 CONCLUSION
 
-Der **Dezember 2024** war ein **historischer Monat** für das OraBrowser-Projekt. Die durchgeführten Verbesserungen haben den Browser von einem **funktionalen Prototyp** zu einem **production-ready, professionellen Web-Browser** transformiert.
+Der **Dezember 2024** war ein **historischer Monat** für das ZAKYXBrowser-Projekt. Die durchgeführten Verbesserungen haben den Browser von einem **funktionalen Prototyp** zu einem **production-ready, professionellen Web-Browser** transformiert.
 
 ### **🏆 Key Takeaways**
 
@@ -494,7 +494,7 @@ Der **Dezember 2024** war ein **historischer Monat** für das OraBrowser-Projekt
 
 ### **🚀 Looking Forward**
 
-Der OraBrowser hat eine **solide Grundlage** für die nächste Entwicklungsphase gelegt. Mit dem **einheitlichen Error-System**, der **modularen Frontend-Architektur** und der **umfassenden Dokumentation** ist das Projekt bereit für:
+Der ZAKYXBrowser hat eine **solide Grundlage** für die nächste Entwicklungsphase gelegt. Mit dem **einheitlichen Error-System**, der **modularen Frontend-Architektur** und der **umfassenden Dokumentation** ist das Projekt bereit für:
 
 - **Feature-Enhancement**: Erweiterte Browser-Features
 - **Performance-Optimization**: Weitere Performance-Verbesserungen  
@@ -502,7 +502,7 @@ Der OraBrowser hat eine **solide Grundlage** für die nächste Entwicklungsphase
 - **Platform-Expansion**: Multi-Platform-Distribution
 - **Community-Building**: Open-Source-Community-Aufbau
 
-**Der OraBrowser ist nicht nur bereit für Production - er ist bereit, ein ernsthafter Konkurrent im Browser-Markt zu werden!** 🌟
+**Der ZAKYXBrowser ist nicht nur bereit für Production - er ist bereit, ein ernsthafter Konkurrent im Browser-Markt zu werden!** 🌟
 
 ---
 

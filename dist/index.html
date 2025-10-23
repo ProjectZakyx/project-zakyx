@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ora Browser</title>
+    <title>ZAKYX Browser</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -121,7 +121,7 @@
         <!-- WebView content will be displayed here -->
         <div class="welcome-screen" id="welcome-screen">
             <div class="welcome-content">
-                <h1>🌐 Welcome to Ora Browser</h1>
+                <h1>🌐 Welcome to ZAKYX Browser</h1>
                 <p>Your modern, fast, and secure web browser</p>
                 
                 <div class="quick-actions">
@@ -613,21 +613,21 @@
         window.testLinkInterception = function() {
             console.log('🔗 === TESTING LINK INTERCEPTION ===');
             
-            if (!window.oraBrowser) {
-                console.log('❌ OraBrowser not available');
+            if (!window.zakyxBrowser) {
+                console.log('❌ ZAKYXBrowser not available');
                 return;
             }
             
             // Teste die Link-Interception
-            console.log('🔗 Link Interception Setup:', window.oraBrowser.linkInterceptionSetup);
-            console.log('🔗 Link Observer:', !!window.oraBrowser.linkObserver);
+            console.log('🔗 Link Interception Setup:', window.zakyxBrowser.linkInterceptionSetup);
+            console.log('🔗 Link Observer:', !!window.zakyxBrowser.linkObserver);
             
             // Teste GUI-Sichtbarkeit
-            window.oraBrowser.ensureOraBrowserGUIVisible();
+            window.zakyxBrowser.ensureZAKYXBrowserGUIVisible();
             
             // Navigiere zu einer Test-Seite
             console.log('🔗 Testing navigation to heise.de...');
-            window.oraBrowser.navigateToUrl('https://heise.de');
+            window.zakyxBrowser.navigateToUrl('https://heise.de');
             
             console.log('✅ Link interception test completed');
             console.log('🔗 Klicken Sie jetzt auf einen Link auf der geladenen Seite!');
@@ -637,13 +637,13 @@
         window.testGUIVisibility = function() {
             console.log('🚨 === TESTING GUI VISIBILITY ===');
             
-            if (!window.oraBrowser) {
-                console.log('❌ OraBrowser not available');
+            if (!window.zakyxBrowser) {
+                console.log('❌ ZAKYXBrowser not available');
                 return;
             }
             
             // Teste GUI-Sichtbarkeit
-            window.oraBrowser.ensureOraBrowserGUIVisible();
+            window.zakyxBrowser.ensureZAKYXBrowserGUIVisible();
             
             console.log('✅ GUI visibility test completed');
         };
@@ -667,8 +667,8 @@
             });
             
             // Reset GUI-Schutz
-            if (window.oraBrowser) {
-                window.oraBrowser.guiVisibilityEnsured = false;
+            if (window.zakyxBrowser) {
+                window.zakyxBrowser.guiVisibilityEnsured = false;
             }
             
             console.log('✅ Duplicate navigation fix completed');

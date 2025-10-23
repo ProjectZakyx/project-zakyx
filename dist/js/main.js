@@ -1,14 +1,14 @@
 /**
- * OraBrowser Main Module
+ * ZAKYXBrowser Main Module
  * Browser-Initialisierung und Event-Setup
  */
 
 import { waitForTauri, ErrorHandler, EventUtils, DomUtils, DebugTools } from './utils.js';
-import { OraBrowserCore } from './core.js';
+import { ZAKYXBrowserCore } from './core.js';
 import { NavigationManager } from './navigation.js';
 import { TabManager, BookmarkManager } from './ui.js';
 
-class OraBrowser {
+class ZAKYXBrowser {
     constructor() {
         this.core = null;
         this.navigationManager = null;
@@ -16,16 +16,16 @@ class OraBrowser {
         this.bookmarkManager = null;
         this.isInitialized = false;
         
-        console.log('🌐 OraBrowser instance created');
+        console.log('🌐 ZAKYXBrowser instance created');
     }
 
     // Browser initialisieren
     async init() {
         try {
-            console.log('🚀 Initializing OraBrowser modules...');
+            console.log('🚀 Initializing ZAKYXBrowser modules...');
             
             // Core initialisieren
-            this.core = new OraBrowserCore();
+            this.core = new ZAKYXBrowserCore();
             this.core.initializeCore();
             
             // Navigation Manager
@@ -53,10 +53,10 @@ class OraBrowser {
             await waitForTauri(3000);
             
             this.isInitialized = true;
-            console.log('✅ OraBrowser fully initialized');
+            console.log('✅ ZAKYXBrowser fully initialized');
             
         } catch (error) {
-            console.error('❌ OraBrowser initialization failed:', error);
+            console.error('❌ ZAKYXBrowser initialization failed:', error);
             this.handleInitializationError(error);
         }
     }
@@ -390,7 +390,7 @@ class OraBrowser {
                 flex-direction: column;
                 justify-content: center;
             ">
-                <h1>🚨 OraBrowser Initialisierungsfehler</h1>
+                <h1>🚨 ZAKYXBrowser Initialisierungsfehler</h1>
                 <p>Der Browser konnte nicht korrekt initialisiert werden.</p>
                 <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <strong>Fehler:</strong> ${error.message || error}
@@ -430,7 +430,7 @@ class OraBrowser {
 
 // Browser-Initialisierung
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🌐 DOM Content Loaded - Starting OraBrowser...');
+            console.log('🌐 DOM Content Loaded - Starting ZAKYXBrowser...');
     
     // Error-Handling setup
     ErrorHandler.setupGlobalErrorHandling();
@@ -438,29 +438,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     try {
         // Browser-Instanz erstellen
-        window.oraBrowser = new OraBrowser();
+        window.zakyxBrowser = new ZAKYXBrowser();
         
         // Initialisieren
-        await window.oraBrowser.init();
+        await window.zakyxBrowser.init();
         
-        console.log('✅ OraBrowser ready for use');
+        console.log('✅ ZAKYXBrowser ready for use');
         
     } catch (error) {
-        console.error('❌ OraBrowser startup failed:', error);
+        console.error('❌ ZAKYXBrowser startup failed:', error);
         
         // Fallback-Initialisierung
         console.log('🔄 Attempting fallback initialization...');
-        window.oraBrowser = new OraBrowser();
-        window.oraBrowser.handleInitializationError(error);
+        window.zakyxBrowser = new ZAKYXBrowser();
+        window.zakyxBrowser.handleInitializationError(error);
     }
 });
 
 // Global Debug-Tools
-window.testOraBrowser = {
-    getStats: () => window.oraBrowser?.getStats(),
+window.testZAKYXBrowser = {
+    getStats: () => window.zakyxBrowser?.getStats(),
     checkElements: () => DebugTools.checkElements(),
-    navigateTo: (url) => window.oraBrowser?.navigationManager?.navigateToUrl(url),
-    createTab: (url) => window.oraBrowser?.tabManager?.createNewTabWithUrl(url)
+    navigateTo: (url) => window.zakyxBrowser?.navigationManager?.navigateToUrl(url),
+    createTab: (url) => window.zakyxBrowser?.tabManager?.createNewTabWithUrl(url)
 };
 
 console.log('📦 Main module loaded - Ready for initialization'); 

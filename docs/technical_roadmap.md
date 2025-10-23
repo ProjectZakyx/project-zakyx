@@ -1,4 +1,4 @@
-# 🚀 **ORA BROWSER - TECHNISCHE ROADMAP 2025**
+# 🚀 **ZAKYX Browser - TECHNISCHE ROADMAP 2025**
 
 ## ✅ **PHASE 1: ABGESCHLOSSEN (Dezember 2024)**
 - ✅ Rust Ecosystem Modernisierung (thiserror, eyre, tracing)
@@ -98,7 +98,7 @@ pub struct ResourceManager {
 
 ### **Workspace-Struktur:**
 ```
-ora-browser/
+zakyx-browser/
 ├── ora_core/          # Browser Engine
 ├── ora_ui/            # User Interface
 ├── ora_security/      # Security Layer
@@ -109,7 +109,7 @@ ora-browser/
 
 ### **Plugin-Architektur:**
 - [ ] **WASM Plugins**: Sichere Erweiterungen
-- [ ] **Script API**: "Ora-Script" Automatisierung
+- [ ] **Script API**: "ZAKYX-Script" Automatisierung
 - [ ] **Extension Store**: Browser-Extensions
 
 ## 💡 **INNOVATIONS-ROADMAP (Future)**
@@ -192,4 +192,4 @@ Deine **technischen Verbesserungsvorschläge sind außergewöhnlich professionel
 🔄 **Mittelfristige Ziele**: WebView2 Optimierung, Web-Tech  
 🚀 **Langfristige Vision**: KI-Integration, Cross-Platform  
 
-**Der Ora Browser wird mit dieser Roadmap zu einem der technisch fortschrittlichsten Browser-Projekte!** 🌟 
+**Der ZAKYX Browser wird mit dieser Roadmap zu einem der technisch fortschrittlichsten Browser-Projekte!** 🌟 

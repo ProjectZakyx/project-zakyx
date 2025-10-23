@@ -1,4 +1,4 @@
-# 🎛️ Anti-Bot Toggle-System - Ora Browser
+# 🎛️ Anti-Bot Toggle-System - ZAKYX Browser
 
 ## Übersicht
 

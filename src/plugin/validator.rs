@@ -1,9 +1,9 @@
 // 🔍 PLUGIN VALIDATOR
 // Validierung von Plugin-Manifesten und -Berechtigungen
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use crate::plugin::types::{PluginManifest, ALLOWED_PERMISSIONS, SUPPORTED_API_VERSIONS};
-use crate::error::{OraBrowserError, OraBrowserResult};
+use crate::error::{ZAKYXBrowserError, ZAKYXBrowserResult};
 
 /// Plugin-Validierungsresultate
 #[derive(Debug, Clone)]
@@ -72,13 +72,13 @@ impl PluginValidator {
     }
     
     /// Validiert nur die Plugin-Berechtigungen (Legacy-Methode)
-    pub fn validate_plugin_permissions(&self, manifest: &PluginManifest) -> OraBrowserResult<()> {
+    pub fn validate_plugin_permissions(&self, manifest: &PluginManifest) -> ZAKYXBrowserResult<()> {
         let result = self.validate_manifest(manifest);
         
         if result.is_valid() {
             Ok(())
         } else {
-            Err(OraBrowserError::plugin_error("validation", &result.errors.join("; ")))
+            Err(ZAKYXBrowserError::plugin_error("validation", &result.errors.join("; ")))
         }
     }
     
@@ -229,7 +229,7 @@ mod tests {
             browser_action: None,
             options_page: None,
             manifest_version: None,
-            minimum_ora_version: None,
+            minimum_zakyx_version: None,
             dependencies: None,
             settings: None,
             update_url: None,

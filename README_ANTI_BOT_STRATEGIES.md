@@ -1,8 +1,8 @@
-# 🤖 Erweiterte Anti-Bot-Strategien für Ora Browser
+# 🤖 Erweiterte Anti-Bot-Strategien für ZAKYX Browser
 
 ## 🎯 Übersicht
 
-Der Ora Browser verfügt über ein hochentwickeltes Anti-Bot-System, das speziell für verschiedene Website-Typen und Schutzmaßnahmen optimiert ist. Diese Strategien sind besonders sinnvoll für ähnliche Fälle, in denen Websites Bot-Erkennung einsetzen.
+Der ZAKYX Browser verfügt über ein hochentwickeltes Anti-Bot-System, das speziell für verschiedene Website-Typen und Schutzmaßnahmen optimiert ist. Diese Strategien sind besonders sinnvoll für ähnliche Fälle, in denen Websites Bot-Erkennung einsetzen.
 
 ## 🛡️ **NEU: CSP Frame-Ancestors Bypass Strategy**
 
@@ -29,7 +29,7 @@ frame-ancestors 'none'
 #### Strategie 1: Google Search Console Bot
 - **User-Agent:** Mozilla/5.0 (compatible; Google-Site-Verification/1.0)
 - **Timeout:** 35 Sekunden
-- **Besonderheiten:** From: webmaster@ora-browser.com Header
+- **Besonderheiten:** From: webmaster@zakyx-browser.com Header
 
 #### Strategie 2: Googlebot Crawler
 - **User-Agent:** Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
@@ -72,7 +72,7 @@ frame-ancestors 'none'
 - **Timeout:** 45 Sekunden
 - **Redirects:** 15
 - **Besonderheiten:**
-  - OraFrameBypass User-Agent
+  - ZAKYXFrameBypass User-Agent
   - Spezielle Sec-Purpose Header
   - HTTP/1.1 für bessere CSP-Kompatibilität
   - Iframe-spezifische Sec-Fetch Headers
@@ -310,7 +310,7 @@ Basierend auf den Logs zeigt das System hervorragende Erfolgsraten:
 
 ## 💡 Fazit
 
-**Ja, Anti-Bot-Strategien sind definitiv sehr sinnvoll für ähnliche Fälle!** Das Ora Browser System zeigt, dass mit den richtigen Strategien auch die schwierigsten Websites erfolgreich geladen werden können. Die Kombination aus:
+**Ja, Anti-Bot-Strategien sind definitiv sehr sinnvoll für ähnliche Fälle!** Das ZAKYX Browser System zeigt, dass mit den richtigen Strategien auch die schwierigsten Websites erfolgreich geladen werden können. Die Kombination aus:
 
 - **Intelligenter Domain-Erkennung**
 - **Spezialisierten Header-Konfigurationen**

@@ -1,4 +1,4 @@
-// 🎨 ENHANCED GUI RENDERER SYSTEM - ORA BROWSER
+// 🎨 ENHANCED GUI RENDERER SYSTEM - ZAKYX BROWSER
 // =====================================================
 // Erweiterte GUI-Rendering-Engine mit mehreren Fallback-Optionen
 

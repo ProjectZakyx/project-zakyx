@@ -1,4 +1,4 @@
-# 🏗️ Ora Browser - Umfassende Architektur-Analyse
+# 🏗️ ZAKYX Browser - Umfassende Architektur-Analyse
 
 > **Datum**: November 2024  
 > **Version**: 1.0.0  
@@ -9,7 +9,7 @@
 
 ## 📋 Executive Summary
 
-Der **Ora Browser** implementiert eine **innovative, ethik-orientierte Browser-Architektur** basierend auf Rust und Tauri. Das Projekt zeigt bemerkenswerte Stärken in der modularen Struktur und Sicherheitskonzeption, weist jedoch Verbesserungspotenzial in der Code-Organisation und Performance-Optimierung auf.
+Der **ZAKYX Browser** implementiert eine **innovative, ethik-orientierte Browser-Architektur** basierend auf Rust und Tauri. Das Projekt zeigt bemerkenswerte Stärken in der modularen Struktur und Sicherheitskonzeption, weist jedoch Verbesserungspotenzial in der Code-Organisation und Performance-Optimierung auf.
 
 ### 🎯 Zentrale Erkenntnisse
 
@@ -25,11 +25,11 @@ Der **Ora Browser** implementiert eine **innovative, ethik-orientierte Browser-A
 
 ### Architekturstil: Layered Modular Architecture
 
-Der Ora Browser folgt einer **geschichteten, modularen Architektur** mit klarer Trennung von Verantwortlichkeiten:
+Der ZAKYX Browser folgt einer **geschichteten, modularen Architektur** mit klarer Trennung von Verantwortlichkeiten:
 
 ```mermaid
 graph TB
-    subgraph "🌐 Ora Browser Architecture"
+    subgraph "🌐 ZAKYX Browser Architecture"
         subgraph "Frontend Layer"
             UI[Tauri UI]
             WebView[WebView2]
@@ -146,7 +146,7 @@ pub struct PluginManager {
 
 ### Smart Proxy System
 
-Der Ora Browser implementiert eine innovative **Smart Proxy-Architektur**:
+Der ZAKYX Browser implementiert eine innovative **Smart Proxy-Architektur**:
 
 ```rust
 // Drei-Schichten-Proxy-System:
@@ -416,7 +416,7 @@ windows = "0.52"    → windows = "0.54"   # Aktuelle Windows APIs
 ```rust
 // Zentrale Error-Types:
 #[derive(Debug, thiserror::Error)]
-pub enum OraBrowserError {
+pub enum ZAKYXBrowserError {
     #[error("Network error: {0}")]
     Network(#[from] reqwest::Error),
     
@@ -588,7 +588,7 @@ pub struct EventStore {
 
 ### Architektur-Assessment Summary
 
-Der **Ora Browser** zeigt eine **ambitionierte und innovative Architektur** mit einigen bemerkenswerten Stärken:
+Der **ZAKYX Browser** zeigt eine **ambitionierte und innovative Architektur** mit einigen bemerkenswerten Stärken:
 
 #### 🌟 Architektur-Highlights:
 - **Ethical-First Design**: Einzigartig in der Browser-Landschaft
@@ -605,7 +605,7 @@ Der **Ora Browser** zeigt eine **ambitionierte und innovative Architektur** mit 
 
 #### 📈 Strategische Empfehlung:
 
-Der Ora Browser hat das Potenzial, ein **Nischen-Browser für Privacy-bewusste und ethisch orientierte Benutzer** zu werden. Die Architektur sollte **evolutionär weiterentwickelt** werden, wobei die einzigartigen Stärken (Ethical Safeguards, Smart Proxy) beibehalten und die strukturellen Schwächen systematisch adressiert werden.
+Der ZAKYX Browser hat das Potenzial, ein **Nischen-Browser für Privacy-bewusste und ethisch orientierte Benutzer** zu werden. Die Architektur sollte **evolutionär weiterentwickelt** werden, wobei die einzigartigen Stärken (Ethical Safeguards, Smart Proxy) beibehalten und die strukturellen Schwächen systematisch adressiert werden.
 
 **Die Architektur ist solide fundamentiert und bereit für die nächste Evolutionsstufe!** 🚀
 
@@ -613,7 +613,7 @@ Der Ora Browser hat das Potenzial, ein **Nischen-Browser für Privacy-bewusste u
 
 ### 📞 Kontakt & Weitere Informationen
 
-- **Repository**: [Ora Browser GitHub](https://github.com/user/ora-browser)
+- **Repository**: [ZAKYX Browser GitHub](https://github.com/user/zakyx-browser)
 - **Dokumentation**: `docs/` Verzeichnis
 - **Issue Tracker**: GitHub Issues
 - **Architektur-Diskussion**: GitHub Discussions

@@ -1,4 +1,4 @@
-//! # Ora Browser Smoke Tests
+//! # ZAKYX Browser Smoke Tests
 //! 
 //! Einfache Tests um sicherzustellen dass der Browser kompiliert und startet
 
@@ -13,8 +13,8 @@ mod tests {
     
     #[test]
     fn test_string_operations() {
-        let name = "Ora Browser";
-        assert!(name.contains("Ora"));
+        let name = "ZAKYX Browser";
+        assert!(name.contains("ZAKYX"));
         assert!(name.contains("Browser"));
         println!("✅ String operations test passed");
     }
@@ -51,9 +51,9 @@ mod tests {
         use std::time::Duration;
         
         let mut map = HashMap::new();
-        map.insert("browser", "ora");
+        map.insert("browser", "zakyx");
         
-        assert_eq!(map.get("browser"), Some(&"ora"));
+        assert_eq!(map.get("browser"), Some(&"zakyx"));
         
         let duration = Duration::from_millis(100);
         assert_eq!(duration.as_millis(), 100);

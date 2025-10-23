@@ -1,8 +1,8 @@
 {
-  "name": "ora-browser-frontend",
+  "name": "zakyx-browser-frontend",
   "version": "1.0.0",
-  "description": "Modular frontend for OraBrowser - A Rust-based web browser",
-  "main": "oraBrowser.js",
+  "description": "Modular frontend for ZAKYX Browser - A Rust-based web browser",
+  "main": "zakyxBrowser.js",
   "scripts": {
     "build": "node build.js",
     "build:watch": "node build.js --watch", 
@@ -19,7 +19,7 @@
     "modular",
     "javascript"
   ],
-  "author": "OraBrowser Team",
+      "author": "ZAKYXBrowser Team",
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {},
@@ -28,7 +28,7 @@
     "utils/",
     "components/",
     "styles/",
-    "oraBrowser.js",
+    "zakyxBrowser.js",
     "build.js"
   ],
   "engines": {

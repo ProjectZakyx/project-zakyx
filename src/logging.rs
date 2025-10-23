@@ -5,19 +5,19 @@ use std::sync::Once;
 
 static INIT: Once = Once::new();
 
-/// 📊 STRUKTURIERTES LOGGING SYSTEM FÜR ORA BROWSER
-pub struct OraLogger {
+/// 📊 STRUKTURIERTES LOGGING SYSTEM FÜR ZAKYX BROWSER
+pub struct ZAKYXLogger {
     _guard: tracing_appender::non_blocking::WorkerGuard,
 }
 
-impl OraLogger {
+impl ZAKYXLogger {
     /// 🚀 INITIALISIERE LOGGING-SYSTEM
     pub fn init() -> eyre::Result<Self> {
         let mut logger = None;
         
         INIT.call_once(|| {
             // 📝 Log-Datei mit täglicher Rotation
-            let file_appender = rolling::daily("logs", "ora_browser.log");
+            let file_appender = rolling::daily("logs", "zakyx_browser.log");
             let (non_blocking, guard) = non_blocking(file_appender);
             
             // 🎨 Formatter für strukturierte Logs
@@ -39,8 +39,8 @@ impl OraLogger {
             
             logger = Some(Self { _guard: guard });
             
-            info!("🚀 Ora Browser Logging System initialized");
-            info!("📊 Logs werden in './logs/ora_browser.log' gespeichert");
+                info!("🚀 ZAKYX Browser Logging System initialized");
+    info!("📊 Logs werden in './logs/zakyx_browser.log' gespeichert");
         });
         
         Ok(logger.unwrap())

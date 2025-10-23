@@ -3,7 +3,7 @@
 // Extrahiert aus proxy_server.rs (Connection Strategy Logik)
 
 use crate::proxy::core::response_processor::ProxyResponse;
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 use reqwest;
 use std::time::Duration;
 
@@ -132,9 +132,9 @@ impl StrategyEngine {
         url: &str,
         method: &str,
         body: Option<&str>,
-    ) -> Result<reqwest::Response, OraBrowserError> {
+    ) -> Result<reqwest::Response, ZAKYXBrowserError> {
         if self.current_strategy_index >= self.strategies.len() {
-            return Err(OraBrowserError::proxy_error("No more strategies available", Some(url)));
+            return Err(ZAKYXBrowserError::proxy_error("No more strategies available", Some(url)));
         }
 
         let strategy = &self.strategies[self.current_strategy_index];
@@ -147,7 +147,7 @@ impl StrategyEngine {
         url: &str,
         method: &str,
         body: Option<&str>,
-    ) -> Result<reqwest::Response, OraBrowserError> {
+    ) -> Result<reqwest::Response, ZAKYXBrowserError> {
         let total_strategies = self.strategies.len();
         
         for i in 0..total_strategies {
@@ -173,7 +173,7 @@ impl StrategyEngine {
         }
 
         // Wenn alle Strategien fehlschlagen, gib einen Fehler zurück
-        Err(OraBrowserError::proxy_error("All connection strategies failed", Some(url)))
+        Err(ZAKYXBrowserError::proxy_error("All connection strategies failed", Some(url)))
     }
 
     /// Führe eine spezifische Strategy aus
@@ -183,7 +183,7 @@ impl StrategyEngine {
         method: &str,
         body: Option<&str>,
         strategy: &ConnectionStrategy,
-    ) -> Result<reqwest::Response, OraBrowserError> {
+    ) -> Result<reqwest::Response, ZAKYXBrowserError> {
         let mut client_builder = reqwest::Client::builder()
             .timeout(Duration::from_secs(strategy.timeout_seconds))
             .connect_timeout(Duration::from_secs(strategy.connect_timeout_seconds))
@@ -197,7 +197,7 @@ impl StrategyEngine {
         }
 
         let client = client_builder.build()
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to build HTTP client: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to build HTTP client: {}", e), Some(url)))?;
         
         let mut request = match method.to_uppercase().as_str() {
             "GET" => client.get(url),
@@ -222,7 +222,7 @@ impl StrategyEngine {
         }
 
         let response = request.send().await
-            .map_err(|e| OraBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
         Ok(response)
     }
 
@@ -297,7 +297,7 @@ impl SmartProxy {
         }
     }
 
-    pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let mut engine = StrategyEngine::new();
         
         match engine.try_all_strategies(url, "GET", None).await {
@@ -311,7 +311,7 @@ impl SmartProxy {
         }
     }
 
-    async fn process_response(response: reqwest::Response, _url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    async fn process_response(response: reqwest::Response, _url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let status_code = response.status().as_u16();
         let content_type = response.headers()
             .get("content-type")
@@ -320,7 +320,7 @@ impl SmartProxy {
             .to_string();
         
         let content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), None))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), None))?;
         
         Ok(ProxyResponse::new(content, content_type, status_code))
     }

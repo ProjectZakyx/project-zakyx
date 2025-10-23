@@ -1,6 +1,6 @@
 // 🌐 INTERNAL WEBVIEW2 NAVIGATION SYSTEM
 // Handles internal navigation within the app instead of opening external browser
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ impl Default for WebViewConfig {
             enable_javascript: true,
             enable_cookies: true,
             enable_local_storage: true,
-            user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OraBrowser/1.0".to_string(),
+            user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 ZakYXBrowser/1.0".to_string(),
             disable_web_security: false,
             allow_running_insecure_content: false,
         }
@@ -185,7 +185,7 @@ impl InternalWebView2Navigator {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ora Browser - Loading {}</title>
+                    <title>ZAKYX Browser - Loading {}</title>
     <style>
         body, html {{
             margin: 0;
@@ -352,7 +352,7 @@ impl InternalWebView2Navigator {
 </head>
 <body>
     <div class="redirect-container">
-        <h2>🌐 Ora Browser</h2>
+                        <h2>🌐 ZAKYX Browser</h2>
         <div class="loading"></div>
         <p>Redirecting to <strong>{}</strong></p>
         <p><small>If you are not redirected automatically, <a href="{}" target="_self">click here</a>.</small></p>

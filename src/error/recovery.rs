@@ -1,8 +1,8 @@
 // 🔄 ERROR RECOVERY
 // Retry-Logik und Fallback-Strategien
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
-use crate::error::{OraBrowserError, OraBrowserResult};
+use crate::error::{ZAKYXBrowserError, ZAKYXBrowserResult};
 
 /// Error-Recovery-Utilities
 pub struct ErrorRecovery;
@@ -13,10 +13,10 @@ impl ErrorRecovery {
         mut operation: F,
         max_retries: u32,
         delay_ms: u64,
-    ) -> OraBrowserResult<T>
+    ) -> ZAKYXBrowserResult<T>
     where
         F: FnMut() -> Fut,
-        Fut: std::future::Future<Output = OraBrowserResult<T>>,
+        Fut: std::future::Future<Output = ZAKYXBrowserResult<T>>,
     {
         let mut last_error = None;
         
@@ -41,12 +41,12 @@ impl ErrorRecovery {
     pub async fn with_fallback<T, F, Fut, G, Gut>(
         mut primary: F,
         mut fallback: G,
-    ) -> OraBrowserResult<T>
+    ) -> ZAKYXBrowserResult<T>
     where
         F: FnMut() -> Fut,
-        Fut: std::future::Future<Output = OraBrowserResult<T>>,
+        Fut: std::future::Future<Output = ZAKYXBrowserResult<T>>,
         G: FnMut() -> Gut,
-        Gut: std::future::Future<Output = OraBrowserResult<T>>,
+        Gut: std::future::Future<Output = ZAKYXBrowserResult<T>>,
     {
         match primary().await {
             Ok(result) => Ok(result),
@@ -75,7 +75,7 @@ impl ErrorRecovery {
     ) -> (Vec<T>, ErrorCollection)
     where
         F: FnMut(T) -> Fut,
-        Fut: std::future::Future<Output = OraBrowserResult<T>>,
+        Fut: std::future::Future<Output = ZAKYXBrowserResult<T>>,
     {
         let mut results = Vec::new();
         let mut errors = ErrorCollection::new();
@@ -97,9 +97,9 @@ impl ErrorRecovery {
 }
 
 /// Error-Aggregation für Batch-Operationen
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ErrorCollection {
-    pub errors: Vec<OraBrowserError>,
+    pub errors: Vec<ZAKYXBrowserError>,
     pub successful_operations: usize,
     pub failed_operations: usize,
 }
@@ -113,7 +113,7 @@ impl ErrorCollection {
         }
     }
     
-    pub fn add_error(&mut self, error: OraBrowserError) {
+    pub fn add_error(&mut self, error: ZAKYXBrowserError) {
         self.errors.push(error);
         self.failed_operations += 1;
     }
@@ -153,7 +153,7 @@ impl ErrorCollection {
     }
     
     /// Konvertiere zu einer zusammenfassenden Error, falls Fehler aufgetreten sind
-    pub fn to_result(self) -> OraBrowserResult<()> {
+    pub fn to_result(self) -> ZAKYXBrowserResult<()> {
         if self.has_errors() {
             let message = format!(
                 "{} of {} operations failed. Success rate: {:.1}%",
@@ -162,13 +162,30 @@ impl ErrorCollection {
                 self.success_rate() * 100.0
             );
             
-            Err(OraBrowserError::Internal {
+            Err(ZAKYXBrowserError::Internal {
                 message,
                 module: "batch_operations".to_string(),
             })
         } else {
             Ok(())
         }
+    }
+
+    /// Zähle Fehler nach Typ
+    pub fn count_by_type(&self, error_type: &str) -> usize {
+        self.errors.iter()
+            .filter(|error| error.to_string().contains(error_type))
+            .count()
+    }
+
+    /// Alias für summary() für Test-Kompatibilität
+    pub fn to_summary(&self) -> String {
+        self.summary()
+    }
+
+    /// Konvertiere zu JSON
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(self)
     }
 }
 
@@ -189,7 +206,7 @@ mod tests {
         
         collection.add_success();
         collection.add_success();
-        collection.add_error(OraBrowserError::Unknown { 
+        collection.add_error(ZAKYXBrowserError::Unknown { 
             message: "test error".to_string() 
         });
         
@@ -214,7 +231,7 @@ mod tests {
                 attempt_count.set(count);
                 async move {
                     if count < 3 {
-                        Err(OraBrowserError::Network {
+                        Err(ZAKYXBrowserError::Network {
                             message: "temporary failure".to_string(),
                             url: None,
                             retry_possible: true,

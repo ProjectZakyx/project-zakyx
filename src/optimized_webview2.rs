@@ -1,474 +1,204 @@
-// 🌐 OPTIMIZED WEBVIEW2 INTEGRATION - ORA BROWSER
-// =====================================================
-// Erweiterte WebView2-Integration mit optimierten Einstellungen
+// 🌐 OPTIMIZED WEBVIEW2 INTEGRATION - LEGACY FILE
+// Diese Datei bleibt für Rückwärtskompatibilität
+// Verwende stattdessen src/webview2/ für neue Entwicklungen
 
-use std::collections::HashMap;
-use windows::Win32::{
-    Foundation::*,
-    UI::WindowsAndMessaging::*,
-    System::Com::*,
-};
 use eyre::Result;
-use crate::w;
+use std::collections::HashMap;
+use windows::Win32::Foundation::HWND;
 
-#[derive(Debug, Clone)]
-pub struct WebView2Config {
-    pub user_data_folder: String,
-    pub additional_browser_arguments: Vec<String>,
-    pub allow_single_sign_on: bool,
-    pub enable_password_autosave: bool,
-    pub enable_general_autofill: bool,
-    pub enable_pinch_zoom: bool,
-    pub enable_swipe_navigation: bool,
-    pub enable_browser_extensions: bool,
-    pub default_script_dialogs_enabled: bool,
-    pub host_objects_allowed: bool,
-    pub web_message_enabled: bool,
-}
+// Re-export der neuen modularen Struktur
+pub use crate::webview2::{
+    OptimizedWebView2 as NewOptimizedWebView2,
+    OptimizedWebView2Manager as NewOptimizedWebView2Manager,
+    WebView2Config,
+    WebView2ConfigBuilder,
+    WebView2EnvironmentInfo,
+    WebView2EnvironmentDetector,
+    WebView2Engine,
+    WebView2PerformanceMonitor,
+};
 
-impl Default for WebView2Config {
-    fn default() -> Self {
-        Self {
-            user_data_folder: std::env::temp_dir().join("OraWebView2").to_string_lossy().to_string(),
-            additional_browser_arguments: vec![
-                "--disable-web-security".to_string(),
-                "--allow-running-insecure-content".to_string(),
-                "--disable-features=VizDisplayCompositor".to_string(),
-                "--enable-gpu-rasterization".to_string(),
-                "--enable-zero-copy".to_string(),
-            ],
-            allow_single_sign_on: false,
-            enable_password_autosave: false,
-            enable_general_autofill: true,
-            enable_pinch_zoom: true,
-            enable_swipe_navigation: true,
-            enable_browser_extensions: false,
-            default_script_dialogs_enabled: true,
-            host_objects_allowed: true,
-            web_message_enabled: true,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct WebView2EnvironmentInfo {
-    pub version: String,
-    pub installation_path: String,
-    pub is_available: bool,
-    pub runtime_type: String,
-}
-
+/// Legacy OptimizedWebView2 (deprecated - use crate::webview2::OptimizedWebView2)
+#[deprecated(note = "Use crate::webview2::OptimizedWebView2 instead")]
 pub struct OptimizedWebView2 {
-    config: WebView2Config,
-    environment_info: Option<WebView2EnvironmentInfo>,
-    container_window: Option<HWND>,
-    is_initialized: bool,
-    initialization_attempts: u32,
-    last_error: Option<String>,
+    inner: NewOptimizedWebView2,
 }
 
 impl OptimizedWebView2 {
-    /// 🚀 ERSTELLE OPTIMIERTEN WEBVIEW2
+    /// Erstellt eine neue OptimizedWebView2-Instanz (Legacy-Wrapper)
     pub fn new() -> Self {
-        println!("🌐 Creating Optimized WebView2...");
+        println!("⚠️ Using legacy OptimizedWebView2 - consider migrating to crate::webview2::OptimizedWebView2");
+        
         Self {
-            config: WebView2Config::default(),
-            environment_info: None,
-            container_window: None,
-            is_initialized: false,
-            initialization_attempts: 0,
-            last_error: None,
+            inner: NewOptimizedWebView2::new(),
         }
     }
 
-    /// 🔍 PRÜFE WEBVIEW2 VERFÜGBARKEIT
-    pub fn check_webview2_availability(&mut self) -> Result<WebView2EnvironmentInfo> {
-        println!("🔍 Checking WebView2 availability...");
-        
-        // Registry-Check für WebView2 Runtime
-        let version = self.get_webview2_version_from_registry()?;
-        let installation_path = self.get_webview2_installation_path()?;
-        
-        let env_info = WebView2EnvironmentInfo {
-            version: version.clone(),
-            installation_path: installation_path.clone(),
-            is_available: !version.is_empty(),
-            runtime_type: if version.is_empty() { "None".to_string() } else { "Evergreen".to_string() },
-        };
-        
-        println!("✅ WebView2 Environment Info:");
-        println!("   Version: {}", env_info.version);
-        println!("   Path: {}", env_info.installation_path);
-        println!("   Available: {}", env_info.is_available);
-        println!("   Type: {}", env_info.runtime_type);
-        
-        self.environment_info = Some(env_info.clone());
-        Ok(env_info)
-    }
-
-    /// 📋 WEBVIEW2 VERSION AUS REGISTRY
-    fn get_webview2_version_from_registry(&self) -> Result<String> {
-        use std::process::Command;
-        
-        let output = Command::new("reg")
-            .args(&[
-                "query",
-                r"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
-                "/v",
-                "pv"
-            ])
-            .output();
-            
-        match output {
-            Ok(result) => {
-                let output_str = String::from_utf8_lossy(&result.stdout);
-                if let Some(line) = output_str.lines().find(|line| line.contains("pv")) {
-                    if let Some(version) = line.split_whitespace().last() {
-                        return Ok(version.to_string());
-                    }
-                }
-            }
-            Err(_) => {}
-        }
-        
-        Ok("Unknown".to_string())
-    }
-
-    /// 📁 WEBVIEW2 INSTALLATION PFAD
-    fn get_webview2_installation_path(&self) -> Result<String> {
-        // Standard-Installationspfade prüfen
-        let possible_paths = vec![
-            r"C:\Program Files (x86)\Microsoft\EdgeWebView\Application",
-            r"C:\Program Files\Microsoft\EdgeWebView\Application",
-        ];
-        
-        for path in possible_paths {
-            if std::path::Path::new(path).exists() {
-                return Ok(path.to_string());
-            }
-        }
-        
-        Ok("Not Found".to_string())
-    }
-
-    /// ⚙️ KONFIGURIERE WEBVIEW2
+    /// Konfiguriert WebView2 (Legacy-Wrapper)
     pub fn configure(&mut self, config: WebView2Config) {
-        println!("⚙️ Configuring WebView2...");
-        self.config = config;
-        println!("✅ WebView2 configuration updated!");
+        self.inner.configure(config);
     }
 
-    /// 🏗️ ERSTELLE CONTAINER WINDOW
+    /// Überprüft WebView2-Verfügbarkeit (Legacy-Wrapper)
+    pub fn check_webview2_availability(&mut self) -> Result<WebView2EnvironmentInfo> {
+        self.inner.check_webview2_availability()
+    }
+
+    /// Erstellt Container-Window (Legacy-Wrapper)
     pub fn create_container(&mut self, parent_window: HWND) -> Result<HWND> {
-        println!("🏗️ Creating WebView2 container window...");
-        
-        unsafe {
-            let container = CreateWindowExW(
-                WS_EX_CONTROLPARENT,
-                w!("STATIC"),
-                w!("OptimizedWebView2Container"),
-                WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-                0, 0, 800, 600,
-                parent_window,
-                None,
-                None,
-                None,
-            );
-            
-            if container.0 == 0 {
-                let error = "Failed to create WebView2 container window";
-                self.last_error = Some(error.to_string());
-                return Err(eyre::eyre!(error));
-            }
-            
-            self.container_window = Some(container);
-            println!("✅ WebView2 container created: {:?}", container);
-            Ok(container)
-        }
+        self.inner.create_container(parent_window)
     }
 
-    /// 🚀 INITIALISIERE WEBVIEW2 MIT ERWEITERTEN OPTIONEN
+    /// Initialisiert WebView2 (Legacy-Wrapper)
     pub async fn initialize_advanced(&mut self) -> Result<()> {
-        println!("🚀 Initializing Advanced WebView2...");
-        self.initialization_attempts += 1;
-        
-        // Verfügbarkeit prüfen
-        match self.check_webview2_availability() {
-            Ok(info) => {
-                if !info.is_available {
-                    return Err(eyre::eyre!("WebView2 Runtime not available"));
-                }
-            }
-            Err(e) => {
-                self.last_error = Some(format!("Availability check failed: {}", e));
-                return Err(e);
-            }
-        }
-
-        // COM initialisieren
-        unsafe {
-            let hr = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
-            if hr.is_err() {
-                let error = "Failed to initialize COM";
-                self.last_error = Some(error.to_string());
-                return Err(eyre::eyre!(error));
-            }
-        }
-
-        // Environment-Optionen erstellen
-        let environment_options = self.create_environment_options()?;
-        println!("🔧 Environment options created");
-
-        // WebView2 Environment erstellen (simuliert)
-        println!("🌐 Creating WebView2 Environment...");
-        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-        
-        // Core WebView2 erstellen (simuliert)
-        println!("🎯 Creating Core WebView2...");
-        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-        
-        // Navigation Event Handler einrichten
-        self.setup_navigation_handlers()?;
-        
-        // Permissions einrichten
-        self.setup_permissions()?;
-        
-        self.is_initialized = true;
-        println!("✅ Advanced WebView2 initialization completed!");
-        Ok(())
+        self.inner.initialize_advanced().await
     }
 
-    /// 🔧 ERSTELLE ENVIRONMENT OPTIONEN
-    fn create_environment_options(&self) -> Result<HashMap<String, String>> {
-        println!("🔧 Creating WebView2 environment options...");
-        
-        let mut options = HashMap::new();
-        
-        // Browser-Argumente
-        let args = self.config.additional_browser_arguments.join(" ");
-        options.insert("AdditionalBrowserArguments".to_string(), args);
-        
-        // User Data Folder
-        options.insert("UserDataFolder".to_string(), self.config.user_data_folder.clone());
-        
-        // Feature-Flags
-        options.insert("AllowSingleSignOnUsingOSPrimaryAccount".to_string(), 
-                      self.config.allow_single_sign_on.to_string());
-        
-        println!("✅ Environment options created with {} settings", options.len());
-        Ok(options)
+    /// Navigiert zu URL (Legacy-Wrapper)
+    pub async fn navigate_to_url(&mut self, url: &str) -> Result<()> {
+        self.inner.navigate_to_url(url).await
     }
 
-    /// 🧭 NAVIGATION HANDLER EINRICHTEN
-    fn setup_navigation_handlers(&self) -> Result<()> {
-        println!("🧭 Setting up navigation handlers...");
-        
-        // Navigation Starting Handler
-        println!("📍 Navigation Starting handler registered");
-        
-        // Navigation Completed Handler
-        println!("✅ Navigation Completed handler registered");
-        
-        // DOM Content Loaded Handler
-        println!("📄 DOM Content Loaded handler registered");
-        
-        // New Window Handler
-        println!("🪟 New Window handler registered");
-        
-        println!("✅ All navigation handlers set up!");
-        Ok(())
+    /// Lädt HTML-String (Legacy-Wrapper)
+    pub async fn navigate_to_string(&mut self, html: &str) -> Result<()> {
+        self.inner.navigate_to_string(html).await
     }
 
-    /// 🛡️ PERMISSIONS EINRICHTEN
-    fn setup_permissions(&self) -> Result<()> {
-        println!("🛡️ Setting up WebView2 permissions...");
-        
-        // Camera Permission
-        println!("📷 Camera permission configured");
-        
-        // Microphone Permission
-        println!("🎤 Microphone permission configured");
-        
-        // Geolocation Permission
-        println!("🌍 Geolocation permission configured");
-        
-        // Notification Permission
-        println!("🔔 Notification permission configured");
-        
-        println!("✅ All permissions configured!");
-        Ok(())
+    /// Führt JavaScript aus (Legacy-Wrapper)
+    pub async fn execute_script(&mut self, script: &str) -> Result<String> {
+        self.inner.execute_script(script).await
     }
 
-    /// 🌐 NAVIGIERE ZU URL
-    pub async fn navigate_to_url(&self, url: &str) -> Result<()> {
-        if !self.is_initialized {
-            return Err(eyre::eyre!("WebView2 not initialized"));
-        }
-        
-        println!("🌐 Navigating to: {}", url);
-        
-        // URL-Validierung
-        if !self.is_valid_url(url) {
-            return Err(eyre::eyre!("Invalid URL format"));
-        }
-        
-        // Navigation ausführen (simuliert)
-        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
-        
-        println!("✅ Navigation completed to: {}", url);
-        Ok(())
+    /// Erstellt Diagnosebericht (Legacy-Wrapper)
+    pub fn create_diagnostic_report(&mut self) -> HashMap<String, String> {
+        self.inner.create_diagnostic_report()
     }
 
-    /// 📄 LADE HTML STRING
-    pub async fn navigate_to_string(&self, html: &str) -> Result<()> {
-        if !self.is_initialized {
-            return Err(eyre::eyre!("WebView2 not initialized"));
-        }
-        
-        println!("📄 Loading HTML string ({} chars)...", html.len());
-        
-        // HTML-Validierung
-        if html.trim().is_empty() {
-            return Err(eyre::eyre!("Empty HTML content"));
-        }
-        
-        // HTML laden (simuliert)
-        tokio::time::sleep(tokio::time::Duration::from_millis(30)).await;
-        
-        println!("✅ HTML string loaded successfully!");
-        Ok(())
+    /// Bereinigt WebView2 (Legacy-Wrapper)
+    pub async fn cleanup(&mut self) -> Result<()> {
+        self.inner.cleanup().await
     }
 
-    /// ✅ URL VALIDIERUNG
-    fn is_valid_url(&self, url: &str) -> bool {
-        url.starts_with("http://") || 
-        url.starts_with("https://") || 
-        url.starts_with("file://") ||
-        url.starts_with("data:")
+    /// Gibt die neue Implementierung zurück (für Migration)
+    pub fn get_new_implementation(&self) -> &NewOptimizedWebView2 {
+        &self.inner
     }
 
-    /// 💉 JAVASCRIPT AUSFÜHREN
-    pub async fn execute_script(&self, script: &str) -> Result<String> {
-        if !self.is_initialized {
-            return Err(eyre::eyre!("WebView2 not initialized"));
-        }
-        
-        println!("💉 Executing JavaScript...");
-        
-        // Script-Validierung
-        if script.trim().is_empty() {
-            return Err(eyre::eyre!("Empty script"));
-        }
-        
-        // Script ausführen (simuliert)
-        tokio::time::sleep(tokio::time::Duration::from_millis(20)).await;
-        
-        let result = "Script executed successfully".to_string();
-        println!("✅ JavaScript executed, result: {}", result);
-        Ok(result)
-    }
-
-    /// 📊 ERSTELLE DIAGNOSEBERICHT
-    pub fn create_diagnostic_report(&self) -> HashMap<String, String> {
-        let mut report = HashMap::new();
-        
-        report.insert("Initialized".to_string(), self.is_initialized.to_string());
-        report.insert("Attempts".to_string(), self.initialization_attempts.to_string());
-        
-        if let Some(error) = &self.last_error {
-            report.insert("LastError".to_string(), error.clone());
-        }
-        
-        if let Some(env_info) = &self.environment_info {
-            report.insert("Version".to_string(), env_info.version.clone());
-            report.insert("Available".to_string(), env_info.is_available.to_string());
-            report.insert("RuntimeType".to_string(), env_info.runtime_type.clone());
-        }
-        
-        report.insert("UserDataFolder".to_string(), self.config.user_data_folder.clone());
-        report.insert("BrowserArgs".to_string(), self.config.additional_browser_arguments.len().to_string());
-        
-        report
-    }
-
-    /// 🧹 CLEANUP
-    pub fn cleanup(&mut self) -> Result<()> {
-        println!("🧹 Cleaning up Optimized WebView2...");
-        
-        if let Some(container) = self.container_window {
-            unsafe {
-                DestroyWindow(container);
-            }
-            self.container_window = None;
-        }
-        
-        self.is_initialized = false;
-        
-        unsafe {
-            CoUninitialize();
-        }
-        
-        println!("✅ Optimized WebView2 cleaned up!");
-        Ok(())
+    /// Gibt die neue Implementierung zurück (mutable, für Migration)
+    pub fn get_new_implementation_mut(&mut self) -> &mut NewOptimizedWebView2 {
+        &mut self.inner
     }
 }
 
-/// 🎯 WEBVIEW2 MANAGER
+impl Default for OptimizedWebView2 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Legacy OptimizedWebView2Manager (deprecated - use crate::webview2::OptimizedWebView2Manager)
+#[deprecated(note = "Use crate::webview2::OptimizedWebView2Manager instead")]
 pub struct OptimizedWebView2Manager {
-    instances: HashMap<String, OptimizedWebView2>,
-    active_instance: Option<String>,
-    global_config: WebView2Config,
+    inner: NewOptimizedWebView2Manager,
 }
 
 impl OptimizedWebView2Manager {
+    /// Erstellt einen neuen Manager (Legacy-Wrapper)
     pub fn new() -> Self {
-        println!("🎯 Creating Optimized WebView2 Manager...");
+        println!("⚠️ Using legacy OptimizedWebView2Manager - consider migrating to crate::webview2::OptimizedWebView2Manager");
+        
         Self {
-            instances: HashMap::new(),
-            active_instance: None,
-            global_config: WebView2Config::default(),
+            inner: NewOptimizedWebView2Manager::new(),
         }
     }
 
+    /// Erstellt eine Instanz (Legacy-Wrapper)
     pub async fn create_instance(&mut self, id: String, parent_window: HWND) -> Result<()> {
-        println!("🚀 Creating WebView2 instance: {}", id);
-        
-        let mut webview = OptimizedWebView2::new();
-        webview.configure(self.global_config.clone());
-        webview.create_container(parent_window)?;
-        webview.initialize_advanced().await?;
-        
-        self.instances.insert(id.clone(), webview);
-        self.active_instance = Some(id);
-        
-        println!("✅ WebView2 instance created successfully!");
-        Ok(())
+        self.inner.create_instance(id, parent_window).await
     }
 
-    pub fn get_active_instance(&mut self) -> Option<&mut OptimizedWebView2> {
-        if let Some(id) = &self.active_instance {
-            self.instances.get_mut(id)
-        } else {
-            None
+    /// Gibt die neue Implementierung zurück (für Migration)
+    pub fn get_new_implementation(&self) -> &NewOptimizedWebView2Manager {
+        &self.inner
+    }
+
+    /// Gibt die neue Implementierung zurück (mutable, für Migration)
+    pub fn get_new_implementation_mut(&mut self) -> &mut NewOptimizedWebView2Manager {
+        &mut self.inner
+    }
+}
+
+impl Default for OptimizedWebView2Manager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Legacy Utility-Funktionen (deprecated - use crate::webview2::utils)
+#[deprecated(note = "Use crate::webview2::utils instead")]
+pub mod utils {
+    use super::*;
+    
+    /// Erstellt Development-Config (Legacy-Wrapper)
+    pub fn create_development_config() -> WebView2Config {
+        crate::webview2::utils::create_development_config()
+    }
+    
+    /// Erstellt Production-Config (Legacy-Wrapper)
+    pub fn create_production_config() -> WebView2Config {
+        crate::webview2::utils::create_production_config()
+    }
+    
+    /// Prüft WebView2-Verfügbarkeit (Legacy-Wrapper)
+    pub fn check_webview2_quick() -> bool {
+        crate::webview2::utils::check_webview2_quick()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_legacy_webview2() {
+        #[allow(deprecated)]
+        {
+            let webview = OptimizedWebView2::new();
+            let _new_impl = webview.get_new_implementation();
+            assert!(true); // Test dass Legacy-Wrapper funktioniert
         }
     }
 
-    pub fn update_global_config(&mut self, config: WebView2Config) {
-        self.global_config = config;
-        println!("🔄 Global WebView2 config updated!");
+    #[test]
+    fn test_legacy_manager() {
+        #[allow(deprecated)]
+        {
+            let manager = OptimizedWebView2Manager::new();
+            let _new_impl = manager.get_new_implementation();
+            assert!(true); // Test dass Legacy-Wrapper funktioniert
+        }
     }
 
-    pub async fn cleanup_all(&mut self) -> Result<()> {
-        println!("🧹 Cleaning up all WebView2 instances...");
-        
-        for instance in self.instances.values_mut() {
-            instance.cleanup()?;
+    #[test]
+    fn test_legacy_utils() {
+        #[allow(deprecated)]
+        {
+            let _dev_config = utils::create_development_config();
+            let _prod_config = utils::create_production_config();
+            let _available = utils::check_webview2_quick();
+            assert!(true); // Test dass Legacy-Utils funktionieren
         }
-        
-        self.instances.clear();
-        self.active_instance = None;
-        
-        println!("✅ All WebView2 instances cleaned up!");
-        Ok(())
     }
-} 
+
+    #[test]
+    fn test_re_exports() {
+        // Test dass alle Re-exports funktionieren
+        let _config = WebView2Config::default();
+        let _builder = WebView2ConfigBuilder::new();
+        let _detector = WebView2EnvironmentDetector::new();
+        let _engine = WebView2Engine::new();
+        let _monitor = WebView2PerformanceMonitor::new();
+        
+        assert!(true); // Re-exports funktionieren
+    }
+}

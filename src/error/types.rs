@@ -1,14 +1,13 @@
-// 🚨 ORA BROWSER - ZENTRALE ERROR-TYPES
+// 🚨 ZAKYX BROWSER - ZENTRALE ERROR-TYPES
 // Einheitliches Error-System für alle Module
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
-use std::fmt;
 use thiserror::Error;
 use serde::{Serialize, Deserialize};
 
-/// Zentraler Error-Type für das gesamte Ora Browser System
+/// Zentraler Error-Type für das gesamte ZAKYX Browser System
 #[derive(Debug, Error, Clone, Serialize, Deserialize)]
-pub enum OraBrowserError {
+pub enum ZAKYXBrowserError {
     // 🌐 NETWORK & HTTP ERRORS
     #[error("Netzwerkfehler: {message}")]
     Network { 
@@ -203,19 +202,19 @@ pub enum LogLevel {
     Debug,
 }
 
-/// Result-Type für Ora Browser
-pub type OraBrowserResult<T> = Result<T, OraBrowserError>;
+/// Result-Type für ZAKYX Browser
+pub type ZAKYXBrowserResult<T> = Result<T, ZAKYXBrowserError>;
 
-impl OraBrowserError {
+impl ZAKYXBrowserError {
     /// Prüfe ob der Fehler wiederholbar ist
     pub fn is_retryable(&self) -> bool {
         match self {
-            OraBrowserError::Network { retry_possible, .. } => *retry_possible,
-            OraBrowserError::Http { retry_possible, .. } => *retry_possible,
-            OraBrowserError::Timeout { retry_possible, .. } => *retry_possible,
-            OraBrowserError::Ui { recoverable, .. } => *recoverable,
-            OraBrowserError::WebView { .. } => true, // Meistens retryable
-            OraBrowserError::Proxy { .. } => true, // Proxy kann verschiedene Strategien versuchen
+            ZAKYXBrowserError::Network { retry_possible, .. } => *retry_possible,
+            ZAKYXBrowserError::Http { retry_possible, .. } => *retry_possible,
+            ZAKYXBrowserError::Timeout { retry_possible, .. } => *retry_possible,
+            ZAKYXBrowserError::Ui { recoverable, .. } => *recoverable,
+            ZAKYXBrowserError::WebView { .. } => true, // Meistens retryable
+            ZAKYXBrowserError::Proxy { .. } => true, // Proxy kann verschiedene Strategien versuchen
             _ => false,
         }
     }
@@ -223,7 +222,7 @@ impl OraBrowserError {
     /// Erstelle Recovery-Strategie für den Fehler
     pub fn recovery_strategy(&self) -> ErrorRecovery {
         match self {
-            OraBrowserError::Network { .. } => ErrorRecovery {
+            ZAKYXBrowserError::Network { .. } => ErrorRecovery {
                 retry_possible: true,
                 retry_count: 0,
                 max_retries: 3,
@@ -231,7 +230,7 @@ impl OraBrowserError {
                 fallback_available: true,
                 user_action_required: false,
             },
-            OraBrowserError::Http { status, .. } => ErrorRecovery {
+            ZAKYXBrowserError::Http { status, .. } => ErrorRecovery {
                 retry_possible: *status >= 500, // Server-Fehler sind retryable
                 retry_count: 0,
                 max_retries: if *status >= 500 { 3 } else { 1 },
@@ -239,7 +238,7 @@ impl OraBrowserError {
                 fallback_available: true,
                 user_action_required: *status == 401, // Auth erforderlich
             },
-            OraBrowserError::Timeout { .. } => ErrorRecovery {
+            ZAKYXBrowserError::Timeout { .. } => ErrorRecovery {
                 retry_possible: true,
                 retry_count: 0,
                 max_retries: 2,
@@ -247,7 +246,7 @@ impl OraBrowserError {
                 fallback_available: true,
                 user_action_required: false,
             },
-            OraBrowserError::Plugin { .. } => ErrorRecovery {
+            ZAKYXBrowserError::Plugin { .. } => ErrorRecovery {
                 retry_possible: true,
                 retry_count: 0,
                 max_retries: 1,
@@ -255,7 +254,7 @@ impl OraBrowserError {
                 fallback_available: false,
                 user_action_required: true,
             },
-            OraBrowserError::Security { .. } => ErrorRecovery {
+            ZAKYXBrowserError::Security { .. } => ErrorRecovery {
                 retry_possible: false,
                 retry_count: 0,
                 max_retries: 0,
@@ -277,13 +276,13 @@ impl OraBrowserError {
     /// Benutzerfreundliche Fehlermeldung
     pub fn user_message(&self) -> String {
         match self {
-            OraBrowserError::Network { message, url, .. } => {
+            ZAKYXBrowserError::Network { message, url, .. } => {
                 match url {
                     Some(u) => format!("🌐 Verbindungsproblem mit {}: {}", u, message),
                     None => format!("🌐 Netzwerkproblem: {}", message),
                 }
             },
-            OraBrowserError::Http { status, url, .. } => {
+            ZAKYXBrowserError::Http { status, url, .. } => {
                 match *status {
                     404 => format!("📄 Seite nicht gefunden: {}", url),
                     403 => format!("🚫 Zugriff verweigert: {}", url),
@@ -291,19 +290,19 @@ impl OraBrowserError {
                     _ => format!("🌐 HTTP-Fehler {}: {}", status, url),
                 }
             },
-            OraBrowserError::Timeout { operation, seconds, .. } => {
+            ZAKYXBrowserError::Timeout { operation, seconds, .. } => {
                 format!("⏱️ Zeitüberschreitung bei {}: {} Sekunden", operation, seconds)
             },
-            OraBrowserError::Plugin { plugin_id, message, .. } => {
+            ZAKYXBrowserError::Plugin { plugin_id, message, .. } => {
                 format!("🔌 Plugin '{}' Fehler: {}", plugin_id, message)
             },
-            OraBrowserError::Security { message, .. } => {
+            ZAKYXBrowserError::Security { message, .. } => {
                 format!("🚨 Sicherheitswarnung: {}", message)
             },
-            OraBrowserError::Ui { message, component, .. } => {
+            ZAKYXBrowserError::Ui { message, component, .. } => {
                 format!("🖥️ Problem mit {}: {}", component, message)
             },
-            OraBrowserError::Config { message, fix_suggestion, .. } => {
+            ZAKYXBrowserError::Config { message, fix_suggestion, .. } => {
                 match fix_suggestion {
                     Some(fix) => format!("⚙️ Konfigurationsproblem: {}. Lösung: {}", message, fix),
                     None => format!("⚙️ Konfigurationsproblem: {}", message),
@@ -316,12 +315,12 @@ impl OraBrowserError {
     /// Gebe Lösungsvorschläge zurück
     pub fn suggested_actions(&self) -> Vec<String> {
         match self {
-            OraBrowserError::Network { .. } => vec![
+            ZAKYXBrowserError::Network { .. } => vec![
                 "🔄 Erneut versuchen".to_string(),
                 "🌐 Internetverbindung prüfen".to_string(),
                 "🔍 Alternative URL verwenden".to_string(),
             ],
-            OraBrowserError::Http { status, .. } => {
+            ZAKYXBrowserError::Http { status, .. } => {
                 match *status {
                     404 => vec!["🔍 URL auf Tippfehler prüfen".to_string(), "🏠 Zur Startseite".to_string()],
                     403 => vec!["🔐 Anmeldung erforderlich".to_string(), "📧 Administrator kontaktieren".to_string()],
@@ -329,12 +328,12 @@ impl OraBrowserError {
                     _ => vec!["🔄 Seite neu laden".to_string()],
                 }
             },
-            OraBrowserError::Plugin { .. } => vec![
+            ZAKYXBrowserError::Plugin { .. } => vec![
                 "🔄 Plugin neu laden".to_string(),
                 "⚙️ Plugin-Einstellungen prüfen".to_string(),
                 "🚫 Plugin deaktivieren".to_string(),
             ],
-            OraBrowserError::Security { .. } => vec![
+            ZAKYXBrowserError::Security { .. } => vec![
                 "🚫 Navigation abbrechen".to_string(),
                 "🔍 URL prüfen".to_string(),
                 "📧 Sicherheitsteam melden".to_string(),
@@ -346,34 +345,34 @@ impl OraBrowserError {
     /// Log-Level für den Fehler
     pub fn log_level(&self) -> LogLevel {
         match self {
-            OraBrowserError::Security { .. } => LogLevel::Error,
-            OraBrowserError::Http { status, .. } => {
+            ZAKYXBrowserError::Security { .. } => LogLevel::Error,
+            ZAKYXBrowserError::Http { status, .. } => {
                 match *status {
                     500..=599 => LogLevel::Error,
                     400..=499 => LogLevel::Warn,
                     _ => LogLevel::Info,
                 }
             },
-            OraBrowserError::Plugin { .. } | 
-            OraBrowserError::Internal { .. } => LogLevel::Error,
-            OraBrowserError::Config { .. } |
-            OraBrowserError::Permission { .. } => LogLevel::Warn,
+            ZAKYXBrowserError::Plugin { .. } | 
+            ZAKYXBrowserError::Internal { .. } => LogLevel::Error,
+            ZAKYXBrowserError::Config { .. } |
+            ZAKYXBrowserError::Permission { .. } => LogLevel::Warn,
             _ => LogLevel::Info,
         }
     }
 }
 
 // Konversionen von anderen Error-Types
-impl From<reqwest::Error> for OraBrowserError {
+impl From<reqwest::Error> for ZAKYXBrowserError {
     fn from(err: reqwest::Error) -> Self {
         if err.is_timeout() {
-            OraBrowserError::Timeout {
+            ZAKYXBrowserError::Timeout {
                 seconds: 30,
                 operation: "HTTP Request".to_string(),
                 retry_possible: true,
             }
         } else {
-            OraBrowserError::Network {
+            ZAKYXBrowserError::Network {
                 message: err.to_string(),
                 url: err.url().map(|u| u.to_string()),
                 retry_possible: true,
@@ -382,23 +381,23 @@ impl From<reqwest::Error> for OraBrowserError {
     }
 }
 
-impl From<std::io::Error> for OraBrowserError {
+impl From<std::io::Error> for ZAKYXBrowserError {
     fn from(err: std::io::Error) -> Self {
         match err.kind() {
-            std::io::ErrorKind::NotFound => OraBrowserError::FileNotFound {
+            std::io::ErrorKind::NotFound => ZAKYXBrowserError::FileNotFound {
                 path: "unknown".to_string(),
                 operation: "file operation".to_string(),
             },
-            std::io::ErrorKind::PermissionDenied => OraBrowserError::Permission {
+            std::io::ErrorKind::PermissionDenied => ZAKYXBrowserError::Permission {
                 message: err.to_string(),
                 required_permission: "file access".to_string(),
             },
-            std::io::ErrorKind::TimedOut => OraBrowserError::Timeout {
+            std::io::ErrorKind::TimedOut => ZAKYXBrowserError::Timeout {
                 seconds: 30,
                 operation: "I/O operation".to_string(),
                 retry_possible: true,
             },
-            _ => OraBrowserError::Internal {
+            _ => ZAKYXBrowserError::Internal {
                 message: err.to_string(),
                 module: "I/O".to_string(),
             },
@@ -406,18 +405,18 @@ impl From<std::io::Error> for OraBrowserError {
     }
 }
 
-impl From<serde_json::Error> for OraBrowserError {
+impl From<serde_json::Error> for ZAKYXBrowserError {
     fn from(err: serde_json::Error) -> Self {
-        OraBrowserError::Serialization {
+        ZAKYXBrowserError::Serialization {
             message: err.to_string(),
             data_type: "JSON".to_string(),
         }
     }
 }
 
-impl From<toml::de::Error> for OraBrowserError {
+impl From<toml::de::Error> for ZAKYXBrowserError {
     fn from(err: toml::de::Error) -> Self {
-        OraBrowserError::Serialization {
+        ZAKYXBrowserError::Serialization {
             message: err.to_string(),
             data_type: "TOML".to_string(),
         }
@@ -425,24 +424,24 @@ impl From<toml::de::Error> for OraBrowserError {
 }
 
 // Für String-Errors (Legacy)
-impl From<String> for OraBrowserError {
+impl From<String> for ZAKYXBrowserError {
     fn from(err: String) -> Self {
-        OraBrowserError::Unknown {
+        ZAKYXBrowserError::Unknown {
             message: err,
         }
     }
 }
 
-impl From<&str> for OraBrowserError {
+impl From<&str> for ZAKYXBrowserError {
     fn from(err: &str) -> Self {
-        OraBrowserError::Unknown {
+        ZAKYXBrowserError::Unknown {
             message: err.to_string(),
         }
     }
 }
 
-impl From<OraBrowserError> for String {
-    fn from(err: OraBrowserError) -> Self {
+impl From<ZAKYXBrowserError> for String {
+    fn from(err: ZAKYXBrowserError) -> Self {
         err.user_message()
     }
 } 

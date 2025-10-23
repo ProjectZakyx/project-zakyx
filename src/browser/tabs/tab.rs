@@ -1,5 +1,5 @@
 // 📂 TAB MANAGEMENT - Individual Tab
-use anyhow::Result;
+// use anyhow::Result; // Currently unused
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]

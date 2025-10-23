@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Projekt-Ora Linux Build Script
+# Projekt-ZAKYX Linux Build Script
 # Automatisiert den Build-Prozess für Linux-Systeme
 
 set -e  # Exit on any error
 
-echo "🚀 Projekt-Ora Linux Build Script"
+echo "🚀 Projekt-ZAKYX Linux Build Script"
 echo "=================================="
 
 # Farben für Output
@@ -197,7 +197,7 @@ install_dependencies() {
 
 # Build Project
 build_project() {
-    print_status "Building Projekt-Ora..."
+    print_status "Building Projekt-ZAKYX..."
     
     # Clean previous builds
     if [ "$1" = "--clean" ]; then
@@ -209,11 +209,11 @@ build_project() {
     if [ "$1" = "--release" ] || [ "$2" = "--release" ]; then
         print_status "Building release version..."
         cargo build --release --verbose
-        BINARY_PATH="target/release/projekt-ora"
+        BINARY_PATH="target/release/projekt-zakyx"
     else
         print_status "Building debug version..."
         cargo build --verbose
-        BINARY_PATH="target/debug/projekt-ora"
+        BINARY_PATH="target/debug/projekt-zakyx"
     fi
     
     if [ -f "$BINARY_PATH" ]; then
@@ -289,9 +289,9 @@ main() {
     echo ""
     echo "To run the application:"
     if [ "$RELEASE" = true ]; then
-        echo "  ./target/release/projekt-ora"
+        echo "  ./target/release/projekt-zakyx"
     else
-        echo "  ./target/debug/projekt-ora"
+        echo "  ./target/debug/projekt-zakyx"
     fi
 }
 

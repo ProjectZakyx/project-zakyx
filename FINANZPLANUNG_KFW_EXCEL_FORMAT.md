@@ -1,4 +1,4 @@
-# 📊 **Detaillierte Finanzplanung - ORA Browser GmbH**
+# 📊 **Detaillierte Finanzplanung - ZAKYX Browser GmbH**
 ## Excel-Format für KfW ERP-StartGeld Antrag
 
 ---

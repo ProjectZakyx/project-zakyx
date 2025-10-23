@@ -1,6 +1,6 @@
-// 🌐 ORA BROWSER - TAURI v2 EDITION
+// 🌐 ZAKYX BROWSER - TAURI v2 EDITION
 // Modern Cross-Platform Web Browser built with Rust + Tauri
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -12,6 +12,7 @@ mod internal_webview2_navigation;
 mod proxy_server;
 mod proxy;
 mod browser;
+mod ui;
 mod ethical_safeguards;
 mod browser_state;
 mod tauri_commands;
@@ -25,9 +26,9 @@ mod error;
 use browser_state::BrowserState;
 use proxy_server::ProxyServer;
 use tauri_commands::*;
-use config::OraConfig;
+use config::ZAKYXConfig;
 use metrics::{init_metrics, get_metrics};
-use error::OraBrowserError;
+use error::ZAKYXBrowserError;
 
 // 🚀 MAIN FUNCTION - TAURI v2
 fn main() {
@@ -38,7 +39,7 @@ fn main() {
     let _metrics = init_metrics();
     info!("📊 Metrics system initialized");
     
-    info!("🚀 Starting Ora Browser with Tauri v2...");
+    info!("🚀 Starting ZAKYX Browser with Tauri v2...");
     
     // Verbesserte Fehlerbehandlung für kritische Initialisierung
     let result = std::panic::catch_unwind(|| {
@@ -46,13 +47,13 @@ fn main() {
             .plugin(tauri_plugin_shell::init())
             .setup(|app| {
                 // 🔧 KONFIGURATION LADEN (hier im Setup um Lifetime-Probleme zu vermeiden)
-                let config = OraConfig::load();
+                let config = ZAKYXConfig::load();
                 info!("🔧 Configuration loaded: version {}", config.version);
                 
                 // Sichere Initialisierung mit Fehlerbehandlung
                 match setup_browser_state(app, &config) {
                     Ok(_) => {
-                        info!("✅ Ora Browser window created successfully!");
+                        info!("✅ ZAKYX Browser window created successfully!");
                         info!("🌐 Ready for cross-platform browsing!");
                         Ok(())
                     },
@@ -119,7 +120,7 @@ fn main() {
     }
 }
 
-fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), OraBrowserError> {
+fn setup_browser_state(app: &mut tauri::App, config: &ZAKYXConfig) -> Result<(), ZAKYXBrowserError> {
     debug!("🔧 Setting up browser state...");
     
     // 📊 METRICS: Startup-Timer starten
@@ -128,7 +129,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), O
     // 1. Proxy Server starten (KRITISCH)
     start_proxy_server(config).map_err(|e| {
         error!("❌ Critical: Proxy server failed to start: {}", e);
-        OraBrowserError::proxy_error(&format!("Proxy server startup failed: {}", e), None)
+        ZAKYXBrowserError::proxy_error(&format!("Proxy server startup failed: {}", e), None)
     })?;
     
     // 2. Browser State initialisieren (KRITISCH)
@@ -136,7 +137,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), O
         Ok(state) => state,
         Err(_) => {
             error!("❌ Critical: Browser state initialization panicked");
-            return Err(OraBrowserError::ui_error("browser_state", "Browser state initialization failed due to panic", false));
+            return Err(ZAKYXBrowserError::ui_error("browser_state", "Browser state initialization failed due to panic", false));
         }
     };
     app.manage(state);
@@ -144,7 +145,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), O
     // 3. Window konfigurieren (KRITISCH)
     setup_main_window(app).map_err(|e| {
         error!("❌ Critical: Main window setup failed: {}", e);
-        OraBrowserError::ui_error("main_window", &format!("Main window setup failed: {}", e), true)
+        ZAKYXBrowserError::ui_error("main_window", &format!("Main window setup failed: {}", e), true)
     })?;
     
     // 4. Event Handler registrieren (NICHT-KRITISCH)
@@ -159,7 +160,7 @@ fn setup_browser_state(app: &mut tauri::App, config: &OraConfig) -> Result<(), O
     Ok(())
 }
 
-fn start_proxy_server(config: &OraConfig) -> Result<(), OraBrowserError> {
+fn start_proxy_server(config: &ZAKYXConfig) -> Result<(), ZAKYXBrowserError> {
     info!("🌐 Starting proxy server on port {}...", config.proxy.primary_port);
     
     // 📊 METRICS: Proxy startup messen
@@ -275,12 +276,12 @@ fn start_proxy_server(config: &OraConfig) -> Result<(), OraBrowserError> {
     }
 }
 
-fn setup_main_window(app: &tauri::App) -> Result<(), OraBrowserError> {
+fn setup_main_window(app: &tauri::App) -> Result<(), ZAKYXBrowserError> {
     let window = app.get_webview_window("main")
-        .ok_or_else(|| OraBrowserError::ui_error("main_window", "Failed to get main window handle", false))?;
+        .ok_or_else(|| ZAKYXBrowserError::ui_error("main_window", "Failed to get main window handle", false))?;
     
-    window.set_title("Ora Browser")
-        .map_err(|e| OraBrowserError::ui_error("main_window", &format!("Failed to set window title: {}", e), true))?;
+                    window.set_title("ZAKYX Browser")
+        .map_err(|e| ZAKYXBrowserError::ui_error("main_window", &format!("Failed to set window title: {}", e), true))?;
     
     Ok(())
 }
@@ -297,7 +298,7 @@ fn init_logging() {
     // Erstelle Log-Verzeichnis
     let log_dir = dirs::config_dir()
         .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join("ora-browser")
+        .join("zakyx-browser")
         .join("logs");
     
     std::fs::create_dir_all(&log_dir).unwrap_or_else(|e| {
@@ -305,14 +306,14 @@ fn init_logging() {
     });
     
     // File Appender für Logs
-    let file_appender = tracing_appender::rolling::daily(&log_dir, "ora-browser.log");
+    let file_appender = tracing_appender::rolling::daily(&log_dir, "zakyx-browser.log");
     let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
     
     // Konfiguriere Tracing
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "ora_browser=debug,info".into()),
+                .unwrap_or_else(|_| "zakyx_browser=debug,info".into()),
         )
         .with(
             tracing_subscriber::fmt::layer()

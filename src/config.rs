@@ -1,9 +1,9 @@
-// 🔧 KONFIGURATIONSVERWALTUNG FÜR ORA BROWSER
+// 🔧 KONFIGURATIONSVERWALTUNG FÜR ZAKYX BROWSER
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tracing::{info, warn};
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProxyConfig {
@@ -73,14 +73,14 @@ impl Default for SecurityConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OraConfig {
+pub struct ZAKYXConfig {
     pub proxy: ProxyConfig,
     pub logging: LoggingConfig,
     pub security: SecurityConfig,
     pub version: String,
 }
 
-impl Default for OraConfig {
+impl Default for ZAKYXConfig {
     fn default() -> Self {
         Self {
             proxy: ProxyConfig::default(),
@@ -91,14 +91,14 @@ impl Default for OraConfig {
     }
 }
 
-impl OraConfig {
+impl ZAKYXConfig {
     /// Lädt die Konfiguration aus der Datei oder erstellt eine Standard-Konfiguration
     pub fn load() -> Self {
         let config_path = Self::config_file_path();
         
         match std::fs::read_to_string(&config_path) {
             Ok(content) => {
-                match toml::from_str::<OraConfig>(&content) {
+                match toml::from_str::<ZAKYXConfig>(&content) {
                     Ok(mut config) => {
                         // Version aktualisieren
                         config.version = env!("CARGO_PKG_VERSION").to_string();
@@ -125,20 +125,20 @@ impl OraConfig {
     }
     
     /// Speichert die aktuelle Konfiguration in die Datei
-    pub fn save(&self) -> Result<(), OraBrowserError> {
+    pub fn save(&self) -> Result<(), ZAKYXBrowserError> {
         let config_path = Self::config_file_path();
         
         // Erstelle Verzeichnis falls es nicht existiert
         if let Some(parent) = config_path.parent() {
             std::fs::create_dir_all(parent)
-                .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to create config directory: {}", e), Some(&config_path.to_string_lossy())))?;
+                .map_err(|e| ZAKYXBrowserError::storage_error("write", &format!("Failed to create config directory: {}", e), Some(&config_path.to_string_lossy())))?;
         }
         
         let content = toml::to_string_pretty(self)
-            .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to serialize config: {}", e), Some(&config_path.to_string_lossy())))?;
+            .map_err(|e| ZAKYXBrowserError::storage_error("write", &format!("Failed to serialize config: {}", e), Some(&config_path.to_string_lossy())))?;
         
         std::fs::write(&config_path, content)
-            .map_err(|e| OraBrowserError::storage_error("write", &format!("Failed to write config file: {}", e), Some(&config_path.to_string_lossy())))?;
+            .map_err(|e| ZAKYXBrowserError::storage_error("write", &format!("Failed to write config file: {}", e), Some(&config_path.to_string_lossy())))?;
         
         info!("💾 Configuration saved to: {:?}", config_path);
         Ok(())
@@ -148,7 +148,7 @@ impl OraConfig {
     pub fn config_file_path() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("ora-browser")
+            .join("zakyx-browser")
             .join("config.toml")
     }
     
@@ -197,7 +197,7 @@ mod tests {
     
     #[test]
     fn test_default_config() {
-        let config = OraConfig::default();
+        let config = ZAKYXConfig::default();
         assert_eq!(config.proxy.primary_port, 3030);
         assert_eq!(config.proxy.fallback_port, 3031);
         assert_eq!(config.logging.log_level, "info");
@@ -206,7 +206,7 @@ mod tests {
     
     #[test]
     fn test_config_validation() {
-        let mut config = OraConfig {
+        let mut config = ZAKYXConfig {
             proxy: ProxyConfig {
                 primary_port: 0,
                 fallback_port: 3030,

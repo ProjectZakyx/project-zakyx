@@ -1,5 +1,5 @@
 /**
- * OraBrowser Tab Manager
+ * ZAKYX Browser Tab Manager
  * Verantwortlich für Tab-Verwaltung, Tab-Switching und Tab-UI
  */
 

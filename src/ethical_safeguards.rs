@@ -1,4 +1,4 @@
-/// 🛡️ ETHICAL SAFEGUARDS FÜR ORA BROWSER
+/// 🛡️ ETHICAL SAFEGUARDS FÜR ZAKYX BROWSER
 /// Implementiert Schutzmaßnahmen für verantwortungsvolles Web-Browsing
 
 use std::time::{Duration, Instant};
@@ -22,7 +22,7 @@ impl Default for EthicalConfig {
             min_delay_between_requests: Duration::from_secs(2), // Minimum 2 Sekunden
             respect_robots_txt: true,
             transparent_user_agent: true,
-            contact_info: Some("ora-browser@example.com".to_string()),
+            contact_info: Some("zakyx-browser@example.com".to_string()),
         }
     }
 }
@@ -102,7 +102,7 @@ impl RateLimiter {
                 .unwrap_or_default();
             
             format!(
-                "OraBrowser/1.0 (+https://github.com/ora-browser{}) Purpose: {}",
+                "ZAKYXBrowser/1.0 (+https://github.com/zakyx-browser{}) Purpose: {}",
                 contact, purpose
             )
         } else {

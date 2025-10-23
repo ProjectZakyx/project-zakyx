@@ -1,9 +1,9 @@
 // 🧪 INTEGRATION TESTS
-// Tests für das gesamte Ora Browser System
-// Copyright © 2024 Ora Browser Team
+// Tests für das gesamte ZAKYX Browser System
+// Copyright © 2024 ZAKYX Browser Team
 
-use ora_browser::{BrowserState, Tab};
-use ora_browser::browser_state::Bookmark;
+use zakyx_browser::{BrowserState, Tab};
+use zakyx_browser::browser_state::Bookmark;
 use std::time::Duration;
 use tokio::time::timeout;
 
@@ -166,7 +166,7 @@ async fn test_bookmark_management_workflow() {
 
 #[test]
 fn test_url_utils_integration() {
-    use ora_browser::url_utils::{normalize_problematic_url, should_use_proxy_for_url};
+    use zakyx_browser::url_utils::{normalize_problematic_url, should_use_proxy_for_url};
     
     // Test the complete URL processing workflow
     let test_urls = vec![
@@ -199,7 +199,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_proxy_server_health() {
         // Starte einen Test-Proxy-Server
-        let proxy_server = ora_browser::proxy_server::ProxyServer::new(3032);
+        let proxy_server = zakyx_browser::proxy_server::ProxyServer::new(3032);
         
         // Starte Server in Background-Task
         let server_handle = tokio::spawn(async move {
@@ -231,7 +231,7 @@ mod integration_tests {
     /// Test der universellen Ressourcen-Route
     #[tokio::test]
     async fn test_universal_resource_route() {
-        let proxy_server = ora_browser::proxy_server::ProxyServer::new(3033);
+        let proxy_server = zakyx_browser::proxy_server::ProxyServer::new(3033);
         
         let server_handle = tokio::spawn(async move {
             let mut server = proxy_server;
@@ -262,7 +262,7 @@ mod integration_tests {
     /// Test der HTML-Erkennung und JavaScript-Injection
     #[tokio::test]
     async fn test_html_detection_and_injection() {
-        let proxy_server = ora_browser::proxy_server::ProxyServer::new(3034);
+        let proxy_server = zakyx_browser::proxy_server::ProxyServer::new(3034);
         
         let server_handle = tokio::spawn(async move {
             let mut server = proxy_server;
@@ -297,7 +297,7 @@ mod integration_tests {
     /// Test der Konfigurationsverwaltung
     #[test]
     fn test_configuration_management() {
-        let mut config = ora_browser::config::OraConfig::default();
+        let mut config = zakyx_browser::config::ZAKYXConfig::default();
         
         // Teste Standard-Werte
         assert_eq!(config.proxy.primary_port, 3030);
@@ -322,7 +322,7 @@ mod integration_tests {
     /// Test des Metrics-Systems
     #[test]
     fn test_metrics_system() {
-        let collector = ora_browser::metrics::MetricsCollector::new();
+        let collector = zakyx_browser::metrics::MetricsCollector::new();
         
         // Teste Werte-Aufzeichnung
         collector.record_value("test_metric", 1.5, None);
@@ -354,12 +354,12 @@ mod integration_tests {
     /// Test der Browser-State-Verwaltung
     #[tokio::test]
     async fn test_browser_state_management() {
-        let state = ora_browser::browser_state::BrowserState::new();
+        let state = zakyx_browser::browser_state::BrowserState::new();
         
         // Teste Tab-Management
         {
             let mut tabs = state.tabs.write().await;
-            tabs.push(ora_browser::browser_state::Tab {
+            tabs.push(zakyx_browser::browser_state::Tab {
                 id: 1,
                 title: "Test Tab".to_string(),
                 url: "https://example.com".to_string(),
@@ -376,7 +376,7 @@ mod integration_tests {
         // Teste Bookmark-Management
         {
             let mut bookmarks = state.bookmarks.write().await;
-            bookmarks.push(ora_browser::browser_state::Bookmark {
+            bookmarks.push(zakyx_browser::browser_state::Bookmark {
                 id: "test-1".to_string(),
                 title: "Test Bookmark".to_string(),
                 url: "https://test.com".to_string(),
@@ -399,7 +399,7 @@ mod integration_tests {
     /// Performance-Test für Proxy-Server
     #[tokio::test]
     async fn test_proxy_performance() {
-        let proxy_server = ora_browser::proxy_server::ProxyServer::new(3035);
+        let proxy_server = zakyx_browser::proxy_server::ProxyServer::new(3035);
         
         let server_handle = tokio::spawn(async move {
             let mut server = proxy_server;
@@ -448,7 +448,7 @@ mod integration_tests {
     /// Test der URL-Utilities
     #[test]
     fn test_url_utilities() {
-        use ora_browser::url_utils::{normalize_problematic_url, should_use_proxy_for_url};
+        use zakyx_browser::url_utils::{normalize_problematic_url, should_use_proxy_for_url};
         
         // Teste URL-Normalisierung
         assert_eq!(normalize_problematic_url("google.com"), "https://google.com");
@@ -464,13 +464,13 @@ mod integration_tests {
     /// Stress-Test für Memory-Leaks
     #[tokio::test]
     async fn test_memory_usage() {
-        let state = ora_browser::browser_state::BrowserState::new();
+        let state = zakyx_browser::browser_state::BrowserState::new();
         
         // Erstelle viele Tabs und lösche sie wieder
         for i in 0..1000 {
             {
                 let mut tabs = state.tabs.write().await;
-                tabs.push(ora_browser::browser_state::Tab {
+                tabs.push(zakyx_browser::browser_state::Tab {
                     id: i,
                     title: format!("Tab {}", i),
                     url: format!("https://example{}.com", i),

@@ -1,4 +1,4 @@
-# 🔍 DEBUG DOCUMENTATION - ORA BROWSER
+# 🔍 DEBUG DOCUMENTATION - ZAKYX Browser
 
 ## 📝 Structured Logging System
 
@@ -8,21 +8,21 @@
 |-------|------------|----------|
 | `error` | Kritische Fehler, die zum Absturz führen | `error!("❌ Critical: Proxy server failed to start")` |
 | `warn` | Warnungen, die Aufmerksamkeit erfordern | `warn!("⚠️ Invalid port, using default")` |
-| `info` | Wichtige Informationen über den Systemzustand | `info!("✅ Ora Browser window created successfully")` |
+| `info` | Wichtige Informationen über den Systemzustand | `info!("✅ ZAKYX Browser window created successfully")` |
 | `debug` | Detaillierte Debug-Informationen | `debug!("🔧 Setting up browser state...")` |
 | `trace` | Sehr detaillierte Trace-Informationen | `trace!("📊 Metric recorded: {} = {}")` |
 
 ### **Log-Ausgabe-Orte**
 
 1. **Console (stdout)**: Farbige, kompakte Ausgabe für Entwicklung
-2. **Datei**: JSON-formatierte Logs in `%CONFIG%/ora-browser/logs/`
+2. **Datei**: JSON-formatierte Logs in `%CONFIG%/zakyx-browser/logs/`
 3. **Rotation**: Täglich neue Log-Dateien
 
 ### **Konfiguration**
 
 ```rust
 // Umgebungsvariable für Log-Level
-RUST_LOG=ora_browser=debug,info
+RUST_LOG=zakyx_browser=debug,info
 
 // Oder in config.toml
 [logging]
@@ -100,7 +100,7 @@ metrics.log_summary();
 
 ## 🔧 **KONFIGURATIONSSYSTEM**
 
-### **Konfigurationsdatei**: `%CONFIG%/ora-browser/config.toml`
+### **Konfigurationsdatei**: `%CONFIG%/zakyx-browser/config.toml`
 
 ```toml
 version = "1.0.0"
@@ -132,7 +132,7 @@ max_content_size_mb = 50
 ### **Automatische Validierung**
 
 ```rust
-let mut config = OraConfig::load();
+let mut config = ZAKYXConfig::load();
 config.validate_and_fix(); // Korrigiert ungültige Werte
 config.save(); // Speichert korrigierte Konfiguration
 ```
@@ -191,23 +191,23 @@ curl "http://localhost:3030/proxy?url=https://example.com"
 
 ```bash
 # Live-Logs verfolgen
-tail -f "%CONFIG%/ora-browser/logs/ora-browser.log"
+tail -f "%CONFIG%/zakyx-browser/logs/zakyx-browser.log"
 
 # Nach Fehlern suchen
-grep "ERROR\|❌" "%CONFIG%/ora-browser/logs/ora-browser.log"
+grep "ERROR\|❌" "%CONFIG%/zakyx-browser/logs/zakyx-browser.log"
 
 # Performance-Metriken
-grep "📊" "%CONFIG%/ora-browser/logs/ora-browser.log"
+grep "📊" "%CONFIG%/zakyx-browser/logs/zakyx-browser.log"
 ```
 
 ### **3. Memory-Profiling**
 
 ```rust
 // Memory-Tracking aktivieren
-RUST_LOG=ora_browser=debug cargo run
+RUST_LOG=zakyx_browser=debug cargo run
 
 // Memory-Stats in Logs
-grep "memory\|Memory" logs/ora-browser.log
+grep "memory\|Memory" logs/zakyx-browser.log
 ```
 
 ### **4. Network-Debugging**

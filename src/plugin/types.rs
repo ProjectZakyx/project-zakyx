@@ -1,14 +1,13 @@
 // 🔌 PLUGIN TYPES
 // Gemeinsame Datenstrukturen für das Plugin-System
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
 use std::collections::HashMap;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
-use crate::error::{OraBrowserError, OraBrowserResult};
 
 /// Plugin-Manifest mit allen Konfigurationsoptionen
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PluginManifest {
     #[serde(default)]
     pub id: Option<String>,
@@ -34,8 +33,8 @@ pub struct PluginManifest {
     pub options_page: Option<String>,
     #[serde(default)]
     pub manifest_version: Option<u32>,
-    #[serde(default)]
-    pub minimum_ora_version: Option<String>,
+    #[serde(default, alias = "minimum_ora_version")]
+    pub minimum_zakyx_version: Option<String>,
     #[serde(default)]
     pub dependencies: Option<HashMap<String, String>>,
     #[serde(default)]
@@ -45,7 +44,7 @@ pub struct PluginManifest {
 }
 
 /// Plugin-Background-Konfiguration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PluginBackground {
     pub scripts: Vec<String>,
     #[serde(default)]
@@ -53,7 +52,7 @@ pub struct PluginBackground {
 }
 
 /// Plugin-Content-Script-Konfiguration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PluginContentScript {
     pub matches: Vec<String>,
     pub js: Vec<String>,
@@ -62,7 +61,7 @@ pub struct PluginContentScript {
 }
 
 /// Plugin-Browser-Action-Konfiguration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PluginBrowserAction {
     #[serde(default)]
     pub default_title: Option<String>,
@@ -80,6 +79,7 @@ pub struct PluginInfo {
     pub path: PathBuf,
     pub loaded: bool,
     pub error: Option<String>,
+    pub load_error: Option<String>,
 }
 
 /// Plugin-Status für Statistiken
@@ -89,10 +89,14 @@ pub struct PluginStats {
     pub loaded_plugins: usize,
     pub enabled_plugins: usize,
     pub failed_plugins: usize,
+    pub permissions_count: std::collections::HashMap<String, usize>,
+    pub version_distribution: std::collections::HashMap<String, usize>,
+    pub author_distribution: std::collections::HashMap<String, usize>,
+    pub total_size: u64,
 }
 
 /// Plugin-Konfiguration für Manager
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginConfig {
     pub plugins_directory: PathBuf,
     pub auto_load_enabled: bool,

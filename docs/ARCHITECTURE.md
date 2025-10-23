@@ -1,1 +1,1 @@
-# 🏗️ Ora Browser - Architektur-Dokumentation
+# 🏗️ ZAKYX Browser - Architektur-Dokumentation

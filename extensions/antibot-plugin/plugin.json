@@ -3,8 +3,8 @@
   "name": "🤖 Anti-Bot Strategies Plugin",
   "version": "1.0.0",
   "description": "Erweiterte Anti-Bot-Strategien für verschiedene Website-Typen",
-  "author": "Ora Browser Team",
-  "homepage": "https://github.com/ora-browser/antibot-plugin",
+      "author": "ZAKYX Browser Team",
+      "homepage": "https://github.com/zakyx-browser/antibot-plugin",
   "permissions": [
     "webRequest",
     "proxy",
@@ -44,10 +44,10 @@
   },
   "options_page": "ui/options.html",
   "manifest_version": 2,
-  "minimum_ora_version": "1.0.0",
+  "minimum_zakyx_version": "1.0.0",
   "dependencies": {
-    "ora-core": ">=1.0.0",
-    "ora-proxy": ">=1.0.0"
+    "zakyx-core": ">=1.0.0",
+    "zakyx-proxy": ">=1.0.0"
   },
   "settings": {
     "enabled": true,
@@ -62,5 +62,5 @@
     "auto_detect": true,
     "statistics_enabled": true
   },
-  "update_url": "https://plugins.ora-browser.com/antibot/updates.xml"
+      "update_url": "https://plugins.zakyx-browser.com/antibot/updates.xml"
 } 

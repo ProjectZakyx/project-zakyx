@@ -1,16 +1,17 @@
 // 📑 Tab Management Commands
 // Alle Commands für Tab-Verwaltung
 
-use tauri::Emitter;
+#![allow(dead_code)] // Tab management API - kept for future use
+
 use crate::browser_state::{BrowserState, Tab};
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 /// Erstelle einen neuen Tab
 #[tauri::command]
 pub async fn create_new_tab(
     state: tauri::State<'_, BrowserState>,
     url: Option<String>,
-) -> Result<Tab, OraBrowserError> {
+) -> Result<Tab, ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     // Deaktiviere alle existierenden Tabs
@@ -36,7 +37,7 @@ pub async fn create_new_tab(
 pub async fn close_tab(
     state: tauri::State<'_, BrowserState>,
     tab_id: String,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     if let Some(pos) = tabs.iter().position(|tab| tab.id.to_string() == tab_id) {
@@ -54,7 +55,7 @@ pub async fn close_tab(
 
 /// Hole alle Tabs
 #[tauri::command]
-pub async fn get_tabs(state: tauri::State<'_, BrowserState>) -> Result<Vec<Tab>, OraBrowserError> {
+pub async fn get_tabs(state: tauri::State<'_, BrowserState>) -> Result<Vec<Tab>, ZAKYXBrowserError> {
     let tabs = state.tabs.read().await;
     Ok(tabs.clone())
 }
@@ -65,7 +66,7 @@ pub async fn update_tab_title(
     state: tauri::State<'_, BrowserState>,
     tab_id: String,
     title: String,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     if let Some(tab) = tabs.iter_mut().find(|tab| tab.id.to_string() == tab_id) {
@@ -81,7 +82,7 @@ pub async fn update_tab_title(
 pub async fn activate_tab(
     state: tauri::State<'_, BrowserState>,
     tab_id: String,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     // Deaktiviere alle Tabs
@@ -103,7 +104,7 @@ pub async fn activate_tab(
 pub async fn duplicate_tab(
     state: tauri::State<'_, BrowserState>,
     tab_id: String,
-) -> Result<Tab, OraBrowserError> {
+) -> Result<Tab, ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     // Finde Tab-Info zuerst
@@ -128,7 +129,7 @@ pub async fn duplicate_tab(
         println!("📄 Tab duplicated: {} -> {}", tab_id, new_tab.id);
         Ok(new_tab)
     } else {
-        Err(OraBrowserError::ui_error("tab_management", &format!("Tab with ID {} not found", tab_id), false))
+        Err(ZAKYXBrowserError::ui_error("tab_management", &format!("Tab with ID {} not found", tab_id), false))
     }
 }
 
@@ -138,7 +139,7 @@ pub async fn update_tab_url(
     state: tauri::State<'_, BrowserState>,
     tab_id: String,
     url: String,
-) -> Result<(), OraBrowserError> {
+) -> Result<(), ZAKYXBrowserError> {
     let mut tabs = state.tabs.write().await;
     
     if let Some(tab) = tabs.iter_mut().find(|tab| tab.id.to_string() == tab_id) {
@@ -151,14 +152,14 @@ pub async fn update_tab_url(
 
 /// Hole aktiven Tab
 #[tauri::command]
-pub async fn get_active_tab(state: tauri::State<'_, BrowserState>) -> Result<Option<Tab>, OraBrowserError> {
+pub async fn get_active_tab(state: tauri::State<'_, BrowserState>) -> Result<Option<Tab>, ZAKYXBrowserError> {
     let tabs = state.tabs.read().await;
     Ok(tabs.iter().find(|tab| tab.is_active).cloned())
 }
 
 /// Zähle die Anzahl der Tabs
 #[tauri::command]
-pub async fn get_tab_count(state: tauri::State<'_, BrowserState>) -> Result<usize, OraBrowserError> {
+pub async fn get_tab_count(state: tauri::State<'_, BrowserState>) -> Result<usize, ZAKYXBrowserError> {
     let tabs = state.tabs.read().await;
     Ok(tabs.len())
 }

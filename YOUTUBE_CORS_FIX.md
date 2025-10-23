@@ -1,4 +1,4 @@
-# 🎥 YouTube CORS-Fehlerbehebung - Ora Browser
+# 🎥 YouTube CORS-Fehlerbehebung - ZAKYX Browser
 
 ## 🚨 Problem
 YouTube funktionierte nicht aufgrund von:

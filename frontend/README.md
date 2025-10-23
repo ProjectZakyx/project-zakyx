@@ -1,6 +1,6 @@
-# OraBrowser Frontend - Modulare Architektur
+# ZAKYXBrowser Frontend - Modulare Architektur
 
-Das OraBrowser Frontend wurde von einer monolithischen 5.700+ Zeilen JavaScript-Datei in eine saubere, modulare Architektur refactored.
+Das ZAKYXBrowser Frontend wurde von einer monolithischen 5.700+ Zeilen JavaScript-Datei in eine saubere, modulare Architektur refactored.
 
 ## 📁 Verzeichnisstruktur
 
@@ -15,7 +15,7 @@ frontend/
 │   └── utils.js          # Utilities & Debug-Tools
 ├── components/            # UI-Komponenten (zukünftig)
 ├── styles/               # CSS-Module (zukünftig)
-├── oraBrowser.js         # Haupt-Browser-Klasse
+├── zakyxBrowser.js         # Haupt-Browser-Klasse
 ├── build.js              # Build-System
 ├── package.json          # NPM-Konfiguration
 └── README.md             # Diese Datei
@@ -95,7 +95,7 @@ node build.js --minify
 
 1. Erstelle die Moduldatei in `modules/`
 2. Füge sie zur `BUILD_CONFIG.modules` in `build.js` hinzu
-3. Importiere und verwende sie in `oraBrowser.js`
+3. Importiere und verwende sie in `zakyxBrowser.js`
 
 ### Debug-Tools
 
@@ -107,10 +107,10 @@ DebugTools.checkElements();
 DebugTools.showTestContent();
 
 // Browser-Statistiken
-window.testOraBrowser.showStats();
+window.testZAKYXBrowser.showStats();
 
 // Navigation testen
-window.testOraBrowser.testNavigation('https://example.com');
+window.testZAKYXBrowser.testNavigation('https://example.com');
 ```
 
 ## 📊 Verbesserungen
@@ -150,9 +150,9 @@ Das neue modulare System ist **rückwärtskompatibel**. Alle bisherigen APIs fun
 
 ```javascript
 // Funktioniert weiterhin
-window.oraBrowser.navigateToUrl('https://example.com');
-window.oraBrowser.createNewTab();
-window.oraBrowser.addBookmarkManual('Titel', 'URL');
+window.zakyxBrowser.navigateToUrl('https://example.com');
+window.zakyxBrowser.createNewTab();
+window.zakyxBrowser.addBookmarkManual('Titel', 'URL');
 ```
 
 ## 🐛 Fehlerbehebung
@@ -172,7 +172,7 @@ ls -la modules/
 window.DebugTools.checkElements();
 
 // Browser-Status prüfen
-console.table(window.oraBrowser.getStats());
+console.table(window.zakyxBrowser.getStats());
 ```
 
 ## 📄 Lizenz

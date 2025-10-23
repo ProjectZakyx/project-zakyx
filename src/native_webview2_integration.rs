@@ -59,7 +59,7 @@ impl NativeWebView2 {
         println!("🏗️ Creating WebView2 container window...");
         
         unsafe {
-            let class_name = w!("OraWebView2Container");
+            let class_name = w!("ZAKYXWebView2Container");
             
             // Registriere Window-Class für WebView2
             let wc = WNDCLASSEXW {
@@ -86,7 +86,7 @@ impl NativeWebView2 {
             let webview_hwnd = CreateWindowExW(
                 WINDOW_EX_STYLE::default(),
                 class_name,
-                w!("Ora WebView2 Engine"),
+                w!("ZAKYX WebView2 Engine"),
                 WS_CHILD | WS_VISIBLE | WS_BORDER,
                 0, 0, 800, 600,
                 self.parent_hwnd,
@@ -210,7 +210,7 @@ impl NativeWebView2 {
         
         // Simuliere JavaScript-Execution
         let result = match script {
-            "document.title" => "Ora Browser - WebView2".to_string(),
+            "document.title" => "ZAKYX Browser - WebView2".to_string(),
             "window.location.href" => self.current_url.clone(),
             "navigator.userAgent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0".to_string(),
             _ => format!("console.log('Executed: {}')", script),

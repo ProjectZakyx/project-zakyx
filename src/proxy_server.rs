@@ -1,4 +1,4 @@
-// 🌐 ORA BROWSER - MODULAR PROXY SERVER
+// 🌐 ZAKYX BROWSER - MODULAR PROXY SERVER
 // Neue schlanke Implementation mit modularen Komponenten
 // Ersetzt die monolithische proxy_server.rs (2,956 Zeilen → ~200 Zeilen)
 
@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use tokio::sync::mpsc;
 use warp::Filter;
 use chrono;
-use crate::error::OraBrowserError;
+use crate::error::ZAKYXBrowserError;
 
 // Temporarily simplified structure without modular components
 // TODO: Re-add modular components once they're stable
@@ -33,8 +33,8 @@ impl ProxyServer {
         }
     }
 
-    pub async fn start(&mut self) -> Result<(), OraBrowserError> {
-        println!("🌐 Starting Ora Browser Proxy Server (Modular) on port {}...", self.port);
+    pub async fn start(&mut self) -> Result<(), ZAKYXBrowserError> {
+        println!("🌐 Starting ZAKYX Browser Proxy Server (Modular) on port {}...", self.port);
         
         // CORS-Handler für Preflight-Requests
         let cors = warp::cors()
@@ -99,7 +99,7 @@ impl ProxyServer {
             .map(|| {
                 warp::reply::json(&serde_json::json!({
                     "status": "ok",
-                    "service": "Ora Browser Proxy (Modular)",
+                    "service": "ZAKYX Browser Proxy (Modular)",
                     "timestamp": chrono::Utc::now().to_rfc3339(),
                     "version": "2.0.0"
                 }))
@@ -224,15 +224,15 @@ impl ProxyServer {
     }
 
     // Einfache Fetch-Implementierung
-    async fn simple_fetch(url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    async fn simple_fetch(url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(30))
             .danger_accept_invalid_certs(true)
             .build()
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to create HTTP client: {}", e), Some(url)))?;
 
         let response = client.get(url).send().await
-            .map_err(|e| OraBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("HTTP request failed: {}", e), Some(url)))?;
         
         let status_code = response.status().as_u16();
         let content_type = response
@@ -243,7 +243,7 @@ impl ProxyServer {
             .to_string();
         
         let content = response.text().await
-            .map_err(|e| OraBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
+            .map_err(|e| ZAKYXBrowserError::network_error(&format!("Failed to read response body: {}", e), Some(url)))?;
         
         Ok(ProxyResponse {
             content,
@@ -309,16 +309,16 @@ impl ProxyServer {
     }
 
     // Legacy-Kompatibilität: Wrapper für die alten Funktionen
-    pub async fn fetch_with_method(url: &str, method: &str, _form_data: &str) -> Result<ProxyResponse, OraBrowserError> {
+    pub async fn fetch_with_method(url: &str, method: &str, _form_data: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         // Vereinfachte Implementierung - nur GET für jetzt
         if method == "GET" {
             Self::simple_fetch(url).await
         } else {
-            Err(OraBrowserError::proxy_error(&format!("Only GET method supported in simplified version, got: {}", method), Some(url)))
+            Err(ZAKYXBrowserError::proxy_error(&format!("Only GET method supported in simplified version, got: {}", method), Some(url)))
         }
     }
 
-    pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, OraBrowserError> {
+    pub async fn fetch_and_strip_headers(url: &str) -> Result<ProxyResponse, ZAKYXBrowserError> {
         // Vereinfachte Implementierung
         Self::fetch_with_method(url, "GET", "").await
     }

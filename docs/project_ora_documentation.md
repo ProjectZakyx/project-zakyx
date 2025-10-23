@@ -20,7 +20,7 @@
 
 ## Mitwirken
 
-Wir freuen uns über Beiträge zur Verbesserung von Projekt-Ora. Bitte lesen Sie unsere Contribution Guidelines, bevor Sie einen Pull Request erstellen.
+Wir freuen uns über Beiträge zur Verbesserung von Projekt-ZAKYX. Bitte lesen Sie unsere Contribution Guidelines, bevor Sie einen Pull Request erstellen.
 
 ## Kontakt
 

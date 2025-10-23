@@ -235,7 +235,7 @@ export const DebugTools = {
     // Performance-Monitoring
     startPerformanceMonitor() {
         if (performance.mark) {
-            performance.mark('ora-browser-start');
+            performance.mark('zakyx-browser-start');
         }
         
         setInterval(() => {

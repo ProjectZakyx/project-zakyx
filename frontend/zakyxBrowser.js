@@ -1,18 +1,18 @@
 /**
- * OraBrowser - Modulare Browser-Hauptklasse
+ * ZAKYXBrowser - Modulare Browser-Hauptklasse
  * Vereint alle Module zu einem funktionsfähigen Browser
  */
 
-import OraBrowserCore from './modules/core.js';
+import ZAKYXBrowserCore from './modules/core.js';
 import NavigationManager from './modules/navigation.js';
 import TabManager from './modules/tabManager.js';
 import BookmarkManager from './modules/bookmarkManager.js';
 import { waitForTauri, DebugTools, ErrorHandler } from './utils/utils.js';
 
-class OraBrowser {
+class ZAKYXBrowser {
     constructor() {
         // Initialisiere Core zuerst
-        this.core = new OraBrowserCore();
+        this.core = new ZAKYXBrowserCore();
         
         // Initialisiere Manager mit Core-Referenz
         this.navigationManager = new NavigationManager(this.core);
@@ -25,12 +25,12 @@ class OraBrowser {
         this.currentUrl = this.core.currentUrl;
         this.isLoading = this.core.isLoading;
         
-        console.log('🚀 OraBrowser (modular) initialized');
+        console.log('🚀 ZAKYXBrowser (modular) initialized');
     }
 
     // Hauptinitialisierung
     async init() {
-        console.log('🔧 Initializing modular OraBrowser...');
+        console.log('🔧 Initializing modular ZAKYXBrowser...');
         
         try {
             // Warte auf Tauri API
@@ -56,7 +56,7 @@ class OraBrowser {
             // Setup Event-Listener
             this.setupEventListeners();
             
-            console.log('✅ OraBrowser modular initialization complete');
+            console.log('✅ ZAKYXBrowser modular initialization complete');
             
         } catch (error) {
             console.error('❌ Initialization error:', error);
@@ -323,38 +323,38 @@ class OraBrowser {
 
 // Browser-Initialisierung
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🌐 DOM Content Loaded - Starting modular OraBrowser...');
+            console.log('🌐 DOM Content Loaded - Starting modular ZAKYXBrowser...');
     
     try {
         // Erstelle Browser-Instanz
-        window.oraBrowser = new OraBrowser();
+        window.zakyxBrowser = new ZAKYXBrowser();
         
         // Initialisiere Browser
-        await window.oraBrowser.init();
+        await window.zakyxBrowser.init();
         
-        console.log('✅ Modular OraBrowser ready');
+        console.log('✅ Modular ZAKYXBrowser ready');
         
     } catch (error) {
-        console.error('❌ OraBrowser initialization failed:', error);
+        console.error('❌ ZAKYXBrowser initialization failed:', error);
         
         // Fallback-Modus
         console.log('🔄 Starting fallback mode...');
-        window.oraBrowser = new OraBrowser();
-        window.oraBrowser.core.initializeCore();
+        window.zakyxBrowser = new ZAKYXBrowser();
+        window.zakyxBrowser.core.initializeCore();
     }
 });
 
 // Global Debug-Tools
-window.testOraBrowser = {
+window.testZAKYXBrowser = {
     showStats: () => {
-        if (window.oraBrowser) {
-            console.table(window.oraBrowser.getStats());
+        if (window.zakyxBrowser) {
+            console.table(window.zakyxBrowser.getStats());
         }
     },
     
     testNavigation: (url = 'https://duckduckgo.com') => {
-        if (window.oraBrowser) {
-            window.oraBrowser.testNavigation(url);
+        if (window.zakyxBrowser) {
+            window.zakyxBrowser.testNavigation(url);
         }
     },
     
@@ -367,6 +367,6 @@ window.testOraBrowser = {
     }
 };
 
-console.log('📜 Modular OraBrowser script loaded - Ready for initialization');
+console.log('📜 Modular ZAKYXBrowser script loaded - Ready for initialization');
 
-export default OraBrowser; 
+export default ZAKYXBrowser; 

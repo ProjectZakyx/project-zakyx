@@ -1,4 +1,4 @@
-/// 🛡️ ENHANCED SECURITY SYSTEM FÜR ORA BROWSER
+/// 🛡️ ENHANCED SECURITY SYSTEM FÜR ZAKYX BROWSER
 use std::collections::HashMap;
 
 pub struct EnhancedSecurityManager {

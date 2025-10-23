@@ -1,13 +1,21 @@
-// 🎨 UI/UX MODULE - Complete User Interface System
-pub mod theme;
-pub mod shortcuts;
-pub mod drag;
-pub mod fullscreen;
-pub mod manager;
+// 🎨 UI Module für ZAKYX Browser
+// Benutzeroberflächen-Komponenten
 
-// Re-export all public types for easy access
-pub use theme::{Theme, ColorScheme, ThemeManager};
-pub use shortcuts::{KeyboardShortcut, ShortcutManager};
-pub use drag::{TabDragInfo, TabDragManager};
-pub use fullscreen::FullscreenManager;
-pub use manager::UIUXImprovementsManager; 
+pub mod bookmarks;
+
+// Weitere UI-Module können hier hinzugefügt werden:
+// pub mod tabs;
+// pub mod settings;
+// pub mod downloads;
+
+// Re-exports für einfachen Zugriff
+pub use bookmarks::{
+    BookmarkEntry, 
+    BookmarkManager, 
+    HorizontalBookmarkToolbar, 
+    BookmarkToolbarManager,
+    BookmarkHtmlGenerator
+};
+
+#[cfg(target_os = "windows")]
+pub use bookmarks::WindowsToolbarImpl;

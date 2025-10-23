@@ -1,5 +1,5 @@
 /**
- * OraBrowser Utils
+ * ZAKYXBrowser Utils
  * Helper-Funktionen und globale Utilities
  */
 
@@ -51,7 +51,7 @@ const DebugTools = {
     // Performance-Monitoring
     startPerformanceMonitor() {
         if (performance.mark) {
-            performance.mark('ora-browser-start');
+            performance.mark('zakyx-browser-start');
         }
         
         setInterval(() => {
@@ -71,10 +71,10 @@ const DebugTools = {
         const testContent = `
 <!DOCTYPE html>
 <html>
-<head><title>OraBrowser Test</title></head>
+        <head><title>ZAKYXBrowser Test</title></head>
 <body style="font-family: Arial; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 100vh;">
     <div style="text-align: center; padding: 40px;">
-        <h1>🎉 OraBrowser Test erfolgreich!</h1>
+        <h1>🎉 ZAKYXBrowser Test erfolgreich!</h1>
         <p>Diese Seite zeigt, dass das modulare System funktioniert.</p>
         <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3>✅ Module geladen:</h3>
@@ -93,10 +93,10 @@ const DebugTools = {
         `;
         
         // Zeige Test-Content
-        if (window.oraBrowser && window.oraBrowser.navigationManager) {
-            window.oraBrowser.navigationManager.displayContent(testContent);
+        if (window.zakyxBrowser && window.zakyxBrowser.navigationManager) {
+            window.zakyxBrowser.navigationManager.displayContent(testContent);
         } else {
-            console.error('❌ OraBrowser instance not available');
+            console.error('❌ ZAKYXBrowser instance not available');
         }
     }
 };
@@ -301,7 +301,7 @@ window.ErrorHandler = ErrorHandler;
 document.addEventListener('DOMContentLoaded', () => {
     ErrorHandler.setupGlobalErrorHandling();
     DebugTools.startPerformanceMonitor();
-    console.log('✅ OraBrowser Utils loaded');
+            console.log('✅ ZAKYXBrowser Utils loaded');
 });
 
 export { 

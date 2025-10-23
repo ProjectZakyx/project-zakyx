@@ -1,6 +1,8 @@
 // 🚨 ERROR MODULE
-// Modulares Error-System für Ora Browser
-// Copyright © 2024 Ora Browser Team
+// Modulares Error-System für ZAKYX Browser
+// Copyright © 2024 ZAKYX Browser Team
+
+#![allow(dead_code)] // Error system - helper functions kept for API completeness
 
 pub mod types;
 pub mod context;
@@ -11,12 +13,10 @@ pub mod recovery;
 pub use types::*;
 
 // Re-export from submodules
-pub use context::{ErrorContext, ContextualError, ContextualResult, SystemInfo};
-pub use helpers::ErrorHelpers;
-pub use recovery::{ErrorRecovery, ErrorCollection};
+pub use context::ErrorContext;
 
 // Extended error types for specific modules
-impl OraBrowserError {
+impl ZAKYXBrowserError {
     /// Erstelle Plugin-spezifischen Error
     pub fn plugin_error(plugin_id: &str, message: &str) -> Self {
         Self::Plugin {
@@ -179,7 +179,7 @@ impl OraBrowserError {
 }
 
 /// Standard Error-Konvertierungen für häufige externe Types
-impl From<Box<dyn std::error::Error + Send + Sync>> for OraBrowserError {
+impl From<Box<dyn std::error::Error + Send + Sync>> for ZAKYXBrowserError {
     fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
         Self::Unknown {
             message: err.to_string(),
@@ -187,7 +187,7 @@ impl From<Box<dyn std::error::Error + Send + Sync>> for OraBrowserError {
     }
 }
 
-impl From<anyhow::Error> for OraBrowserError {
+impl From<anyhow::Error> for ZAKYXBrowserError {
     fn from(err: anyhow::Error) -> Self {
         Self::Unknown {
             message: err.to_string(),
@@ -196,27 +196,27 @@ impl From<anyhow::Error> for OraBrowserError {
 }
 
 /// Convenience-Funktionen für häufige Patterns
-pub fn plugin_not_found(plugin_id: &str) -> OraBrowserError {
-    OraBrowserError::PluginNotFound {
+pub fn plugin_not_found(plugin_id: &str) -> ZAKYXBrowserError {
+    ZAKYXBrowserError::PluginNotFound {
         plugin_id: plugin_id.to_string(),
     }
 }
 
-pub fn plugin_already_loaded(plugin_id: &str) -> OraBrowserError {
-    OraBrowserError::PluginAlreadyLoaded {
+pub fn plugin_already_loaded(plugin_id: &str) -> ZAKYXBrowserError {
+    ZAKYXBrowserError::PluginAlreadyLoaded {
         plugin_id: plugin_id.to_string(),
     }
 }
 
-pub fn invalid_url(url: &str, reason: &str) -> OraBrowserError {
-    OraBrowserError::InvalidUrl {
+pub fn invalid_url(url: &str, reason: &str) -> ZAKYXBrowserError {
+    ZAKYXBrowserError::InvalidUrl {
         url: url.to_string(),
         reason: reason.to_string(),
     }
 }
 
-pub fn file_not_found(path: &str, operation: &str) -> OraBrowserError {
-    OraBrowserError::FileNotFound {
+pub fn file_not_found(path: &str, operation: &str) -> ZAKYXBrowserError {
+    ZAKYXBrowserError::FileNotFound {
         path: path.to_string(),
         operation: operation.to_string(),
     }
@@ -228,12 +228,12 @@ mod tests {
     
     #[test]
     fn test_error_type_checks() {
-        let plugin_error = OraBrowserError::plugin_error("test-plugin", "test message");
+        let plugin_error = ZAKYXBrowserError::plugin_error("test-plugin", "test message");
         assert!(plugin_error.is_plugin_error());
         assert!(!plugin_error.is_network_error());
         assert_eq!(plugin_error.plugin_id(), Some("test-plugin"));
         
-        let network_error = OraBrowserError::network_error("connection failed", Some("https://example.com"));
+        let network_error = ZAKYXBrowserError::network_error("connection failed", Some("https://example.com"));
         assert!(network_error.is_network_error());
         assert!(!network_error.is_plugin_error());
         assert_eq!(network_error.url(), Some("https://example.com"));
@@ -243,7 +243,7 @@ mod tests {
     fn test_convenience_functions() {
         let error = plugin_not_found("missing-plugin");
         match error {
-            OraBrowserError::PluginNotFound { plugin_id } => {
+            ZAKYXBrowserError::PluginNotFound { plugin_id } => {
                 assert_eq!(plugin_id, "missing-plugin");
             },
             _ => panic!("Wrong error type"),
@@ -251,7 +251,7 @@ mod tests {
         
         let error = invalid_url("not-a-url", "missing protocol");
         match error {
-            OraBrowserError::InvalidUrl { url, reason } => {
+            ZAKYXBrowserError::InvalidUrl { url, reason } => {
                 assert_eq!(url, "not-a-url");
                 assert_eq!(reason, "missing protocol");
             },
@@ -261,7 +261,7 @@ mod tests {
     
     #[test]
     fn test_error_report() {
-        let error = OraBrowserError::plugin_error("test-plugin", "test message");
+        let error = ZAKYXBrowserError::plugin_error("test-plugin", "test message");
         let report = error.to_report(None);
         
         assert!(report.contains("ERROR REPORT"));

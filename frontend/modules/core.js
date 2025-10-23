@@ -1,9 +1,9 @@
 /**
- * OraBrowser Core Module
+ * ZAKYXBrowser Core Module
  * Grundlegende Browser-Funktionalität und Initialisierung
  */
 
-class OraBrowserCore {
+class ZAKYXBrowserCore {
     constructor() {
         this.isLoading = false;
         this.currentUrl = '';
@@ -21,7 +21,7 @@ class OraBrowserCore {
             enabledPlugins: 3
         };
         
-        console.log('🚀 OraBrowser Core initialized');
+        console.log('🚀 ZAKYXBrowser Core initialized');
     }
 
     // 🔗 TAURI API PRÜFUNG
@@ -99,7 +99,7 @@ class OraBrowserCore {
     // Settings Management
     getSettings() {
         try {
-            const savedSettings = localStorage.getItem('ora-browser-settings');
+            const savedSettings = localStorage.getItem('zakyx-browser-settings');
             if (savedSettings) {
                 return JSON.parse(savedSettings);
             }
@@ -119,7 +119,7 @@ class OraBrowserCore {
 
     saveSettings(settings) {
         try {
-            localStorage.setItem('ora-browser-settings', JSON.stringify(settings));
+            localStorage.setItem('zakyx-browser-settings', JSON.stringify(settings));
             console.log('💾 Settings saved to localStorage');
             this.settings = { ...this.settings, ...settings };
             return true;
@@ -157,18 +157,18 @@ class OraBrowserCore {
 
     // Grundlegende Initialisierung
     initializeCore() {
-        console.log('🔧 Initializing OraBrowser Core...');
+        console.log('🔧 Initializing ZAKYXBrowser Core...');
         
         this.settings = this.getSettings();
         console.log('⚙️ Settings loaded:', this.settings);
         
         this.updateStatus('Bereit');
         
-        console.log('🌐 Ora Browser v1.0.0 - Core Ready');
+        console.log('🌐 ZAKYX Browser v1.0.0 - Core Ready');
     }
 }
 
 // Global verfügbar machen
-window.OraBrowserCore = OraBrowserCore;
+    window.ZAKYXBrowserCore = ZAKYXBrowserCore;
 
-export default OraBrowserCore; 
+export default ZAKYXBrowserCore; 

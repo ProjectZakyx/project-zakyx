@@ -1,16 +1,16 @@
 @echo off
-REM 🚀 ORA BROWSER - PRODUCTION STARTUP SCRIPT
+REM 🚀 ZAKYX BROWSER - PRODUCTION STARTUP SCRIPT
 REM Version: 1.0.0
 REM Datum: 2025-06-21
 
 echo.
 echo ========================================
-echo 🚀 ORA BROWSER - PRODUCTION START
+echo 🚀 ZAKYX BROWSER - PRODUCTION START
 echo ========================================
 echo.
 
 REM Prüfe ob Release-Build existiert
-if not exist "target\release\ora-browser.exe" (
+if not exist "target\release\zakyx-browser.exe" (
     echo ❌ FEHLER: Release-Build nicht gefunden!
     echo.
     echo Bitte zuerst erstellen mit:
@@ -21,19 +21,19 @@ if not exist "target\release\ora-browser.exe" (
 )
 
 REM Erstelle Konfigurationsverzeichnis
-if not exist "%APPDATA%\ora-browser" (
+if not exist "%APPDATA%\zakyx-browser" (
     echo 📁 Erstelle Konfigurationsverzeichnis...
-    mkdir "%APPDATA%\ora-browser"
-    mkdir "%APPDATA%\ora-browser\logs"
+    mkdir "%APPDATA%\zakyx-browser"
+    mkdir "%APPDATA%\zakyx-browser\logs"
 )
 
 REM Setze Produktions-Umgebungsvariablen
-set RUST_LOG=ora_browser=info
-set ORA_BROWSER_ENV=production
-set ORA_BROWSER_CONFIG=%APPDATA%\ora-browser\config.toml
+set RUST_LOG=zakyx_browser=info
+set ZAKYX_BROWSER_ENV=production
+set ZAKYX_BROWSER_CONFIG=%APPDATA%\zakyx-browser\config.toml
 
 echo ⚙️ Produktions-Konfiguration:
-echo    📂 Config-Verzeichnis: %APPDATA%\ora-browser
+echo    📂 Config-Verzeichnis: %APPDATA%\zakyx-browser
 echo    📄 Log-Level: INFO
 echo    🌐 Proxy-Port: 3030
 echo.
@@ -52,9 +52,9 @@ if %errorlevel% == 0 (
     )
 )
 
-echo ✅ Starte Ora Browser (Produktions-Modus)...
+echo ✅ Starte ZAKYX Browser (Produktions-Modus)...
 echo.
-echo 📝 Logs werden gespeichert in: %APPDATA%\ora-browser\logs\
+echo 📝 Logs werden gespeichert in: %APPDATA%\zakyx-browser\logs\
 echo 🌐 Proxy-Server läuft auf: http://localhost:3030
 echo 🔍 Health-Check: http://localhost:3030/health
 echo.
@@ -62,19 +62,19 @@ echo Zum Beenden: Strg+C drücken
 echo ========================================
 echo.
 
-REM Starte Ora Browser
-"target\release\ora-browser.exe"
+REM Starte ZAKYX Browser
+"target\release\zakyx-browser.exe"
 
 REM Nach dem Beenden
 echo.
 echo ========================================
-echo 🛑 ORA BROWSER BEENDET
+echo 🛑 ZAKYX BROWSER BEENDET
 echo ========================================
 echo.
 echo 📊 Produktions-Statistiken:
-if exist "%APPDATA%\ora-browser\logs\ora-browser.log" (
-    echo    📄 Log-Datei: %APPDATA%\ora-browser\logs\ora-browser.log
-    for %%A in ("%APPDATA%\ora-browser\logs\ora-browser.log") do echo    📏 Log-Größe: %%~zA Bytes
+if exist "%APPDATA%\zakyx-browser\logs\zakyx-browser.log" (
+    echo    📄 Log-Datei: %APPDATA%\zakyx-browser\logs\zakyx-browser.log
+    for %%A in ("%APPDATA%\zakyx-browser\logs\zakyx-browser.log") do echo    📏 Log-Größe: %%~zA Bytes
 ) else (
     echo    📄 Keine Logs gefunden
 )

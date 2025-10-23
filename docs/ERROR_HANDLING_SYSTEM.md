@@ -1,8 +1,8 @@
-# 🛡️ OraBrowser - Error-Handling-System-Dokumentation
+# 🛡️ ZAKYXBrowser - Error-Handling-System-Dokumentation
 
 > **Version**: 1.0.0+  
 > **Datum**: Dezember 2024  
-> **System**: Einheitliches OraBrowserError-System  
+> **System**: Einheitliches ZAKYXBrowserError-System  
 > **Status**: Production-Ready ✅  
 > **Migration**: 67+ Funktionen erfolgreich migriert  
 
@@ -10,7 +10,7 @@
 
 ## 📋 Übersicht
 
-Das **OraBrowser Error-Handling-System** bietet eine **einheitliche, typsichere und erweiterbare** Fehlerbehandlung für den gesamten Browser. Es ersetzt inkonsistente Error-Typen durch ein **zentrales OraBrowserError-System** mit kontextueller Debugging-Information und automatischen Recovery-Strategien.
+Das **ZAKYXBrowser Error-Handling-System** bietet eine **einheitliche, typsichere und erweiterbare** Fehlerbehandlung für den gesamten Browser. Es ersetzt inkonsistente Error-Typen durch ein **zentrales ZAKYXBrowserError-System** mit kontextueller Debugging-Information und automatischen Recovery-Strategien.
 
 ### **🎯 System-Ziele**
 
@@ -30,7 +30,7 @@ Das **OraBrowser Error-Handling-System** bietet eine **einheitliche, typsichere 
 ```rust
 src/error/
 ├── mod.rs           // Unified module integration & re-exports
-├── types.rs         // OraBrowserError enum & core types
+├── types.rs         // ZAKYXBrowserError enum & core types
 ├── context.rs       // ErrorContext for debugging information
 ├── recovery.rs      // Recovery strategies & batch operations
 └── helpers.rs       // Conversion traits & convenience macros
@@ -65,11 +65,11 @@ graph TD
 
 ## 🎯 Core Error Types
 
-### **🔧 OraBrowserError Enum**
+### **🔧 ZAKYXBrowserError Enum**
 
 ```rust
 #[derive(Debug, thiserror::Error)]
-pub enum OraBrowserError {
+pub enum ZAKYXBrowserError {
     #[error("Plugin error: {message}")]
     Plugin {
         message: String,
@@ -188,9 +188,9 @@ impl ErrorContext {
 
 ```rust
 // Automatic context creation
-use crate::error::{OraBrowserResult, OraBrowserError, ErrorContext};
+use crate::error::{ZAKYXBrowserResult, ZAKYXBrowserError, ErrorContext};
 
-fn example_function() -> OraBrowserResult<String> {
+fn example_function() -> ZAKYXBrowserResult<String> {
     let context = ErrorContext::new()
         .with_operation("load_config")
         .with_metadata("config_type", "browser_settings");
@@ -198,7 +198,7 @@ fn example_function() -> OraBrowserResult<String> {
     // Operation that might fail
     match std::fs::read_to_string("config.toml") {
         Ok(content) => Ok(content),
-        Err(e) => Err(OraBrowserError::Config {
+        Err(e) => Err(ZAKYXBrowserError::Config {
             field: "config_file".to_string(),
             message: format!("Failed to read config: {}", e),
             file_path: Some(PathBuf::from("config.toml")),

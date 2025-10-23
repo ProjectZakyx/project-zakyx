@@ -1,11 +1,11 @@
-# Projekt-Ora Makefile
+# Projekt-ZAKYX Makefile
 # Cross-Platform Build System
 
 .PHONY: help build build-release test clean install deps-linux deps-windows check format lint
 
 # Default target
 help:
-	@echo "Projekt-Ora Build System"
+	@echo "Projekt-ZAKYX Build System"
 	@echo "========================"
 	@echo ""
 	@echo "Available targets:"
@@ -170,7 +170,7 @@ update:
 
 # Show project information
 info:
-	@echo "Project: Projekt-Ora"
+	@echo "Project: Projekt-ZAKYX"
 	@echo "Rust version: $$(rustc --version)"
 	@echo "Cargo version: $$(cargo --version)"
 	@echo "Target: $$(rustc -vV | grep host | cut -d' ' -f2)"

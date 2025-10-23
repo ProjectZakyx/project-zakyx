@@ -1,4 +1,4 @@
-# 🎨 Ora Browser - Oberflächen-Verschönerungen
+# 🎨 ZAKYX Browser - Oberflächen-Verschönerungen
 ## Komplette GUI-Modernisierung abgeschlossen!
 
 ### ✨ **Was wurde verschönert:**
@@ -185,7 +185,7 @@ Small Text:    0.9rem (14px)
 
 ## ✅ **Status: VOLLSTÄNDIG IMPLEMENTIERT**
 
-🎉 **Der Ora Browser hat jetzt eine moderne, professionelle und wunderschöne Oberfläche!**
+🎉 **Der ZAKYX Browser hat jetzt eine moderne, professionelle und wunderschöne Oberfläche!**
 
 **Technische Umsetzung:**
 - ✅ HTML/CSS/JS komplett überarbeitet
@@ -204,4 +204,4 @@ Small Text:    0.9rem (14px)
 
 ---
 
-*"Der Ora Browser ist jetzt visuell auf dem Level moderner Premium-Browser wie Arc, Brave oder Edge!"* 🚀 
+*"Der ZAKYX Browser ist jetzt visuell auf dem Level moderner Premium-Browser wie Arc, Brave oder Edge!"* 🚀 

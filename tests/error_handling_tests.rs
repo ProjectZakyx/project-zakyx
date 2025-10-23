@@ -1,16 +1,16 @@
 // 🧪 ERROR HANDLING INTEGRATION TESTS
-// Comprehensive tests for the new OraBrowserError architecture
+// Comprehensive tests for the new ZAKYXBrowserError architecture
 // Tests all 67+ migrated functions and error recovery mechanisms
-// Copyright © 2024 Ora Browser Team
+// Copyright © 2024 ZAKYX Browser Team
 
-use ora_browser::error::{OraBrowserError, ErrorContext, ErrorRecovery, ErrorCollection};
-use ora_browser::BrowserState;
-use ora_browser::browser_state::{Tab, Bookmark};
-use ora_browser::config::OraConfig;
+use zakyx_browser::error::{ZAKYXBrowserError, ErrorContext, ErrorRecovery, ErrorCollection};
+use zakyx_browser::BrowserState;
+use zakyx_browser::browser_state::{Tab, Bookmark};
+use zakyx_browser::config::ZAKYXConfig;
 use std::time::Duration;
 use tokio::time::timeout;
 
-/// Test the core OraBrowserError functionality
+/// Test the core ZAKYXBrowserError functionality
 #[cfg(test)]
 mod error_core_tests {
     use super::*;
@@ -18,21 +18,21 @@ mod error_core_tests {
     #[test]
     fn test_error_types_creation() {
         // Test all error type creation methods
-        let plugin_error = OraBrowserError::plugin_error("test-plugin", "Plugin failed to load");
+        let plugin_error = ZAKYXBrowserError::plugin_error("test-plugin", "Plugin failed to load");
         assert!(plugin_error.is_plugin_error());
         assert_eq!(plugin_error.plugin_id(), Some("test-plugin"));
 
-        let network_error = OraBrowserError::network_error("Connection failed", Some("https://example.com"));
+        let network_error = ZAKYXBrowserError::network_error("Connection failed", Some("https://example.com"));
         assert!(network_error.is_network_error());
         assert_eq!(network_error.url(), Some("https://example.com"));
 
-        let config_error = OraBrowserError::config_error("Invalid port", Some("primary_port"), Some("Use port 3030-3099"));
+        let config_error = ZAKYXBrowserError::config_error("Invalid port", Some("primary_port"), Some("Use port 3030-3099"));
         assert!(config_error.is_config_error());
 
-        let ui_error = OraBrowserError::ui_error("main_window", "Window creation failed", true);
+        let ui_error = ZAKYXBrowserError::ui_error("main_window", "Window creation failed", true);
         assert!(!ui_error.is_security_error());
 
-        let security_error = OraBrowserError::security_error("Certificate validation failed");
+        let security_error = ZAKYXBrowserError::security_error("Certificate validation failed");
         assert!(security_error.is_security_error());
     }
 
@@ -69,9 +69,9 @@ mod error_core_tests {
     fn test_error_collection() {
         let mut collection = ErrorCollection::new();
         
-        collection.add_error(OraBrowserError::plugin_error("plugin1", "Error 1"));
-        collection.add_error(OraBrowserError::plugin_error("plugin2", "Error 2"));
-        collection.add_error(OraBrowserError::network_error("Network error", None));
+        collection.add_error(ZAKYXBrowserError::plugin_error("plugin1", "Error 1"));
+        collection.add_error(ZAKYXBrowserError::plugin_error("plugin2", "Error 2"));
+        collection.add_error(ZAKYXBrowserError::network_error("Network error", None));
 
         assert_eq!(collection.len(), 3);
         assert!(collection.has_plugin_errors());
@@ -86,7 +86,7 @@ mod error_core_tests {
 
     #[test]
     fn test_user_friendly_messages() {
-        let error = OraBrowserError::network_error("Connection timeout", Some("https://slow-site.com"));
+        let error = ZAKYXBrowserError::network_error("Connection timeout", Some("https://slow-site.com"));
         let user_msg = error.user_message();
         assert!(user_msg.contains("network"));
         assert!(!user_msg.contains("TCP")); // Technical details should be hidden
@@ -102,7 +102,7 @@ mod error_core_tests {
 #[cfg(test)]
 mod tauri_commands_error_tests {
     use super::*;
-    use ora_browser::tauri_commands::*;
+    use zakyx_browser::tauri_commands::*;
 
     #[tokio::test]
     async fn test_tab_management_errors() {
@@ -122,7 +122,7 @@ mod tauri_commands_error_tests {
 
         // Test duplicate tab with non-existent ID
         let result = duplicate_tab(tauri::State::from(&state), "999999".to_string()).await;
-        assert!(result.is_err()); // This should return an OraBrowserError
+        assert!(result.is_err()); // This should return an ZAKYXBrowserError
         
         if let Err(error) = result {
             assert!(error.is_ui_error());
@@ -203,7 +203,7 @@ mod tauri_commands_error_tests {
 #[cfg(test)]
 mod proxy_error_tests {
     use super::*;
-    use ora_browser::proxy_server::ProxyServer;
+    use zakyx_browser::proxy_server::ProxyServer;
 
     #[tokio::test]
     async fn test_proxy_fetch_errors() {
@@ -238,7 +238,7 @@ mod proxy_error_tests {
 
     #[tokio::test] 
     async fn test_proxy_strategy_engine_errors() {
-        use ora_browser::proxy::core::strategy_engine::{StrategyEngine, SmartProxy};
+        use zakyx_browser::proxy::core::strategy_engine::{StrategyEngine, SmartProxy};
 
         // Test SmartProxy with invalid URL
         let result = SmartProxy::fetch_and_strip_headers("not-a-valid-url").await;
@@ -266,7 +266,7 @@ mod config_error_tests {
 
     #[test]
     fn test_config_save_errors() {
-        let config = OraConfig::default();
+        let config = ZAKYXConfig::default();
         
         // Try to save config - should work normally
         let result = config.save();
@@ -275,7 +275,7 @@ mod config_error_tests {
 
     #[test]
     fn test_config_validation() {
-        let mut config = OraConfig::default();
+        let mut config = ZAKYXConfig::default();
         
         // Set invalid values that should be corrected
         config.proxy.primary_port = 0;
@@ -304,7 +304,7 @@ mod error_performance_tests {
         
         // Create 1000 errors
         for i in 0..1000 {
-            let _ = OraBrowserError::plugin_error(&format!("plugin-{}", i), "Test error");
+            let _ = ZAKYXBrowserError::plugin_error(&format!("plugin-{}", i), "Test error");
         }
         
         let duration = start.elapsed();
@@ -337,7 +337,7 @@ mod error_performance_tests {
         
         // Add 1000 errors to collection
         for i in 0..1000 {
-            collection.add_error(OraBrowserError::plugin_error(&format!("plugin-{}", i), "Test error"));
+            collection.add_error(ZAKYXBrowserError::plugin_error(&format!("plugin-{}", i), "Test error"));
         }
         
         let duration = start.elapsed();
@@ -392,7 +392,7 @@ mod error_integration_tests {
     #[tokio::test]
     async fn test_error_recovery_simulation() {
         // Simulate a network error with retry mechanism
-        let error = OraBrowserError::network_error("Connection timeout", Some("https://slow-site.com"));
+        let error = ZAKYXBrowserError::network_error("Connection timeout", Some("https://slow-site.com"));
         let recovery_strategy = error.recovery_strategy();
         
         assert!(recovery_strategy.retry_possible);
@@ -418,10 +418,10 @@ mod error_integration_tests {
         let mut error_collection = ErrorCollection::new();
         
         // Collect various error types
-        error_collection.add_error(OraBrowserError::plugin_error("plugin1", "Plugin failed"));
-        error_collection.add_error(OraBrowserError::network_error("Network down", None));
-        error_collection.add_error(OraBrowserError::config_error("Invalid config", None, None));
-        error_collection.add_error(OraBrowserError::plugin_error("plugin2", "Another plugin failed"));
+        error_collection.add_error(ZAKYXBrowserError::plugin_error("plugin1", "Plugin failed"));
+        error_collection.add_error(ZAKYXBrowserError::network_error("Network down", None));
+        error_collection.add_error(ZAKYXBrowserError::config_error("Invalid config", None, None));
+        error_collection.add_error(ZAKYXBrowserError::plugin_error("plugin2", "Another plugin failed"));
         
         // Generate metrics
         assert_eq!(error_collection.len(), 4);
@@ -448,13 +448,13 @@ mod error_integration_tests {
 mod test_helpers {
     use super::*;
 
-    pub fn create_test_error_with_context(error_type: &str) -> (OraBrowserError, ErrorContext) {
+    pub fn create_test_error_with_context(error_type: &str) -> (ZAKYXBrowserError, ErrorContext) {
         let error = match error_type {
-            "plugin" => OraBrowserError::plugin_error("test-plugin", "Test plugin error"),
-            "network" => OraBrowserError::network_error("Test network error", Some("https://test.com")),
-            "config" => OraBrowserError::config_error("Test config error", Some("test_field"), Some("Fix suggestion")),
-            "ui" => OraBrowserError::ui_error("test_component", "Test UI error", true),
-            _ => OraBrowserError::security_error("Test security error"),
+            "plugin" => ZAKYXBrowserError::plugin_error("test-plugin", "Test plugin error"),
+            "network" => ZAKYXBrowserError::network_error("Test network error", Some("https://test.com")),
+            "config" => ZAKYXBrowserError::config_error("Test config error", Some("test_field"), Some("Fix suggestion")),
+            "ui" => ZAKYXBrowserError::ui_error("test_component", "Test UI error", true),
+            _ => ZAKYXBrowserError::security_error("Test security error"),
         };
         
         let context = ErrorContext::new()
@@ -466,7 +466,7 @@ mod test_helpers {
         (error, context)
     }
 
-    pub fn assert_error_quality(error: &OraBrowserError) {
+    pub fn assert_error_quality(error: &ZAKYXBrowserError) {
         // Verify error has good user message
         let user_msg = error.user_message();
         assert!(!user_msg.is_empty(), "Error should have user message");
@@ -524,14 +524,14 @@ mod regression_tests {
     #[test]
     fn test_config_functionality_preserved() {
         // Ensure config loading/saving still works after migration
-        let config = OraConfig::default();
+        let config = ZAKYXConfig::default();
         
         // Should be able to save without errors
         let save_result = config.save();
         assert!(save_result.is_ok(), "Config save should work after migration");
         
         // Should be able to load
-        let loaded_config = OraConfig::load();
+        let loaded_config = ZAKYXConfig::load();
         assert_eq!(loaded_config.version, config.version);
     }
 
@@ -543,7 +543,7 @@ mod regression_tests {
         // Starting the server in a separate task to avoid blocking
         let server_handle = tokio::spawn(async move {
             let result = server.start().await;
-            // Server start should return OraBrowserError on failure, not panic
+            // Server start should return ZAKYXBrowserError on failure, not panic
             match result {
                 Ok(_) => true,
                 Err(e) => {
@@ -588,7 +588,7 @@ macro_rules! test_error_type {
 }
 
 // Generate tests for each error type
-test_error_type!(plugin, OraBrowserError::plugin_error("test", "message"));
-test_error_type!(network, OraBrowserError::network_error("message", None));
-test_error_type!(config, OraBrowserError::config_error("message", None, None));
-test_error_type!(security, OraBrowserError::security_error("message")); 
+test_error_type!(plugin, ZAKYXBrowserError::plugin_error("test", "message"));
+test_error_type!(network, ZAKYXBrowserError::network_error("message", None));
+test_error_type!(config, ZAKYXBrowserError::config_error("message", None, None));
+test_error_type!(security, ZAKYXBrowserError::security_error("message")); 

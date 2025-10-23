@@ -1,6 +1,6 @@
-# 🌐 Ora Browser
+# 🌐 ZAKYX Browser
 
-**Ein moderner, sicherheitsorientierter Web-Browser mit erweiterten Features und plattformübergreifender Unterstützung.**
+**A modern, security-oriented web browser with advanced features and cross-platform support.**
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)
@@ -10,81 +10,97 @@
 
 ## ✨ Features
 
-### 🚀 **Kern-Features**
-- **Moderne Browser-Engine** mit WebView2 Integration
-- **Tab-Management** mit dynamischer Tab-Erstellung und -Verwaltung
-- **Bookmark-System** mit persistenter Speicherung
-- **Verlaufs-Management** für besuchte Seiten
-- **Einstellungs-Management** mit anpassbaren Konfigurationen
+### 🚀 **Core Features**
+- **Modern Browser Engine** with WebView2 Integration
+- **Tab Management** with dynamic tab creation and management
+- **Bookmark System** with persistent storage
+- **History Management** for visited pages
+- **Settings Management** with customizable configurations
 
-### 🔌 **Plugin-System**
-- **Dynamisches Plugin-Loading** zur Laufzeit
-- **Berechtigungssystem** für sichere Plugin-Ausführung
-- **Plugin-Manager** mit Enable/Disable-Funktionalität
-- **API-Versionierung** für Plugin-Kompatibilität
-- **Manifest-basierte Konfiguration**
+### 🔌 **Plugin System**
+- **Dynamic Plugin Loading** at runtime
+- **Permission System** for secure plugin execution
+- **Plugin Manager** with Enable/Disable functionality
+- **API Versioning** for plugin compatibility
+- **Manifest-based Configuration**
 
-### 🛡️ **Sicherheits-Features**
-- **Smart Proxy System** für problematische Websites
-- **URL-Normalisierung** und -Validierung
-- **Ethische Safeguards** mit Rate-Limiting
-- **Header-Stripping** für iframe-Kompatibilität
-- **Domain-spezifische Fallbacks**
+### 🛡️ **Security Features**
+- **Smart Proxy System** for problematic websites
+- **URL Normalization** and validation
+- **Ethical Safeguards** with rate limiting
+- **Header Stripping** for iframe compatibility
+- **Domain-specific Fallbacks**
 
-### 🏗️ **Architektur**
-- **Modulare Struktur** mit klarer Trennung der Verantwortlichkeiten
-- **Async/Await** für performante I/O-Operationen
-- **Thread-sichere State-Verwaltung** mit RwLock
-- **Umfassende Test-Abdeckung** (Unit + Integration Tests)
-- **Plugin-API** für Erweiterbarkeit
+### 🏗️ **Architecture**
+- **Modular Structure** with clear separation of concerns
+- **Async/Await** for performant I/O operations
+- **Thread-safe State Management** with RwLock
+- **Comprehensive Test Coverage** (Unit + Integration Tests)
+- **Plugin API** for extensibility
 
 ## 🚀 Installation
 
-### Voraussetzungen
+### Prerequisites
 - **Rust** (1.70+)
 - **Node.js** (16+)
 - **WebView2** (Windows)
 - **Tauri CLI**
 
 ```bash
-# Tauri CLI installieren
+# Install Tauri CLI
 cargo install tauri-cli
 
-# Repository klonen
-git clone https://github.com/your-username/ora-browser.git
-cd ora-browser
+# Clone repository
+git clone https://github.com/your-username/project-zakyx-main.git
+cd project-zakyx-main
 
-# Dependencies installieren
+# Install dependencies
+cargo build --release
+
+# Build frontend
+cd frontend
 npm install
-cargo build
+node build.js
+cd ..
 ```
 
 ### Build
 ```bash
 # Development Build
-cargo tauri dev
+cargo build
 
 # Production Build
-cargo tauri build
+cargo build --release
+
+# Frontend Build
+cd frontend && node build.js
 
 # Tests ausführen
 cargo test
+npm test
 ```
 
-## 📖 Verwendung
+## 📖 Usage
 
-### Browser starten
+### Start Browser
 ```bash
-cargo tauri dev
+# Development
+cargo run
+
+# Production
+./target/release/zakyx-browser
+
+# With PowerShell Launcher (Windows)
+.\launch_zakyx_browser_with_gui.ps1
 ```
 
-### Plugin entwickeln
+### Plugin Development
 ```json
 {
-  "name": "Mein Plugin",
+  "name": "My Plugin",
   "version": "1.0.0",
-  "description": "Ein Beispiel-Plugin",
-  "author": "Dein Name",
+  "description": "An example plugin",
+  "author": "Your Name",
   "main_script": "main.js",
   "permissions": ["network", "storage"],
   "api_version": "1.0",
@@ -92,121 +108,121 @@ cargo tauri dev
 }
 ```
 
-### API verwenden
+### API Usage
 ```javascript
-// Tab erstellen
+// Create tab
 await invoke('create_new_tab', { url: 'https://example.com' });
 
-// Bookmark hinzufügen
+// Add bookmark
 await invoke('add_bookmark', { 
-  title: 'Beispiel', 
+  title: 'Example', 
   url: 'https://example.com' 
 });
 
-// Plugin laden
-await invoke('load_plugin', { plugin_id: 'mein-plugin' });
+// Load plugin
+await invoke('load_plugin', { plugin_id: 'my-plugin' });
 ```
 
-## 🏗️ Architektur
+## 🏗️ Architecture
 
-### Module-Struktur
+### Module Structure
 ```
 src/
-├── main.rs                    # Haupt-Anwendung (87 Zeilen)
+├── main.rs                    # Main application (87 lines)
 ├── browser_state.rs           # Browser State & Data Structures
-├── tauri_commands.rs          # Alle Tauri Commands
-├── plugin_manager.rs          # Plugin-System
-├── url_utils.rs              # URL-Hilfsfunktionen
+├── tauri_commands.rs          # All Tauri Commands
+├── plugin_manager.rs          # Plugin System
+├── url_utils.rs              # URL Helper Functions
 ├── proxy_server.rs           # Smart Proxy System
-├── smart_proxy.rs            # Erweiterte Proxy-Logik
-├── browser_features.rs       # Browser-Features
-├── ethical_safeguards.rs     # Sicherheits-Features
+├── smart_proxy.rs            # Advanced Proxy Logic
+├── browser_features.rs       # Browser Features
+├── ethical_safeguards.rs     # Security Features
 └── internal_webview2_navigation.rs  # WebView2 Integration
 ```
 
-### Plugin-System
+### Plugin System
 ```
 extensions/
-├── antibot-plugin/           # Anti-Bot Plugin (Beispiel)
+├── antibot-plugin/           # Anti-Bot Plugin (Example)
 │   ├── plugin.json          # Plugin Manifest
-│   ├── antibot-plugin.js    # Haupt-Script
-│   └── ui/                  # UI-Komponenten
-└── your-plugin/             # Dein Plugin
+│   ├── antibot-plugin.js    # Main Script
+│   └── ui/                  # UI Components
+└── your-plugin/             # Your Plugin
     ├── plugin.json
     └── main.js
 ```
 
 ## 🧪 Tests
 
-### Test-Abdeckung
-- **17 Unit Tests** (100% Pass-Rate)
-- **4 Integration Tests** (100% Pass-Rate)
-- **Umfassende Modul-Tests**
+### Test Coverage
+- **17 Unit Tests** (100% Pass Rate)
+- **4 Integration Tests** (100% Pass Rate)
+- **Comprehensive Module Tests**
 
 ```bash
-# Alle Tests ausführen
+# Run all tests
 cargo test
 
-# Nur Unit Tests
+# Unit tests only
 cargo test --lib
 
-# Nur Integration Tests
+# Integration tests only
 cargo test --test integration_tests
 ```
 
-## 🔌 Plugin-Entwicklung
+## 🔌 Plugin Development
 
-### Plugin erstellen
-1. **Verzeichnis erstellen**: `extensions/mein-plugin/`
-2. **Manifest erstellen**: `plugin.json`
-3. **Script entwickeln**: `main.js`
-4. **Plugin installieren**: Über Plugin-Manager
+### Create Plugin
+1. **Create directory**: `extensions/my-plugin/`
+2. **Create manifest**: `plugin.json`
+3. **Develop script**: `main.js`
+4. **Install plugin**: Via Plugin Manager
 
-### Berechtigungen
-- `network` - Netzwerk-Zugriff
-- `storage` - Lokale Speicherung
-- `tabs` - Tab-Management
-- `bookmarks` - Bookmark-Zugriff
-- `history` - Verlaufs-Zugriff
-- `settings` - Einstellungs-Zugriff
+### Permissions
+- `network` - Network access
+- `storage` - Local storage
+- `tabs` - Tab management
+- `bookmarks` - Bookmark access
+- `history` - History access
+- `settings` - Settings access
 
-## 🛠️ Entwicklung
+## 🛠️ Development
 
-### Beitragen
-1. **Fork** das Repository
-2. **Feature Branch** erstellen
-3. **Tests** hinzufügen
-4. **Pull Request** erstellen
+### Contributing
+1. **Fork** the repository
+2. **Create** feature branch
+3. **Add** tests
+4. **Create** pull request
 
 ## 📊 Performance
 
-### Metriken
-- **Startup Zeit**: < 2 Sekunden
+### Metrics
+- **Startup Time**: < 2 seconds
 - **Memory Usage**: < 100MB (Base)
 - **Plugin Loading**: < 500ms
 - **Tab Creation**: < 100ms
 
-## 🔒 Sicherheit
+## 🔒 Security
 
-### Sicherheits-Features
-- **Plugin-Sandboxing** mit Berechtigungssystem
-- **URL-Validierung** und -Normalisierung
-- **Rate-Limiting** für Netzwerk-Requests
-- **Header-Stripping** für sichere iframe-Einbettung
-- **Ethische Safeguards** für verantwortliches Browsing
+### Security Features
+- **Plugin Sandboxing** with permission system
+- **URL Validation** and normalization
+- **Rate Limiting** for network requests
+- **Header Stripping** for secure iframe embedding
+- **Ethical Safeguards** for responsible browsing
 
 ## 🤝 Community
 
 ### Support
-- **GitHub Issues** für Bug Reports
-- **Discussions** für Feature Requests
-- **Wiki** für Dokumentation
+- **GitHub Issues** for bug reports
+- **Discussions** for feature requests
+- **Wiki** for documentation
 
-### Lizenz
-MIT License - siehe [LICENSE](LICENSE) für Details.
+### License
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Entwickelt mit ❤️ und Rust**
+**Developed with ❤️ and Rust**
 
-*Ora Browser - Browsing neu definiert* 
+*ZAKYX Browser - Redefining browsing* 

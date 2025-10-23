@@ -1,4 +1,4 @@
-🌐 Ora Browser v1.0.0
+🌐 ZAKYX Browser v1.0.0
 =========================
 
 🎯 Release Information:
@@ -8,7 +8,7 @@
 - Windows Version: Microsoft Windows 11 Pro
 
 📁 Files included:
-- ora-browser.exe    - Main application binary
+- zakyx-browser.exe    - Main application binary
 - README.md         - Full documentation
 - LICENSE           - MIT License text
 - gui.html          - HTML GUI interface
@@ -23,7 +23,7 @@
 1. Extract all files to a folder
 2. Install WebView2 Runtime if needed:
    https://developer.microsoft.com/en-us/microsoft-edge/webview2/
-3. Run ora-browser.exe
+3. Run zakyx-browser.exe
 
 🚀 Features:
 ✅ WebView2 Integration for real web rendering
@@ -44,7 +44,7 @@
 - Check Windows Defender SmartScreen settings
 
 📞 Support:
-- Issues: https://github.com/user/ora-browser/issues
+- Issues: https://github.com/user/zakyx-browser/issues
 - Documentation: See README.md
 
-© 2024 Ora Browser Project - MIT License
+© 2024 ZAKYX Browser Project - MIT License
