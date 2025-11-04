@@ -2,6 +2,8 @@
 
 **A modern, security-oriented web browser with advanced features and cross-platform support.**
 
+[🇩🇪 Deutsche Version](README_DE.md) | [🇬🇧 English Version](README.md)
+
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
@@ -51,8 +53,8 @@
 cargo install tauri-cli
 
 # Clone repository
-git clone https://github.com/your-username/project-zakyx-main.git
-cd project-zakyx-main
+git clone https://github.com/ProjectZakyx/project-zakyx.git
+cd project-zakyx
 
 # Install dependencies
 cargo build --release
