@@ -11,7 +11,6 @@ pub mod validator;
 pub mod discovery;
 pub mod loader;
 pub mod management;
-pub mod manager;
 
 // Re-exports für einfache Verwendung
 pub use types::{
@@ -20,7 +19,7 @@ pub use types::{
     ALLOWED_PERMISSIONS
 };
 
-pub use manager::PluginManager;
+pub use management::PluginManager;
 
 // Convenience-Funktionen
 impl PluginManager {
