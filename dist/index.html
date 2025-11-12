@@ -437,9 +437,9 @@
                 // Stelle echte API wieder her
                 if (restoreRealTauriAPI()) {
                     // Falls schon Standalone-Modus aktiv war, korrigiere es
-                    if (window.oraBrowser && window.oraBrowser.bookmarks) {
+                    if (window.zakyxBrowser && window.zakyxBrowser.bookmarks) {
                         console.log('🔄 Reaktiviere Tauri-Modus für bestehenden Browser...');
-                        window.oraBrowser.loadBookmarksFromBackend();
+                        window.zakyxBrowser.loadBookmarksFromBackend();
                     }
                 }
             }
@@ -477,9 +477,9 @@
                 restoreRealTauriAPI();
             }
             
-            if (window.oraBrowser) {
-                console.log('📚 Aktuelle Bookmark-Anzahl:', window.oraBrowser.bookmarks.length);
-                if (window.oraBrowser.bookmarks.length === 0) {
+            if (window.zakyxBrowser) {
+                console.log('📚 Aktuelle Bookmark-Anzahl:', window.zakyxBrowser.bookmarks.length);
+                if (window.zakyxBrowser.bookmarks.length === 0) {
                     console.log('📚 Keine Bookmarks gefunden - erzwinge Standard-Bookmarks');
                     window.forceDefaultBookmarks();
                 }
@@ -490,57 +490,57 @@
         window.testBookmarks = async function() {
             console.log('📚 === MANUAL BOOKMARK TEST ===');
             
-            if (window.oraBrowser) {
+            if (window.zakyxBrowser) {
                 console.log('📚 Testing bookmark creation...');
-                await window.oraBrowser.addBookmarkManual('Manual Test', 'https://manual-test.com');
+                await window.zakyxBrowser.addBookmarkManual('Manual Test', 'https://manual-test.com');
                 
-                console.log('📚 Current bookmarks:', window.oraBrowser.bookmarks);
+                console.log('📚 Current bookmarks:', window.zakyxBrowser.bookmarks);
                 
                 console.log('📚 Testing bookmark modal...');
-                window.oraBrowser.showBookmarkModal();
+                window.zakyxBrowser.showBookmarkModal();
             } else {
-                console.log('❌ oraBrowser not available');
+                console.log('❌ zakyxBrowser not available');
             }
         };
 
         window.debugBookmarks = function() {
             console.log('📚 === BOOKMARK DEBUG INFO ===');
             
-            if (window.oraBrowser) {
-                window.oraBrowser.debugBookmarkFunctionality();
+            if (window.zakyxBrowser) {
+                window.zakyxBrowser.debugBookmarkFunctionality();
                 
-                console.log('📚 Current bookmarks:', window.oraBrowser.bookmarks);
-                console.log('📚 Bookmark count:', window.oraBrowser.bookmarks.length);
+                console.log('📚 Current bookmarks:', window.zakyxBrowser.bookmarks);
+                console.log('📚 Bookmark count:', window.zakyxBrowser.bookmarks.length);
                 
                 // Test bookmark rendering
                 console.log('📚 Testing bookmark rendering...');
-                window.oraBrowser.renderBookmarks();
+                window.zakyxBrowser.renderBookmarks();
                 
                 // Test Tauri API
                 console.log('📚 Testing Tauri API...');
-                window.oraBrowser.checkTauriAPI();
+                window.zakyxBrowser.checkTauriAPI();
                 
             } else {
-                console.log('❌ oraBrowser not available');
+                console.log('❌ zakyxBrowser not available');
             }
         };
 
         window.forceDefaultBookmarks = function() {
             console.log('📚 === FORCING DEFAULT BOOKMARKS ===');
             
-            if (window.oraBrowser) {
-                window.oraBrowser.bookmarks = [
+            if (window.zakyxBrowser) {
+                window.zakyxBrowser.bookmarks = [
                     { id: '1', title: '🔍 Google', url: 'https://google.com' },
                     { id: '2', title: '👨‍💻 GitHub', url: 'https://github.com' },
                     { id: '3', title: '📖 Wikipedia', url: 'https://wikipedia.org' },
                     { id: '4', title: '🏠 HTML GUI', url: 'gui' }
                 ];
                 
-                console.log('📚 Default bookmarks set:', window.oraBrowser.bookmarks);
-                window.oraBrowser.renderBookmarks();
+                console.log('📚 Default bookmarks set:', window.zakyxBrowser.bookmarks);
+                window.zakyxBrowser.renderBookmarks();
                 console.log('📚 Bookmarks rendered');
             } else {
-                console.log('❌ oraBrowser not available');
+                console.log('❌ zakyxBrowser not available');
             }
         };
 
@@ -600,9 +600,9 @@
             if (restoreRealTauriAPI()) {
                 console.log('✅ Tauri API wiederhergestellt - aktiviere Tauri-Modus');
                 
-                if (window.oraBrowser) {
+                if (window.zakyxBrowser) {
                     console.log('🔄 Lade Bookmarks vom Backend neu...');
-                    window.oraBrowser.loadBookmarksFromBackend();
+                    window.zakyxBrowser.loadBookmarksFromBackend();
                 }
             } else {
                 console.log('❌ Tauri API nicht verfügbar');
