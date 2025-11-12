@@ -9,7 +9,9 @@
 
 ## 📋 Projektübersicht
 
-**ZAKYX Browser** ist ein vollständig funktionsfähiger, produktionsreifer Web-Browser, entwickelt in **Rust** mit **Tauri v2** und **WebView2**. Das Projekt demonstriert fortgeschrittene Softwareentwicklung mit Fokus auf Sicherheit, Performance und Modulare Architektur.
+**ZAKYX Browser** ist ein moderner Desktop-Web-Browser mit Custom-UI, entwickelt in **Rust** mit **Tauri v2**. Der Browser nutzt **WebView2** (Microsoft Edge Chromium Engine) als Rendering-Engine und bietet erweiterte Features wie Smart Proxy, Plugin-System und umfassende Browser-Funktionalität.
+
+**Architektur-Typ**: Browser-Wrapper/Shell mit Custom UI (ähnlich wie Vivaldi, Brave) - nutzt WebView2/Chromium für das eigentliche Web-Rendering, bietet aber vollständige Browser-Features wie Tab-Management, Bookmarks, History und Plugin-System.
 
 **Repository**: [https://github.com/ProjectZakyx/project-zakyx/tree/project-zakyx-main](https://github.com/ProjectZakyx/project-zakyx/tree/project-zakyx-main)
 
@@ -18,11 +20,12 @@
 ## 🎯 Kernmerkmale
 
 ### 🚀 **Core Features**
-- ✅ **Modern Browser Engine** mit WebView2-Integration (Chromium-basiert)
+- ✅ **WebView2-basierte Rendering-Engine** (Microsoft Edge Chromium) für vollständige Web-Kompatibilität
 - ✅ **Tab-Management** mit dynamischer Tab-Erstellung und -Verwaltung
 - ✅ **Bookmark-System** mit persistenter Speicherung
 - ✅ **History-Management** für besuchte Seiten mit Suchfunktion
 - ✅ **Settings-Management** mit konfigurierbaren Einstellungen
+- ✅ **Smart Proxy System** für erweiterte Website-Kompatibilität und CORS-Handling
 
 ### 🔌 **Plugin-System**
 - ✅ **Dynamisches Plugin-Loading** zur Laufzeit
@@ -59,15 +62,18 @@
 - **Serde** - Serialisierung/Deserialisierung
 - **Tracing** - Strukturiertes Logging
 
-### **Frontend**
+### **Frontend & Rendering**
 - **Vanilla JavaScript (ES6+)** - Modulares Frontend-System
 - **HTML5/CSS3** - Moderne UI mit Tailwind CSS
-- **WebView2** - Microsoft Edge Chromium Engine
+- **Tauri WebView** - Nutzt WebView2 (Windows) / WebKit (macOS/Linux) für Rendering
+- **iframe-basiertes Rendering** - Webseiten werden in iframes geladen
+- **Smart Proxy Integration** - Proxy-Server für CORS-Kompatibilität
 
 ### **Architektur-Patterns**
+- **Browser-Wrapper-Architektur** - Custom UI über WebView2/Chromium Engine
 - **Modular Design** - Klare Trennung von Concerns
 - **Plugin Architecture** - Erweiterbares System
-- **Proxy Pattern** - Smart Proxy für Website-Kompatibilität
+- **Proxy Pattern** - Smart Proxy für Website-Kompatibilität und CORS-Handling
 - **State Management** - Arc/RwLock für Thread-Safety
 
 ---
@@ -150,6 +156,26 @@ dist/js/
 
 ---
 
+## 🏗️ Architektur-Details
+
+### **Rendering-Engine**
+Der ZAKYX Browser nutzt **WebView2** (Microsoft Edge Chromium Engine) als Rendering-Engine. Dies bedeutet:
+- ✅ **Vollständige Web-Standards-Unterstützung** (HTML5, CSS3, ES2022, WebAssembly)
+- ✅ **Chromium-basierte Rendering-Performance** - identisch mit Microsoft Edge
+- ✅ **Keine eigene Browser-Engine** - nutzt bewährte, moderne Rendering-Technologie
+- ✅ **Cross-Platform-Rendering** - WebView2 (Windows), WebKit (macOS/Linux)
+- ✅ **Smart Proxy Integration** - erweiterte Kompatibilität für problematische Websites
+
+### **Browser-Features**
+Trotz Nutzung von WebView2 bietet der Browser vollständige Browser-Funktionalität:
+- ✅ **Custom Browser-UI** - vollständig angepasste Benutzeroberfläche
+- ✅ **Tab-Management** - Multi-Tab-Support mit State-Management
+- ✅ **Bookmark & History System** - persistente Datenspeicherung
+- ✅ **Plugin-System** - erweiterbare Architektur
+- ✅ **Smart Proxy** - CORS-Handling und Website-Optimierung
+
+---
+
 ## 🎯 Technische Highlights
 
 ### **1. Einheitliches Error-Handling-System**
@@ -186,8 +212,9 @@ Vollständiges Plugin-System mit:
 
 ## 🔒 Sicherheitsfeatures
 
+- **WebView2-Sicherheit** - Nutzt Chromium-Sicherheitsfeatures (Sandboxing, Site Isolation)
 - **iframe-Sandbox** mit minimalen Berechtigungen
-- **CORS-Schutz** auf Browser-Ebene
+- **CORS-Handling** über Smart Proxy System
 - **PostMessage-Validation** für sichere Kommunikation
 - **Memory-Safety** durch Rust
 - **HTTPS-Enforcement** mit Zertifikatsvalidierung
@@ -322,4 +349,21 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 
 **Entwickelt mit ❤️ und Rust**
 
-*ZAKYX Browser - Redefining browsing*
+*ZAKYX Browser - Ein moderner Browser-Wrapper mit Custom UI und erweiterten Features*
+
+---
+
+## 📌 Wichtige Hinweise
+
+### **Browser-Architektur**
+- Der ZAKYX Browser ist ein **Browser-Wrapper/Shell** mit Custom UI
+- Nutzt **WebView2** (Chromium) als Rendering-Engine - keine eigene Engine
+- Bietet vollständige Browser-Features (Tabs, Bookmarks, History, Plugins)
+- Ähnliche Architektur wie Vivaldi, Brave, Opera (aber mit Tauri statt Electron)
+
+### **Vorteile dieser Architektur**
+- ✅ **Schnelle Entwicklung** - Nutzt bewährte Rendering-Engine
+- ✅ **Vollständige Web-Kompatibilität** - Chromium-Standards
+- ✅ **Kleine Binary-Größe** - Tauri ist schlanker als Electron
+- ✅ **Native Performance** - Rust-Backend für optimale Performance
+- ✅ **Erweiterte Features** - Custom UI und Plugin-System
