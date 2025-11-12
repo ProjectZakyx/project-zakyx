@@ -1,6 +1,6 @@
 # 🌐 ZAKYX Browser - Portfolio-Zusammenfassung
 
-**Eine Tauri-basierte Desktop-App mit Browser-UI und iframe-basiertem Rendering - Browser-ähnliche Funktionalität mit erweiterten Features**
+**Tauri Desktop-App (Rust) mit Custom Browser-Interface - nutzt iframe-basiertes Rendering und Proxy-Server für Webseiten-Display statt native Browser-Engine**
 
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)](https://tauri.app/)
