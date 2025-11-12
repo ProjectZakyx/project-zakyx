@@ -1,6 +1,6 @@
 # 🌐 ZAKYX Browser - Portfolio-Zusammenfassung
 
-**Ein moderner, sicherheitsorientierter Web-Browser mit erweiterten Features und Cross-Platform-Unterstützung**
+**Eine Tauri-basierte Desktop-App mit Browser-UI und iframe-basiertem Rendering - Browser-ähnliche Funktionalität mit erweiterten Features**
 
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)](https://tauri.app/)
