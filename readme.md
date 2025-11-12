@@ -9,9 +9,11 @@
 
 ## 📋 Projektübersicht
 
-**ZAKYX Browser** ist ein moderner Desktop-Web-Browser mit Custom-UI, entwickelt in **Rust** mit **Tauri v2**. Der Browser nutzt **WebView2** (Microsoft Edge Chromium Engine) als Rendering-Engine und bietet erweiterte Features wie Smart Proxy, Plugin-System und umfassende Browser-Funktionalität.
+**ZAKYX Browser** ist eine **Tauri-basierte Desktop-App** mit Custom Browser-UI, entwickelt in **Rust** mit **Tauri v2**. Die App nutzt **iframe-basiertes Rendering** für Webseiten und einen **Proxy-Server** für Content-Delivery und CORS-Handling. Sie bietet Browser-Features wie Tab-Management, Bookmarks, History und ein Plugin-System.
 
-**Architektur-Typ**: Browser-Wrapper/Shell mit Custom UI (ähnlich wie Vivaldi, Brave) - nutzt WebView2/Chromium für das eigentliche Web-Rendering, bietet aber vollständige Browser-Features wie Tab-Management, Bookmarks, History und Plugin-System.
+**Architektur-Typ**: Browser-ähnliche Desktop-App mit iframe-basiertem Rendering - Webseiten werden über einen Proxy-Server geladen und in HTML-iframe-Elementen angezeigt. Die App bietet vollständige Browser-Features (Tabs, Bookmarks, History, Plugins), nutzt aber kein natives WebView2-Rendering.
+
+> ⚠️ **Hinweis**: Diese App nutzt iframe-basiertes Rendering, was bestimmte Limitationen mit sich bringt. Siehe [docs/IFRAME_LIMITATIONS.md](docs/IFRAME_LIMITATIONS.md) für Details.
 
 **Repository**: [https://github.com/ProjectZakyx/project-zakyx/tree/project-zakyx-main](https://github.com/ProjectZakyx/project-zakyx/tree/project-zakyx-main)
 
@@ -20,12 +22,13 @@
 ## 🎯 Kernmerkmale
 
 ### 🚀 **Core Features**
-- ✅ **WebView2-basierte Rendering-Engine** (Microsoft Edge Chromium) für vollständige Web-Kompatibilität
+- ✅ **iframe-basiertes Rendering** - Webseiten werden in HTML-iframe-Elementen geladen
+- ✅ **Proxy-Server** (Rust/Warp) für Content-Delivery und CORS-Handling
 - ✅ **Tab-Management** mit dynamischer Tab-Erstellung und -Verwaltung
 - ✅ **Bookmark-System** mit persistenter Speicherung
 - ✅ **History-Management** für besuchte Seiten mit Suchfunktion
 - ✅ **Settings-Management** mit konfigurierbaren Einstellungen
-- ✅ **Smart Proxy System** für erweiterte Website-Kompatibilität und CORS-Handling
+- ⚠️ **Hinweis**: iframe-basiertes Rendering hat Limitationen (siehe [docs/IFRAME_LIMITATIONS.md](docs/IFRAME_LIMITATIONS.md))
 
 ### 🔌 **Plugin-System**
 - ✅ **Dynamisches Plugin-Loading** zur Laufzeit
@@ -65,15 +68,18 @@
 ### **Frontend & Rendering**
 - **Vanilla JavaScript (ES6+)** - Modulares Frontend-System
 - **HTML5/CSS3** - Moderne UI mit Tailwind CSS
-- **Tauri WebView** - Nutzt WebView2 (Windows) / WebKit (macOS/Linux) für Rendering
-- **iframe-basiertes Rendering** - Webseiten werden in iframes geladen
-- **Smart Proxy Integration** - Proxy-Server für CORS-Kompatibilität
+- **iframe-basiertes Rendering** - Webseiten werden in HTML-iframe-Elementen geladen
+- **Proxy-Server** (Rust/Warp) - Lädt Content und liefert ihn an Frontend
+- **Tauri IPC** - Kommunikation zwischen Frontend und Backend
+
+> ⚠️ **Wichtig**: Die App nutzt **iframe-basiertes Rendering**, nicht native WebView2-Integration. WebView2-Code existiert im Repository, wird aber aktuell nicht verwendet.
 
 ### **Architektur-Patterns**
-- **Browser-Wrapper-Architektur** - Custom UI über WebView2/Chromium Engine
+- **Tauri Desktop-App** - Native Desktop-Anwendung mit Web-Frontend
+- **iframe-basiertes Rendering** - Webseiten werden in HTML-iframe-Elementen angezeigt
+- **Proxy-Pattern** - Proxy-Server für Content-Delivery und CORS-Handling
 - **Modular Design** - Klare Trennung von Concerns
 - **Plugin Architecture** - Erweiterbares System
-- **Proxy Pattern** - Smart Proxy für Website-Kompatibilität und CORS-Handling
 - **State Management** - Arc/RwLock für Thread-Safety
 
 ---
@@ -158,21 +164,30 @@ dist/js/
 
 ## 🏗️ Architektur-Details
 
-### **Rendering-Engine**
-Der ZAKYX Browser nutzt **WebView2** (Microsoft Edge Chromium Engine) als Rendering-Engine. Dies bedeutet:
-- ✅ **Vollständige Web-Standards-Unterstützung** (HTML5, CSS3, ES2022, WebAssembly)
-- ✅ **Chromium-basierte Rendering-Performance** - identisch mit Microsoft Edge
-- ✅ **Keine eigene Browser-Engine** - nutzt bewährte, moderne Rendering-Technologie
-- ✅ **Cross-Platform-Rendering** - WebView2 (Windows), WebKit (macOS/Linux)
-- ✅ **Smart Proxy Integration** - erweiterte Kompatibilität für problematische Websites
+### **Rendering-Architektur**
+Der ZAKYX Browser nutzt **iframe-basiertes Rendering** für Webseiten:
+
+**Wie es funktioniert:**
+1. **Proxy-Server** (Rust/Warp) lädt Webseiten-Content
+2. **Content wird verarbeitet** (CORS-Handling, Header-Stripping)
+3. **Content wird in iframe geladen** (HTML-iframe-Element)
+4. **Tauri IPC** verbindet Frontend und Backend
+
+**Technische Details:**
+- ✅ **Proxy-Server** läuft auf `localhost:3030`
+- ✅ **iframe-Sandbox** mit konfigurierten Berechtigungen
+- ✅ **Content-Optimierung** für iframe-Kompatibilität
+- ⚠️ **Limitationen** durch iframe-Restrictions (siehe [docs/IFRAME_LIMITATIONS.md](docs/IFRAME_LIMITATIONS.md))
 
 ### **Browser-Features**
-Trotz Nutzung von WebView2 bietet der Browser vollständige Browser-Funktionalität:
+Die App bietet vollständige Browser-Funktionalität:
 - ✅ **Custom Browser-UI** - vollständig angepasste Benutzeroberfläche
 - ✅ **Tab-Management** - Multi-Tab-Support mit State-Management
 - ✅ **Bookmark & History System** - persistente Datenspeicherung
 - ✅ **Plugin-System** - erweiterbare Architektur
 - ✅ **Smart Proxy** - CORS-Handling und Website-Optimierung
+
+> ⚠️ **Hinweis**: WebView2-Code existiert im Repository (`src/webview2/`, `src/native_webview2_integration.rs`), wird aber aktuell nicht verwendet. Die App nutzt iframe-basiertes Rendering.
 
 ---
 
@@ -212,14 +227,16 @@ Vollständiges Plugin-System mit:
 
 ## 🔒 Sicherheitsfeatures
 
-- **WebView2-Sicherheit** - Nutzt Chromium-Sicherheitsfeatures (Sandboxing, Site Isolation)
-- **iframe-Sandbox** mit minimalen Berechtigungen
+- **iframe-Sandbox** mit konfigurierten Berechtigungen (allow-scripts, allow-forms, etc.)
+- **Proxy-Server-Sicherheit** - Content-Filtering und Header-Stripping
 - **CORS-Handling** über Smart Proxy System
 - **PostMessage-Validation** für sichere Kommunikation
 - **Memory-Safety** durch Rust
 - **HTTPS-Enforcement** mit Zertifikatsvalidierung
 - **Privacy-by-Design** - keine Datensammlung ohne Zustimmung
 - **Plugin-Sandboxing** mit Permission-System
+
+> ⚠️ **Hinweis**: iframe-basiertes Rendering hat Sicherheits-Limitationen. Siehe [docs/IFRAME_LIMITATIONS.md](docs/IFRAME_LIMITATIONS.md) für Details.
 
 ---
 
@@ -356,14 +373,23 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 ## 📌 Wichtige Hinweise
 
 ### **Browser-Architektur**
-- Der ZAKYX Browser ist ein **Browser-Wrapper/Shell** mit Custom UI
-- Nutzt **WebView2** (Chromium) als Rendering-Engine - keine eigene Engine
+- Der ZAKYX Browser ist eine **Tauri-basierte Desktop-App** mit Custom Browser-UI
+- Nutzt **iframe-basiertes Rendering** - Webseiten werden in HTML-iframe-Elementen geladen
+- **Proxy-Server** (Rust/Warp) lädt Content und liefert ihn an Frontend
 - Bietet vollständige Browser-Features (Tabs, Bookmarks, History, Plugins)
-- Ähnliche Architektur wie Vivaldi, Brave, Opera (aber mit Tauri statt Electron)
+- **NICHT** ein Browser-Wrapper mit WebView2 (WebView2-Code existiert, wird aber nicht verwendet)
 
-### **Vorteile dieser Architektur**
-- ✅ **Schnelle Entwicklung** - Nutzt bewährte Rendering-Engine
-- ✅ **Vollständige Web-Kompatibilität** - Chromium-Standards
-- ✅ **Kleine Binary-Größe** - Tauri ist schlanker als Electron
-- ✅ **Native Performance** - Rust-Backend für optimale Performance
-- ✅ **Erweiterte Features** - Custom UI und Plugin-System
+### **Architektur-Details**
+- ✅ **Tauri Desktop-App** - Native Desktop-Anwendung
+- ✅ **iframe-Rendering** - Webseiten in HTML-iframe-Elementen
+- ✅ **Proxy-Server** - Content-Delivery und CORS-Handling
+- ✅ **Modulare Architektur** - Klare Trennung der Verantwortlichkeiten
+- ⚠️ **iframe-Limitationen** - Viele Websites blockieren iframe-Einbettung
+
+### **Limitationen & Bekannte Probleme**
+- ⚠️ **X-Frame-Options** - Viele Websites blockieren iframe-Einbettung
+- ⚠️ **CORS-Probleme** - Cross-Origin-Restrictions können auftreten
+- ⚠️ **Proxy-Abhängigkeit** - Browser funktioniert nicht ohne laufenden Proxy-Server
+- ⚠️ **Performance** - iframes sind langsamer als native Rendering
+
+Siehe [docs/IFRAME_LIMITATIONS.md](docs/IFRAME_LIMITATIONS.md) für detaillierte Informationen.
